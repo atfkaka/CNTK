@@ -1,0 +1,39 @@
+RootDir=.
+DataDir=$RootDir$
+ModelDir=models
+command=speechTrain
+
+# deviceId=-1 for CPU, >=0 for GPU devices
+DeviceNumber=-1
+
+precision=float
+
+modelPath=$ModelDir$/HTKMLFReaderSimple_Model.dnn
+deviceId=$DeviceNumber$
+
+parallelTrain=false
+makeMode=false
+
+Simple_Test = [
+    reader=[
+      readerType=HTKMLFReader
+      readMethod=blockRandomize
+      miniBatchMode=Partial
+      randomize=Auto
+      verbosity=0
+
+      features=[
+          dim=363
+          type=Real
+          scpFile=$DataDir$/glob_0000.scp
+      ]
+  
+      labels=[
+          mlfFile=$DataDir$/glob_0000.mlf
+          labelMappingFile=$DataDir$/state.list
+        
+          labelDim=132
+          labelType=Category
+      ]
+   ]
+]
