@@ -19,9 +19,6 @@ namespace Microsoft
         {
             namespace Test
             {
-                const int deviceId = 0;
-                const float epsilon = 0.0001f;
-
                 struct F
                 {
                     F()
