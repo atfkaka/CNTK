@@ -31,7 +31,7 @@ namespace Microsoft
                         wstring parent_path = path.parent_path().c_str();
 
                         BOOST_TEST_MESSAGE("Setting current path to:");
-                        BOOST_TEST_MESSAGE(parent_path.c_str());
+                        BOOST_TEST_MESSAGE(*parent_path.c_str());
 
                         boost::filesystem::current_path(parent_path);
 
