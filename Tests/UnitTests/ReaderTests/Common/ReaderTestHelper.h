@@ -18,17 +18,21 @@ namespace Microsoft {  namespace MSR {  namespace CNTK
         {
             F(wstring dataPath)
             {
+                m_dataPath = dataPath;
+
                 BOOST_TEST_MESSAGE("setup fixture");
                 BOOST_TEST_MESSAGE("Current working directory:");
-                BOOST_TEST_MESSAGE(boost::filesystem::current_path());
+                m_initialWorkingPath = boost::filesystem::current_path().c_str();
+                BOOST_TEST_MESSAGE(m_initialWorkingPath.c_str());
 
                 boost::filesystem::path path(boost::unit_test::framework::master_test_suite().argv[0]);
-                wstring parent_path = path.parent_path().c_str();
+                m_parentPath = path.parent_path().c_str();
 
+                // TODO: Setup the CWD based on the data path
                 BOOST_TEST_MESSAGE("Setting current path to:");
-                BOOST_TEST_MESSAGE(*parent_path.c_str());
+                BOOST_TEST_MESSAGE(m_parentPath.c_str());
 
-                boost::filesystem::current_path(parent_path);
+                boost::filesystem::current_path(m_parentPath);
 
                 BOOST_TEST_MESSAGE("Current working directory is now:");
                 BOOST_TEST_MESSAGE(boost::filesystem::current_path());
@@ -39,7 +43,9 @@ namespace Microsoft {  namespace MSR {  namespace CNTK
                 BOOST_TEST_MESSAGE("teardown fixture");
             }
 
-            wstring dataPath;
+            wstring m_initialWorkingPath;
+            wstring m_parentPath;
+            wstring m_dataPath;
 
             // Helper function to write the Reader's content to a file.
             // outputFile : the file stream to output to.
