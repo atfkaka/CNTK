@@ -4,11 +4,6 @@
 // </copyright>
 //
 #include "stdafx.h"
-#include "Matrix.h"
-#include "commandArgUtil.h"
-#include "DataReader.h"
-#include "common/ReaderTestHelper.h"
-#include "boost/filesystem.hpp"
 
 using namespace Microsoft::MSR::CNTK;
 
@@ -20,8 +15,13 @@ namespace Microsoft
         {
             namespace Test
             {
+                struct HTKMLFixture : F
+                {
+                    HTKMLFixture() : F(L"HTKML")
+                    {}
+                };
 
-                BOOST_FIXTURE_TEST_SUITE(ReaderTestSuite, F)
+                BOOST_FIXTURE_TEST_SUITE(ReaderTestSuite, HTKMLFixture)
 
                 BOOST_AUTO_TEST_CASE(HTKMLFReaderSimpleDataLoop)
                 {

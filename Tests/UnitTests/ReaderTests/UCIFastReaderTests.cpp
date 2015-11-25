@@ -4,11 +4,6 @@
 // </copyright>
 //
 #include "stdafx.h"
-#include "Matrix.h"
-#include "commandArgUtil.h"
-#include "DataReader.h"
-#include "common/ReaderTestHelper.h"
-#include "boost/filesystem.hpp"
 
 using namespace Microsoft::MSR::CNTK;
 
@@ -20,10 +15,16 @@ namespace Microsoft
         {
             namespace Test
             {
+                struct UCIFastFixture : F
+                {
+                    UCIFastFixture() : F(L"UCIFast")
+                    {}
+                };
+
                 const int deviceId = 0;
                 const float epsilon = 0.0001f;
 
-                BOOST_FIXTURE_TEST_SUITE(ReaderTestSuite, F)
+                BOOST_FIXTURE_TEST_SUITE(ReaderTestSuite, UCIFastFixture)
 
                 BOOST_AUTO_TEST_CASE(UCIFastReaderSimpleDataLoop)
                 {

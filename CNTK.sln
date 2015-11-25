@@ -413,7 +413,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UCIFastReaderTests", "Tests
 		{E6646FFE-3588-4276-8A15-8D65C22711C1} = {E6646FFE-3588-4276-8A15-8D65C22711C1}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HTKLMFReaderTests", "Tests\UnitTests\HTKLMFReaderTests\HTKLMFReaderTests.vcxproj", "{A4FC3467-4787-43E8-BBC0-D79AE56B468D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReaderTests", "Tests\UnitTests\ReaderTests\ReaderTests.vcxproj", "{A4FC3467-4787-43E8-BBC0-D79AE56B468D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -98,6 +98,17 @@ namespace Microsoft {  namespace MSR {  namespace CNTK
                 }
             }
 
+            // Helper function to run a Reader test.
+            // configFileName       : the file name for the config file
+            // controlDataFilePath  : the file path for the control data to verify against
+            // testDataFilePath     : the file path for writing the minibatch data (used for comparing against control data)
+            // testSectionName      : the section name for the test inside the config file
+            // readerSectionName    : the reader field name in the test section
+            // epochSize            : the epoch size
+            // mbSize               : the minibatch size
+            // epochs               : the number of epochs to read
+            // expectedFeatureRowsCount : the expected number of rows in the feature matrix
+            // expectedLabelRowsCount   : the expected number of rows in the label matrix
             void HelperRunReaderTest(
                 wstring configFileName, 
                 const wstring controlDataFilePath, 
