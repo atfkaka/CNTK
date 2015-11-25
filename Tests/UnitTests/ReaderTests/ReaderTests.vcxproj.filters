@@ -45,12 +45,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Data\HTKMLFReaderSimple_Config.txt">
-      <Filter>Data</Filter>
-    </Text>
-    <Text Include="Data\HTKMLFReaderSimple_Control.txt">
-      <Filter>Data</Filter>
-    </Text>
     <Text Include="Data\UCIFastReaderSimpleDataLoop_Config.txt">
       <Filter>Data</Filter>
     </Text>
@@ -61,6 +55,12 @@
       <Filter>Data</Filter>
     </Text>
     <Text Include="Data\UCIFastReaderSimpleDataLoop_Train.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="Data\HTKMLFReaderSimpleDataLoop_Config.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="Data\HTKMLFReaderSimpleDataLoop_Control.txt">
       <Filter>Data</Filter>
     </Text>
   </ItemGroup>

@@ -8,7 +8,7 @@ DeviceNumber=-1
 
 precision=float
 
-modelPath=$ModelDir$/HTKMLFReaderSimple_Model.dnn
+modelPath=$ModelDir$/HTKMLFReaderSimpleDataLoop_Model.dnn
 deviceId=$DeviceNumber$
 
 parallelTrain=false

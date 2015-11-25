@@ -132,10 +132,10 @@
     <ClCompile Include="UCIFastReaderTests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Data\HTKMLFReaderSimple_Config.txt">
+    <Text Include="Data\HTKMLFReaderSimpleDataLoop_Config.txt">
       <DeploymentContent>true</DeploymentContent>
     </Text>
-    <Text Include="Data\HTKMLFReaderSimple_Control.txt">
+    <Text Include="Data\HTKMLFReaderSimpleDataLoop_Control.txt">
       <DeploymentContent>true</DeploymentContent>
     </Text>
     <Text Include="Data\UCIFastReaderSimpleDataLoop_Config.txt" />

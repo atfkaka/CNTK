@@ -3,5 +3,5 @@
 // </copyright>
 //
 // stdafx.cpp : source file that includes just the standard includes
-#define BOOST_TEST_MODULE HTKLMReaderTests
+#define BOOST_TEST_MODULE ReaderTests
 #include "stdafx.h"
