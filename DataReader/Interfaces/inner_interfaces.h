@@ -3,92 +3,95 @@
 #include <vector>
 #include "reader_interface.h"
 
-// Defines the encoding of a frame.
-struct FrameDescription
-{
-    std::vector<size_t> dimensions;
-    size_t elementSize;
-};
+namespace Microsoft { namespace MSR { namespace CNTK {
 
-// Defines identifier and length of a Sequence.
-struct SequenceDescription
-{
-    size_t id;
-    size_t length;
-};
+    // Defines the encoding of a frame.
+    struct FrameDescription
+    {
+        std::vector<size_t> dimensions;
+        size_t elementSize;
+    };
 
-// Defines a sequences, which consists of sequences description and a number
-// of frames, which have the same encoding and are layed out in memory contiguously.
-struct Sequence
-{
-    SequenceDescription* description;
-    FrameDescription* frameDescription;
-    char* data;
-    size_t numberOfFrames;
-};
+    // Defines identifier and length of a Sequence.
+    struct SequenceDescription
+    {
+        size_t id;
+        size_t length;
+    };
 
-// Low-level input interface (for file, network, etc.).
-// Memory buffers to fill data into are provided by the caller.
-class BlockReader
-{
-public:
-    virtual void get(char* buffer, size_t offset, size_t size) = 0;
-    virtual ~BlockReader() = 0 {}
-};
+    // Defines a sequences, which consists of sequences description and a number
+    // of frames, which have the same encoding and are layed out in memory contiguously.
+    struct Sequence
+    {
+        SequenceDescription* description;
+        FrameDescription* frameDescription;
+        char* data;
+        size_t numberOfFrames;
+    };
 
-// Interface to for structured reading from a single datasource
-class DataDeserializer
-{
-};
+    // Low-level input interface (for file, network, etc.).
+    // Memory buffers to fill data into are provided by the caller.
+    class BlockReader
+    {
+    public:
+        virtual void get(char* buffer, size_t offset, size_t size) = 0;
+        virtual ~BlockReader() = 0 {}
+    };
 
-// Timeline specifies a vector of Sequence IDs and lengths.
-// This information is exposed by a Sequencer, e.g., to be used by the Randomizer.
-typedef std::vector<SequenceDescription> Timeline;
+    // Interface to for structured reading from a single datasource
+    class DataDeserializer
+    {
+    };
 
-// Timeline offsets specify file offset of sequences. These are used internally
-// of a Sequence Reader or a Sequencer.
-typedef std::vector<size_t> TimelineOffsets;
+    // Timeline specifies a vector of Sequence IDs and lengths.
+    // This information is exposed by a Sequencer, e.g., to be used by the Randomizer.
+    typedef std::vector<SequenceDescription> Timeline;
 
-// A Sequencer composes Timeline information and a number of Sequence readers, providing
-// random-access to the Timeline as well as the composed Sequence readers.
-class Sequencer
-{
-public:
-    virtual Timeline& getTimeline() const = 0;
-    virtual std::vector<InputDescriptionPtr> getInputs() const = 0;
-    virtual std::map<InputId, Sequence> getSequenceById(size_t id) = 0;
-    virtual ~Sequencer() = 0 {};
-};
+    // Timeline offsets specify file offset of sequences. These are used internally
+    // of a Sequence Reader or a Sequencer.
+    typedef std::vector<size_t> TimelineOffsets;
 
-typedef std::shared_ptr<Sequencer> SequencerPtr;
+    // A Sequencer composes Timeline information and a number of Sequence readers, providing
+    // random-access to the Timeline as well as the composed Sequence readers.
+    class Sequencer
+    {
+    public:
+        virtual Timeline& getTimeline() const = 0;
+        virtual std::vector<InputDescriptionPtr> getInputs() const = 0;
+        virtual std::map<InputId, Sequence> getSequenceById(size_t id) = 0;
+        virtual ~Sequencer() = 0 {};
+    };
 
-// Defines context augmentation (to the left and to the right).
-// This will be specified as a construction parameter to Sequence Reader.
-struct AugmentationDescriptor
-{
-    size_t contextLeft;
-    size_t contextRight;
-};
+    typedef std::shared_ptr<Sequencer> SequencerPtr;
 
-// Provides Input descriptions and sequential access to sequences.
-class Transformer
-{
-public:
-    virtual std::vector<InputDescriptionPtr> getInputs() const = 0;
-    virtual ~Transformer() = 0 {}
-    virtual std::map<InputId, Sequence> getNextSequence() = 0;
-};
+    // Defines context augmentation (to the left and to the right).
+    // This will be specified as a construction parameter to Sequence Reader.
+    struct AugmentationDescriptor
+    {
+        size_t contextLeft;
+        size_t contextRight;
+    };
 
-typedef std::shared_ptr<Transformer> TransformerPtr;
+    // Provides Input descriptions and sequential access to sequences.
+    class Transformer
+    {
+    public:
+        virtual std::vector<InputDescriptionPtr> getInputs() const = 0;
+        virtual ~Transformer() = 0 {}
+        virtual std::map<InputId, Sequence> getNextSequence() = 0;
+    };
 
-// A Randomizer implements Sequence randomization for a Sequencer and
-// additional parameters given at construction time.
-// Note: chunk-level randomization can be implemented based on Sequence lengths
-// exposed through the Sequencer's Timeline method.
-class Randomizer : public Transformer
-{
-};
+    typedef std::shared_ptr<Transformer> TransformerPtr;
 
-class ImageCropper : public Transformer
-{
-};
+    // A Randomizer implements Sequence randomization for a Sequencer and
+    // additional parameters given at construction time.
+    // Note: chunk-level randomization can be implemented based on Sequence lengths
+    // exposed through the Sequencer's Timeline method.
+    class Randomizer : public Transformer
+    {
+    };
+
+    class ImageCropper : public Transformer
+    {
+    };
+}}}

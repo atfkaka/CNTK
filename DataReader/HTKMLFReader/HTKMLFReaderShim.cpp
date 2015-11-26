@@ -79,8 +79,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             }
 
             auto layout = input.second->getLayout();
-            int rowNumber = 0;// layout->rows->Size();
-            int columnNumber = 0; //layout->columns->Size();
+            size_t rowNumber = layout->rows->GetNumElements();
+            size_t columnNumber = layout->columns->GetNumCols();
 
             auto data = reinterpret_cast<const ElemType*>(input.second->getData());
             matrices[name]->SetValue(rowNumber, columnNumber, matrices[name]->GetDeviceId(), const_cast<ElemType*>(data), matrixFlagNormal);

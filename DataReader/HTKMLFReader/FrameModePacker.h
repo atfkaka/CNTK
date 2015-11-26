@@ -1,8 +1,10 @@
 #pragma once
 
-#include "reader_interface.h"
 #include <vector>
 #include <memory>
+
+#include "reader_interface.h"
+#include "commandArgUtil.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
     class FrameModePacker : public Reader
