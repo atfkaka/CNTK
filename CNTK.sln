@@ -194,7 +194,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LSTM", "LSTM", "{19EE975B-232D-49F0-94C7-6F1C6424FB53}"
 	ProjectSection(SolutionItems) = preProject
 		Tests\Speech\LSTM\cntk.config = Tests\Speech\LSTM\cntk.config
-		..\..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs = ..\..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs
+		..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs = ..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParseConfig", "MachineLearning\ParseConfig\ParseConfig.vcxproj", "{7C4E77C9-6B17-4B02-82C1-DB62EEE2635B}"
@@ -412,6 +412,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReaderTests", "Tests\UnitTe
 		{33D2FD22-DEF2-4507-A58A-368F641AEBE5} = {33D2FD22-DEF2-4507-A58A-368F641AEBE5}
 		{60BDB847-D0C4-4FD3-A947-0C15C08BCDB5} = {60BDB847-D0C4-4FD3-A947-0C15C08BCDB5}
 		{E6646FFE-3588-4276-8A15-8D65C22711C1} = {E6646FFE-3588-4276-8A15-8D65C22711C1}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reader interfaces", "Reader interfaces", "{824DF649-E168-4C96-AADC-ACDD349FF45B}"
+	ProjectSection(SolutionItems) = preProject
+		DataReader\Interfaces\implementations.h = DataReader\Interfaces\implementations.h
+		DataReader\Interfaces\inner_interfaces.h = DataReader\Interfaces\inner_interfaces.h
+		DataReader\Interfaces\reader_interface.h = DataReader\Interfaces\reader_interface.h
 	EndProjectSection
 EndProject
 Global
@@ -700,5 +707,6 @@ Global
 		{4701E678-5E6F-470D-B348-9CD1A2C095D1} = {6F19321A-65E7-4829-B00C-3886CD6C6EDE}
 		{EB2BE26F-6BD4-4274-971F-86D080779DD1} = {DD043083-71A4-409A-AA91-F9C548DCF7EC}
 		{A4FC3467-4787-43E8-BBC0-D79AE56B468D} = {6F19321A-65E7-4829-B00C-3886CD6C6EDE}
+		{824DF649-E168-4C96-AADC-ACDD349FF45B} = {39E42C4B-A078-4CA4-9D92-B883D8129601}
 	EndGlobalSection
 EndGlobal
