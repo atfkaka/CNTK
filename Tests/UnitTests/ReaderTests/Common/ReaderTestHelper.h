@@ -27,6 +27,7 @@ namespace Microsoft {  namespace MSR {  namespace CNTK
 
                 boost::filesystem::path path(boost::unit_test::framework::master_test_suite().argv[0]);
                 m_parentPath = path.parent_path().c_str();
+                m_parentPath += L"/../../../Tests/UnitTests/ReaderTests/Data";
 
                 // TODO: Setup the CWD based on the data path
                 BOOST_TEST_MESSAGE("Setting current path to:");
