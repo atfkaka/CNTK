@@ -17,6 +17,8 @@
     <ClCompile Include="..\..\Common\fileutil.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="HTKMLFReaderShim.cpp" />
+    <ClCompile Include="FrameModePacker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="biggrowablevectors.h" />
@@ -50,6 +52,8 @@
     <ClInclude Include="..\..\Common\Include\ssematrix.h">
       <Filter>Common\Include</Filter>
     </ClInclude>
+    <ClInclude Include="HTKMLFReaderShim.h" />
+    <ClInclude Include="FrameModePacker.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

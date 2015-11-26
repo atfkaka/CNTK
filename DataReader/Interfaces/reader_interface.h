@@ -18,6 +18,7 @@ struct EpochConfiguration
     size_t totalSize;
 
     size_t numberOfSequences;
+    size_t index;
 };
 
 typedef size_t InputId;
@@ -25,7 +26,7 @@ typedef size_t InputId;
 // Input description.
 struct InputDescription
 {
-    std::string name;
+    std::wstring name;
     InputId id;
     std::string targetLayoutType;
     std::map<std::string, std::string> properties;
