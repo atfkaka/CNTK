@@ -194,7 +194,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LSTM", "LSTM", "{19EE975B-232D-49F0-94C7-6F1C6424FB53}"
 	ProjectSection(SolutionItems) = preProject
 		Tests\Speech\LSTM\cntk.config = Tests\Speech\LSTM\cntk.config
-		..\..\..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs = ..\..\..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs
+		..\..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs = ..\..\..\..\work\cntk-public\Tests\Speech\LSTM\lstm.bs
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParseConfig", "MachineLearning\ParseConfig\ParseConfig.vcxproj", "{7C4E77C9-6B17-4B02-82C1-DB62EEE2635B}"
@@ -408,6 +408,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CNTKActionsLib", "MachineLe
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReaderTests", "Tests\UnitTests\ReaderTests\ReaderTests.vcxproj", "{A4FC3467-4787-43E8-BBC0-D79AE56B468D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{33D2FD22-DEF2-4507-A58A-368F641AEBE5} = {33D2FD22-DEF2-4507-A58A-368F641AEBE5}
+		{60BDB847-D0C4-4FD3-A947-0C15C08BCDB5} = {60BDB847-D0C4-4FD3-A947-0C15C08BCDB5}
+		{E6646FFE-3588-4276-8A15-8D65C22711C1} = {E6646FFE-3588-4276-8A15-8D65C22711C1}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -512,6 +517,7 @@ Global
 		{B3DD765E-694E-4494-BAD7-37BBF2942517}.Debug|x64.ActiveCfg = Debug|x64
 		{B3DD765E-694E-4494-BAD7-37BBF2942517}.Debug|x64.Build.0 = Debug|x64
 		{B3DD765E-694E-4494-BAD7-37BBF2942517}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{B3DD765E-694E-4494-BAD7-37BBF2942517}.Release|Mixed Platforms.Build.0 = Release|x64
 		{B3DD765E-694E-4494-BAD7-37BBF2942517}.Release|Win32.ActiveCfg = Release|x64
 		{B3DD765E-694E-4494-BAD7-37BBF2942517}.Release|x64.ActiveCfg = Release|x64
 		{B3DD765E-694E-4494-BAD7-37BBF2942517}.Release|x64.Build.0 = Release|x64
@@ -549,7 +555,6 @@ Global
 		{DBB3C106-B0B4-4059-8477-C89528CEC1B0}.Debug|Win32.ActiveCfg = Debug|x64
 		{DBB3C106-B0B4-4059-8477-C89528CEC1B0}.Debug|x64.ActiveCfg = Debug|x64
 		{DBB3C106-B0B4-4059-8477-C89528CEC1B0}.Release|Mixed Platforms.ActiveCfg = Release|x64
-		{DBB3C106-B0B4-4059-8477-C89528CEC1B0}.Release|Mixed Platforms.Build.0 = Release|x64
 		{DBB3C106-B0B4-4059-8477-C89528CEC1B0}.Release|Win32.ActiveCfg = Release|x64
 		{DBB3C106-B0B4-4059-8477-C89528CEC1B0}.Release|x64.ActiveCfg = Release|x64
 		{CE429AA2-3778-4619-8FD1-49BA3B81197B}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
