@@ -8,6 +8,7 @@
 #include "DataReader.h"
 #include "commandArgUtil.h"
 #include "FrameModePacker.h"
+#include "SubstitutingMemoryProvider.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -17,6 +18,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         FrameModePackerPtr m_packer;
         EpochPtr m_epoch;
         MBLayoutPtr m_layout;
+        SubstitutingMemoryProviderPtr m_memoryProvider;
+        bool m_providerSet;
 
     public:
         virtual void Init(const ConfigParameters & config) override;

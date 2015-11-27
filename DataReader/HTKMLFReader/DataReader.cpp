@@ -21,6 +21,7 @@
 #define DATAREADER_EXPORTS
 #include "DataReader.h"
 #include "HTKMLFReader.h"
+#include "HTKMLFReaderShim.h"
 #include "commandArgUtil.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
@@ -28,7 +29,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 template<class ElemType>
 void DATAREADER_API GetReader(IDataReader<ElemType>** preader)
 {
-    *preader = new HTKMLFReader<ElemType>();
+    *preader = new HTKMLFReaderShim<ElemType>();
 }
 
 extern "C" DATAREADER_API void GetReaderF(IDataReader<float>** preader)

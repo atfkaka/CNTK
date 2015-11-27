@@ -34,8 +34,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         void InitFromConfig(const ConfigParameters& config);
         void PrepareForTrainingOrTesting(const ConfigParameters& config);
         void StartDistributedMinibatchLoop(size_t requestedMBSize, size_t epoch, size_t subsetNum, size_t numSubsets, size_t requestedEpochSamples /*= requestDataSize*/);
-        void StartMinibatchLoopToTrainOrTest(size_t mbSize, size_t epoch, size_t subsetNum, size_t numSubsets, size_t requestedEpochSamples);
         Minibatch GetMinibatch();
+
+        void PackToMinibatch(Minibatch &mb);
         void FillOneUttDataforParallelmode(size_t startFr,
             size_t framenum, size_t channelIndex, size_t sourceChannelIndex);
         bool ReNewBufferForMultiIO(size_t i);
@@ -76,10 +77,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         unique_ptr<msra::dbn::minibatchiterator> m_mbiter;
         unique_ptr<msra::dbn::minibatchsource> m_frameSource;
         size_t m_mbNumTimeSteps;                // number of time steps  to fill/filled (note: for frame randomization, this the #frames, and not 1 as later reported)
-        vector<bool> m_sentenceEnd;
-        vector<size_t> m_processedFrame;
         vector<size_t> m_numFramesToProcess;    // [seq index] number of frames available (left to return) in each parallel sequence
-        vector<size_t> m_switchFrame;           /// TODO: something like the position where a new sequence starts; still supported?
         vector<size_t> m_numValidFrames;        // [seq index] valid #frames in each parallel sequence. Frames (s, t) with t >= m_numValidFrames[s] are NoInput.
 
         std::vector<std::shared_ptr<void>> m_featuresBufferMultiUtt;
@@ -97,8 +95,6 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         std::vector<shared_ptr<const msra::dbn::latticepair>>  m_extraLatticeBufferMultiUtt;
         std::vector<std::vector<size_t>> m_extraLabelsIDBufferMultiUtt;
         std::vector<std::vector<size_t>> m_extraPhoneboundaryIDBufferMultiUtt;
-        vector<size_t> m_extraSeqsPerMB;
-        size_t m_extraNumSeqs;
     };
 
     typedef std::shared_ptr<FrameModePacker> FrameModePackerPtr;

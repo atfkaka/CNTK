@@ -56,6 +56,7 @@
     <ClInclude Include="FrameModePacker.h" />
     <ClInclude Include="CudaMemoryProvider.h" />
     <ClInclude Include="HeapMemoryProvider.h" />
+    <ClInclude Include="SubstitutingMemoryProvider.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

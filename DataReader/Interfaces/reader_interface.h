@@ -88,12 +88,12 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     // Represents a single minibatch.
     struct Minibatch
     {
-        bool notAtEndOfEpoch;
+        bool atEndOfEpoch;
         std::map<size_t /*id from the Input description*/, InputPtr> minibatch;
 
         operator bool() const
         {
-            return notAtEndOfEpoch;
+            return !atEndOfEpoch;
         }
     };
 

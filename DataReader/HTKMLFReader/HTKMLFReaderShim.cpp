@@ -30,14 +30,19 @@ typedef unsigned short WORD;
 typedef unsigned int UNINT32;
 #endif
 
+#include "SubstitutingMemoryProvider.h"
+#include "CudaMemoryProvider.h"
+#include "HeapMemoryProvider.h"
+
 namespace Microsoft { namespace MSR { namespace CNTK {
 
     template<class ElemType>
     void HTKMLFReaderShim<ElemType>::Init(const ConfigParameters& config)
     {
         assert(config(L"frameMode", true));
-
-        m_packer = std::make_shared<FrameModePacker>(config, nullptr, sizeof(ElemType));
+        m_memoryProvider = std::make_shared<SubstitutingMemoryProvider>();
+        m_providerSet = false;
+        m_packer = std::make_shared<FrameModePacker>(config, m_memoryProvider, sizeof(ElemType));
     }
 
     template<class ElemType>
@@ -62,8 +67,32 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     template<class ElemType>
     bool HTKMLFReaderShim<ElemType>::GetMinibatch(std::map<std::wstring, Matrix<ElemType>*>& matrices)
     {
+        // eldak: Hack.
+        int deviceId = matrices.begin()->second->GetDeviceId();
+        for (auto mx : matrices)
+        {
+            if (mx.second->GetDeviceId() != deviceId)
+            {
+                assert(false);
+            }
+        }
+
+        if (!m_providerSet)
+        {
+
+            if (deviceId < 0)
+                m_memoryProvider->SetMemoryProvider(std::make_shared<HeapMemoryProvider>());
+            else
+                m_memoryProvider->SetMemoryProvider(std::make_shared<CudaMemoryProvider>(deviceId));
+
+            m_providerSet = true;
+        }
+
         Minibatch m = m_epoch->readMinibatch();
-        assert(false);
+        if (m.atEndOfEpoch)
+        {
+            return false;
+        }
 
         auto inputs = m_packer->getInputs();
         std::map<size_t, wstring> idToName;
@@ -81,8 +110,11 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             }
 
             auto layout = input.second->getLayout();
-            size_t rowNumber = layout->rows->GetNumElements();
             size_t columnNumber = layout->columns->GetNumCols();
+            size_t rowNumber = layout->rows->GetNumElements();
+
+            // Current hack.
+            m_layout = layout->columns;
 
             auto data = reinterpret_cast<const ElemType*>(input.second->getData());
             matrices[name]->SetValue(rowNumber, columnNumber, matrices[name]->GetDeviceId(), const_cast<ElemType*>(data), matrixFlagNormal);
