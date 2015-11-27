@@ -54,6 +54,8 @@
     </ClInclude>
     <ClInclude Include="HTKMLFReaderShim.h" />
     <ClInclude Include="FrameModePacker.h" />
+    <ClInclude Include="CudaMemoryProvider.h" />
+    <ClInclude Include="HeapMemoryProvider.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

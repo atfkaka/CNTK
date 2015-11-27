@@ -110,7 +110,9 @@
     <ClInclude Include="chunkevalsource.h" />
     <ClInclude Include="..\..\Common\Include\fileutil.h" />
     <ClInclude Include="..\..\Common\Include\DebugUtil.h" />
+    <ClInclude Include="CudaMemoryProvider.h" />
     <ClInclude Include="FrameModePacker.h" />
+    <ClInclude Include="HeapMemoryProvider.h" />
     <ClInclude Include="htkfeatio.h" />
     <ClInclude Include="HTKMLFReader.h" />
     <ClInclude Include="HTKMLFReaderShim.h" />
