@@ -46,19 +46,19 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     // Input data.
     class Input
     {
-        char* data_;
+        void* data_;
         size_t data_size_;
         LayoutPtr layout_;
 
     public:
-        Input(char* data, size_t dataSize, LayoutPtr layout)
+        Input(void* data, size_t dataSize, LayoutPtr layout)
             : data_(data)
             , data_size_(dataSize)
             , layout_(layout)
         {
         }
 
-        const char* getData() const
+        const void* getData() const
         {
             return data_;
         }
@@ -79,8 +79,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     class MemoryProvider
     {
     public:
-        void* alloc(size_t element, size_t numberOfElements);
-        void free(void* ptr);
+        virtual void* alloc(size_t element, size_t numberOfElements) = 0;
+        virtual void free(void* ptr) = 0;
+        virtual ~MemoryProvider() = 0 {}
     };
     typedef std::shared_ptr<MemoryProvider> MemoryProviderPtr;
 

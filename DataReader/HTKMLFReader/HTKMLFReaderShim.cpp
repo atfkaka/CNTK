@@ -33,9 +33,11 @@ typedef unsigned int UNINT32;
 namespace Microsoft { namespace MSR { namespace CNTK {
 
     template<class ElemType>
-    void HTKMLFReaderShim<ElemType>::Init(const ConfigParameters & config)
+    void HTKMLFReaderShim<ElemType>::Init(const ConfigParameters& config)
     {
-        m_packer = std::make_shared<FrameModePacker>(config);
+        assert(config(L"frameMode", true));
+
+        m_packer = std::make_shared<FrameModePacker>(config, nullptr, sizeof(ElemType));
     }
 
     template<class ElemType>

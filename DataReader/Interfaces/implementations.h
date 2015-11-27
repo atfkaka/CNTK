@@ -7,17 +7,6 @@
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
-    class EpochImplementation : public Epoch
-    {
-    public:
-        virtual Minibatch readMinibatch() override
-        {
-            throw std::logic_error("The method or operation is not implemented.");
-            return Minibatch();
-        };
-        virtual ~EpochImplementation() {};
-    };
-
 
     // TODO we don't use this yet
     struct PhysicalTimeline : Timeline
