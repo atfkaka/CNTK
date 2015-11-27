@@ -46,7 +46,7 @@ namespace msra { namespace dbn {
             minibatchready=false;
         }
 
-        
+
 
         void saveandflush(msra::dbn::matrix &pred)
         {
@@ -83,8 +83,8 @@ namespace msra { namespace dbn {
     public:
         chunkevalsource (size_t numinput, size_t numoutput, size_t chunksize)
             :vdim(numinput),udim(numoutput),chunksize(chunksize)
-        {         
-            frames.reserve (chunksize * 2);    
+        {
+            frames.reserve (chunksize * 2);
             feat.resize(vdim,chunksize); // initialize to size chunksize
         }
 
@@ -104,7 +104,7 @@ namespace msra { namespace dbn {
             numframes.push_back (feat.cols());
             outpaths.push_back (outpath);
             sampperiods.push_back (sampperiod);
-            
+
         }
 
         void createevalminibatch()
@@ -159,7 +159,7 @@ namespace msra { namespace dbn {
             minibatchready=false;
         }
 
-        
+
 
         void saveandflush(msra::dbn::matrix &pred, size_t index)
         {
@@ -189,26 +189,26 @@ namespace msra { namespace dbn {
             assert (firstframe == framesinblock); framesinblock;
 
             // and we are done --forget the FIFO content & get ready for next chunk
-            
+
         }
 
     public:
         chunkevalsourcemulti (std::vector<size_t> vdims, std::vector<size_t> udims, size_t chunksize)
             :vdims(vdims),udims(udims),chunksize(chunksize)
-        {     
+        {
 
             foreach_index(i, vdims)
             {
                 msra::dbn::matrix thisfeat;
                 std::vector<std::vector<float>> frames; // [t] all feature frames concatenated into a big block
-                
+
                 frames.reserve(chunksize * 2);
                 framesmulti.push_back(frames);
-                //framesmulti[i].reserve (chunksize * 2);    
-                
+                //framesmulti[i].reserve (chunksize * 2);
+
                 thisfeat.resize(vdims[i], chunksize);
                 feat.push_back(thisfeat);
-    
+
                 outpaths.push_back(std::vector<std::wstring>());
                 sampperiods.push_back(std::vector<unsigned int>());
                 //feat[i].resize(vdims[i],chunksize); // initialize to size chunksize
@@ -233,7 +233,7 @@ namespace msra { namespace dbn {
 
             outpaths[index].push_back (outpath);
             sampperiods[index].push_back (sampperiod);
-            
+
         }
 
         void createevalminibatch()
@@ -295,19 +295,19 @@ namespace msra { namespace dbn {
 
     public:
         FileEvalSource(std::vector<size_t> vdims, std::vector<size_t> leftcontext, std::vector<size_t> rightcontext, size_t chunksize) :vdims(vdims), leftcontext(leftcontext), rightcontext(rightcontext), chunksize(chunksize)
-        {     
+        {
             foreach_index(i, vdims)
             {
                 msra::dbn::matrix thisfeat;
                 std::vector<std::vector<float>> frames; // [t] all feature frames concatenated into a big block
-                
+
                 frames.reserve(chunksize * 2);
                 framesMulti.push_back(frames);
-                //framesmulti[i].reserve (chunksize * 2);    
-                
+                //framesmulti[i].reserve (chunksize * 2);
+
                 thisfeat.resize(vdims[i], chunksize);
                 feat.push_back(thisfeat);
-    
+
                 sampPeriods.push_back(std::vector<unsigned int>());
                 //feat[i].resize(vdims[i],chunksize); // initialize to size chunksize
             }
@@ -330,7 +330,7 @@ namespace msra { namespace dbn {
                 numFrames.push_back (feat.cols());
 
             sampPeriods[index].push_back (sampPeriod);
-            
+
         }
 
         void CreateEvalMinibatch()
@@ -368,5 +368,5 @@ namespace msra { namespace dbn {
         void Reset() { Clear(); }
     };
 
-    
+
 };};

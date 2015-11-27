@@ -45,10 +45,10 @@ public:
                            std::vector<shared_ptr<const latticesource::latticepair>> & lattices, std::vector<std::vector<size_t>> & sentendmark,
 						   std::vector<std::vector<size_t>> & phoneboundaries) = 0;
     // getbatch() overload to support subsetting of mini-batches for parallel training
-    // Default implementation does not support subsetting and throws an exception on 
+    // Default implementation does not support subsetting and throws an exception on
     // calling this overload with a numsubsets value other than 1.
     virtual bool getbatch(const size_t globalts,
-                          const size_t framesrequested, const size_t subsetnum, const size_t numsubsets, size_t & framesadvanced, 
+                          const size_t framesrequested, const size_t subsetnum, const size_t numsubsets, size_t & framesadvanced,
                           std::vector<msra::dbn::matrix> & feat, std::vector<std::vector<size_t>> & uids,
                           std::vector<const_array_ref<msra::lattices::lattice::htkmlfwordsequence::word>> & transcripts,
                           std::vector<shared_ptr<const latticesource::latticepair>> & lattices, std::vector<std::vector<size_t>> & sentendmark,
@@ -71,7 +71,7 @@ public:
     virtual double gettimegetbatch () = 0;                          // used to report runtime
     virtual size_t firstvalidglobalts (const size_t globalts) = 0;  // get first valid epoch start from intended 'globalts'
     virtual const std::vector<size_t> & unitcounts() const = 0;     // report number of senones
-    virtual void setverbosity(int newverbosity) = 0;    
+    virtual void setverbosity(int newverbosity) = 0;
     virtual ~minibatchsource() { }
 };
 
@@ -122,7 +122,7 @@ private:
 
             foreach_index(i,uids)
                 uids[i].clear();
-            
+
             transcripts.clear();
             actualmbframes = 0;
             return;
@@ -170,7 +170,7 @@ public:
         datapass = 0;
         fillorclear(); // get the first batch
     }
-    
+
     // TODO not nice, but don't know how to access these frames otherwise
     // mbiterator constructor, set epochstart and -endframe explicitly
     minibatchiterator(msra::dbn::minibatchsource & source, size_t epoch, size_t epochstart, size_t epochend, size_t requestedmbframes, size_t subsetnum, size_t numsubsets, size_t datapasses)
@@ -250,7 +250,7 @@ public:
 	std::vector<size_t> & bounds(size_t i) { checkhasdata(); assert(phoneboundaries.size() >= i + 1); return phoneboundaries[i]; }
 
     // return a lattice for an utterance (caller should first get total through currentmblattices())
-    shared_ptr<const msra::dbn::latticepair> lattice(size_t uttindex) const { return lattices[uttindex]; }    // lattices making up the current 
+    shared_ptr<const msra::dbn::latticepair> lattice(size_t uttindex) const { return lattices[uttindex]; }    // lattices making up the current
     bool haslattice() 	{ return	lattices.size() > 0 ? true : false; }
     // return the reference transcript labels (words with alignments) for current minibatch (or empty if no transcripts requested)
     const_array_ref<msra::lattices::lattice::htkmlfwordsequence::word> transcript (size_t uttindex) { return transcripts.empty() ? const_array_ref<msra::lattices::lattice::htkmlfwordsequence::word>() : transcripts[uttindex]; }
