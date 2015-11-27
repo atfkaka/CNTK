@@ -427,8 +427,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         {
             // construct all the parameters we don't need, but need to be passed to the constructor...
 
+            m_lattices.reset(new msra::dbn::latticesource(latticetocs, m_hset.getsymmap()));
             // now get the frame source. This has better randomization and doesn't create temp files
-            m_frameSource.reset(new msra::dbn::minibatchutterancesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, msra::dbn::latticesource(latticetocs, std::unordered_map<std::string, size_t>()), map<wstring, msra::lattices::lattice::htkmlfwordsequence>(), true));
+            m_frameSource.reset(new msra::dbn::minibatchutterancesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, *m_lattices, m_latticeMap, true));
             m_frameSource->setverbosity(m_verbosity);
         }
         else if (!_wcsicmp(readMethod.c_str(), L"rollingWindow"))

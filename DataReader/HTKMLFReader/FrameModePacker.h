@@ -55,6 +55,11 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             category,
         };
     private:
+        /*not used by necessary to initialize the source*/
+        msra::asr::simplesenonehmm m_hset;
+        unique_ptr<msra::dbn::latticesource> m_lattices;
+        map<wstring, msra::lattices::lattice::htkmlfwordsequence> m_latticeMap;
+
         size_t m_elementSize; // size of the element, should go away probably and be taken from the layout?
         MemoryProviderPtr m_memoryProvider;
         intargvector m_numSeqsPerMBForAllEpochs;
