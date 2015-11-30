@@ -121,7 +121,6 @@
     <ClInclude Include="minibatchsourcehelpers.h" />
     <ClInclude Include="MonolithicTransformer.h" />
     <ClInclude Include="msra_mgram.h" />
-    <ClInclude Include="rollingwindowsource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SubstitutingMemoryProvider.h" />
     <ClInclude Include="targetver.h" />

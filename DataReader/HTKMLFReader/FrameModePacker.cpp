@@ -10,8 +10,8 @@
 #include "latticearchive.h"             // for reading HTK phoneme lattices (MMI training)
 #include "msra_mgram.h"                 // for unigram scores of ground-truth path in sequence training
 
-#include "rollingwindowsource.h"        // minibatch sources
-#include "utterancesourcemulti.h"
+// to be removed: #include "rollingwindowsource.h"        // minibatch sources
+#include "utterancesourcemulti.h"       // minibatch sources
 #include "chunkevalsource.h"
 #include "minibatchiterator.h"
 #define DATAREADER_EXPORTS  // creating the exports here

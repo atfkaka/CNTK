@@ -17,8 +17,8 @@
 #include "simplesenonehmm.h"            // for MMI scoring
 #include "msra_mgram.h"                 // for unigram scores of ground-truth path in sequence training
 
-#include "rollingwindowsource.h"        // minibatch sources
-#include "utterancesourcemulti.h"
+// to bre removed: #include "rollingwindowsource.h"        // minibatch sources
+#include "utterancesourcemulti.h"       // minibatch sources
 #include "chunkevalsource.h"
 #include "minibatchiterator.h"
 #define DATAREADER_EXPORTS  // creating the exports here
@@ -456,6 +456,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             }
             else if (!_wcsicmp(readMethod.c_str(), L"rollingWindow"))
             {
+                assert(0); // to be deprecated
+
                 std::wstring pageFilePath;
                 std::vector<std::wstring> pagePaths;
                 if (readerConfig.Exists(L"pageFilePath"))
@@ -513,11 +515,11 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 #endif
                 }
 
-                const bool mayhavenoframe=false;
-                int addEnergy = 0;
+                // const bool mayhavenoframe=false;
+                // int addEnergy = 0;
 
-                m_frameSource.reset(new msra::dbn::minibatchframesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, pagePaths, mayhavenoframe, addEnergy));
-                m_frameSource->setverbosity(m_verbosity);
+                // deprecated m_frameSource.reset(new msra::dbn::minibatchframesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, pagePaths, mayhavenoframe, addEnergy));
+                // deprecated m_frameSource->setverbosity(m_verbosity);
             }
             else
             {
