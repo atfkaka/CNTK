@@ -19,5 +19,15 @@ if errorlevel 1 exit /b 1
 if errorlevel 1 exit /b 1
 
 set PATH=%PATH%;%CYGWIN_BIN%
-python2.7.exe Tests/TestDriver.py run Speech/QuickE2E
+
+python2.7.exe Tests/TestDriver.py run -d gpu -f release Speech/QuickE2E
+if errorlevel 1 exit /b 1
+
+python2.7.exe Tests/TestDriver.py run -d cpu -f release Speech/QuickE2E
+if errorlevel 1 exit /b 1
+
+python2.7.exe Tests/TestDriver.py run -d gpu -f debug Speech/QuickE2E
+if errorlevel 1 exit /b 1
+
+python2.7.exe Tests/TestDriver.py run -d cpu -f debug Speech/QuickE2E
 if errorlevel 1 exit /b 1
