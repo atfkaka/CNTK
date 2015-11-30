@@ -19,6 +19,8 @@
     </ClCompile>
     <ClCompile Include="HTKMLFReaderShim.cpp" />
     <ClCompile Include="FrameModePacker.cpp" />
+    <ClCompile Include="MonolithicTransformer.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="biggrowablevectors.h" />
@@ -57,6 +59,8 @@
     <ClInclude Include="CudaMemoryProvider.h" />
     <ClInclude Include="HeapMemoryProvider.h" />
     <ClInclude Include="SubstitutingMemoryProvider.h" />
+    <ClInclude Include="MonolithicTransformer.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

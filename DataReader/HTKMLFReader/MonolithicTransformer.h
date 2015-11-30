@@ -9,51 +9,29 @@
 #include "biggrowablevectors.h"
 #include "utterancesourcemulti.h"
 #include "minibatchiterator.h"
-
+#include <inner_interfaces.h>
 
 namespace Microsoft { namespace MSR { namespace CNTK {
-    class FrameModePacker : public Reader
+
+    class MonolithicTransformer : public Transformer
     {
     public:
-        FrameModePacker(const ConfigParameters & config, MemoryProviderPtr memoryProvider, size_t elementSize);
+        MonolithicTransformer(const ConfigParameters & readerConfig);
 
-        virtual std::vector<InputDescriptionPtr> getInputs() override;
-        virtual EpochPtr startNextEpoch(const EpochConfiguration& config) override;
+        virtual std::vector<InputDescriptionPtr> getInputs() const override;
+
+        virtual std::map<InputId, Sequence> getNextSequence() override;
+
+        virtual ~MonolithicTransformer()
+        {}
 
     private:
-        class EpochImplementation : public Epoch
-        {
-            FrameModePacker* m_parent;
-
-        public:
-            EpochImplementation(FrameModePacker* parent);
-            virtual Minibatch readMinibatch() override;
-            virtual ~EpochImplementation();
-        };
-
-        void InitFromConfig(const ConfigParameters& config);
-        void StartDistributedMinibatchLoop(size_t requestedMBSize, size_t epoch, size_t subsetNum, size_t numSubsets, size_t requestedEpochSamples /*= requestDataSize*/);
-        Minibatch GetMinibatch();
-
-        void PackToMinibatch(Minibatch &mb);
-        void FillOneUttDataforParallelmode(size_t startFr,
-            size_t framenum, size_t channelIndex, size_t sourceChannelIndex);
-        bool ReNewBufferForMultiIO(size_t i);
-        void GetDataNamesFromConfig(
-            const ConfigParameters& readerConfig,
-            std::vector<std::wstring>& features,
-            std::vector<std::wstring>& labels,
-            std::vector<std::wstring>& hmms,
-            std::vector<std::wstring>& lattices);
-        void ExpandDotDotDot(wstring & featPath, const wstring & scpPath, wstring & scpDirCached);
-        std::shared_ptr<void> AllocateIntermediateBuffer(size_t numElements, size_t elementSize);
-
         enum InputOutputTypes
         {
             real,
             category,
         };
-    private:
+
         /*not used by necessary to initialize the source*/
         msra::asr::simplesenonehmm m_hset;
         unique_ptr<msra::dbn::latticesource> m_lattices;
@@ -101,5 +79,5 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         std::vector<std::vector<size_t>> m_extraPhoneboundaryIDBufferMultiUtt;
     };
 
-    typedef std::shared_ptr<FrameModePacker> FrameModePackerPtr;
+    typedef std::shared_ptr<MonolithicTransformer> MonolithicTransformerPtr;
 }}}
