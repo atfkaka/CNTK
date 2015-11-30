@@ -636,10 +636,12 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     {
         Timer m_aggregateTimer;
         size_t m_verbosity;
+        std::string m_message;
 
     public:
-        ScopeTimer(size_t verbosity)
+        ScopeTimer(size_t verbosity, const std::string& message)
             : m_verbosity(verbosity)
+            , m_message(message)
         {
             if (m_verbosity > 2)
             {
@@ -652,8 +654,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             if (m_verbosity > 2)
             {
                 m_aggregateTimer.Stop();
-                double totalMBReadTime = m_aggregateTimer.ElapsedSeconds();
-                fprintf(stderr, "Total Minibatch read time = %.8g\n", totalMBReadTime);
+                double time = m_aggregateTimer.ElapsedSeconds();
+                fprintf(stderr, m_message.c_str(), time);
             }
         }
     };
@@ -662,7 +664,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     {
         assert(m_numSeqsPerMB == 1);
 
-        ScopeTimer scopeTimer(m_verbosity);
+        ScopeTimer scopeTimer(m_verbosity, "Total Minibatch read time = %.8g\n");
         bool skip;
         Minibatch mb;
         do
@@ -912,22 +914,12 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             assert(false);
         }
 
-        Timer mbIterAdvancementTimer;
-        if (m_verbosity > 2)
-            mbIterAdvancementTimer.Start();
-
+        ScopeTimer mbIterAdvancementTimer(m_verbosity, "Time to advance mbiter = %.8g\n");
         // Advance the MB iterator until we find some data or reach the end of epoch
         do
         {
             (*m_mbiter)++;
         } while ((m_mbiter->currentmbframes() == 0) && *m_mbiter);
-
-        if (m_verbosity > 2)
-        {
-            mbIterAdvancementTimer.Stop();
-            double advancementTime = mbIterAdvancementTimer.ElapsedSeconds();
-            fprintf(stderr, "Time to advance mbiter = %.8g\n", advancementTime);
-        }
 
         if (!(*m_mbiter))
             m_noData = true;

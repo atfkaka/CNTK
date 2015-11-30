@@ -39,10 +39,18 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     template<class ElemType>
     void HTKMLFReaderShim<ElemType>::Init(const ConfigParameters& config)
     {
+        m_layout = make_shared<MBLayout>();
+
         assert(config(L"frameMode", true));
         m_memoryProvider = std::make_shared<SubstitutingMemoryProvider>();
         m_providerSet = false;
         m_packer = std::make_shared<FrameModePacker>(config, m_memoryProvider, sizeof(ElemType));
+
+        intargvector numberOfuttsPerMinibatchForAllEpochs =
+            config(L"nbruttsineachrecurrentiter", ConfigParameters::Array(intargvector(vector<int>{ 1 })));
+
+        auto numSeqsPerMBForAllEpochs = numberOfuttsPerMinibatchForAllEpochs;
+        m_layout->Init(numSeqsPerMBForAllEpochs[0], 0, true);
     }
 
     template<class ElemType>
