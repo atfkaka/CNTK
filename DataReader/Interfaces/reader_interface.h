@@ -105,15 +105,6 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     };
     typedef std::unique_ptr<Epoch> EpochPtr;
 
-    class Packer
-    {
-    public:
-        virtual std::vector<InputDescriptionPtr> getInputs() = 0;
-        virtual EpochPtr startNextEpoch(const EpochConfiguration& config) = 0;
-        virtual ~Packer() = 0 {};
-    };
-    typedef std::unique_ptr<Packer> PackerPtr;
-
     // Main Reader interface. The border interface between the CNTK and Reader.
     class Reader
     {
