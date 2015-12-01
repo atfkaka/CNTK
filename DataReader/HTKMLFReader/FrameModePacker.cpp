@@ -56,21 +56,14 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
     std::vector<InputDescriptionPtr> FrameModePacker::getInputs()
     {
-        std::vector<InputDescriptionPtr> result;
-        for (auto i : m_nameToId)
-        {
-            auto inputDescription = std::make_shared<InputDescription>();
-            inputDescription->name = i.first;
-            inputDescription->id = i.second;
-            result.push_back(inputDescription);
-        }
-
-        return result;
+        return m_transformer->getInputs();
     }
 
     EpochPtr FrameModePacker::startNextEpoch(const EpochConfiguration& config)
     {
         m_transformer->SetEpochConfiguration(config);
+        assert(config.workerRank < config.numberOfWorkers);
+
         StartDistributedMinibatchLoop(config.minibatchSize, config.index, config.workerRank, config.numberOfWorkers, config.totalSize);
         return std::make_unique<EpochImplementation>(this);
     }
@@ -509,9 +502,6 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     // requestedEpochSamples - [in] number of samples to randomize, defaults to requestDataSize which uses the number of samples there are in the dataset
     void FrameModePacker::StartDistributedMinibatchLoop(size_t requestedMBSize, size_t epoch, size_t /*subsetNum*/, size_t /*numSubsets*/, size_t /*requestedEpochSamples = requestDataSize*/)
     {
-        assert(subsetNum < numSubsets);
-        assert((subsetNum == 0) && (numSubsets == 1));
-
         m_mbNumTimeSteps = requestedMBSize;       // note: ignored in frame mode and full-sequence mode
 
         m_numSeqsPerMB = m_numSeqsPerMBForAllEpochs[epoch];
