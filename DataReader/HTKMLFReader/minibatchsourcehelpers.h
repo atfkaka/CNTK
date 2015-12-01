@@ -23,7 +23,7 @@ namespace msra { namespace dbn {
 // ---------------------------------------------------------------------------
 // augmentneighbors() -- augmenting features with their neighbor frames
 // ---------------------------------------------------------------------------
-    
+
 // implant a sub-vector into a vector, for use in augmentneighbors
 template<class INV, class OUTV> static void copytosubvector (const INV & inv, size_t subvecindex, OUTV & outv)
 {
@@ -275,7 +275,7 @@ public:
 };
 
 // Using a smaller sized integer type to store the state ids saves a huge amount of space
-// We need more than 2 bytes (i.e. an unsigned int or bigger) to support untied context-dependent phones 
+// We need more than 2 bytes (i.e. an unsigned int or bigger) to support untied context-dependent phones
 // TODO: This is currently being hardcoded to unsigned short for saving space, which means untied context-dependent phones
 // will not work. This needs to be changed to dynamically choose what size to use based on the number of class ids.
 typedef unsigned short CLASSIDTYPE;

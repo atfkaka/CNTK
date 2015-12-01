@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include <wchar.h>
-#include "simplesenonehmm.h"   
+#include "simplesenonehmm.h"
 #include <array>
 #include "minibatchsourcehelpers.h"
 
@@ -87,7 +87,7 @@ protected:
             sampsize   = fgetshort (f);
             sampkind   = fgetshort (f);
         }
-        
+
         // read header of idx feature cach
         void idxRead (FILE * f)
         {
@@ -113,7 +113,7 @@ protected:
         {
             nsamples = swapint (nsamples);
             sampperiod = swapint (sampperiod);
-            sampsize = swapshort (sampsize);    
+            sampsize = swapshort (sampsize);
             sampkind = swapshort (sampkind);
         }
     };
@@ -345,6 +345,8 @@ public:
             isidxformat = false;
             if (xpath.empty())  // no '=' detected: pass entire file (it's not an archive)
             {
+                assert(0); // current HTKMLF reader requires archive format (.numframes() method below)
+
                 archivepath = logicalpath;
                 s = 0;
                 e = INT_MAX;
@@ -630,7 +632,7 @@ struct htkmlfentry
     unsigned int numframes;
     msra::dbn::CLASSIDTYPE classid;     // numeric state id
     msra::dbn::HMMIDTYPE phonestart;     // numeric phone start  time
-    
+
 private:
     // verify and save data
     void setdata (size_t ts, size_t te, size_t uid)
@@ -867,7 +869,7 @@ public:
         assert (id < issilstatetable.size());
         return issilstatetable[id];
     }
-    
+
     struct nullmap { int operator[] (const char * s) const { LogicError("nullmap: should never be used"); } };  // to satisfy a template, never used... :(
 
     // constructor reads multiple MLF files
@@ -897,7 +899,7 @@ public:
     }
 
     //phone boundary
-    template<typename WORDSYMBOLTABLE, typename UNITSYMBOLTABLE>    
+    template<typename WORDSYMBOLTABLE, typename UNITSYMBOLTABLE>
     htkmlfreader(const vector<wstring> & paths, const set<wstring> & restricttokeys, const wstring & stateListPath, const WORDSYMBOLTABLE * wordmap, const UNITSYMBOLTABLE * unitmap,
         const double htkTimeToFrame, const msra::asr::simplesenonehmm & hset)
     {
@@ -947,7 +949,7 @@ public:
             char* context = nullptr;
             const char* delim = "\r\n";
 
-            auto consumeMLFLine = [&](const char* mlfLine) 
+            auto consumeMLFLine = [&](const char* mlfLine)
             {
                 currLineNum++;
                 currMLFLines.push_back(mlfLine);
