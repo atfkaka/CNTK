@@ -70,6 +70,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
     EpochPtr FrameModePacker::startNextEpoch(const EpochConfiguration& config)
     {
+        m_transformer->SetEpochConfiguration(config);
         StartDistributedMinibatchLoop(config.minibatchSize, config.index, config.workerRank, config.numberOfWorkers, config.totalSize);
         return std::make_unique<EpochImplementation>(this);
     }
@@ -426,8 +427,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
             m_lattices.reset(new msra::dbn::latticesource(latticetocs, m_hset.getsymmap()));
             // now get the frame source. This has better randomization and doesn't create temp files
-            m_frameSource.reset(new msra::dbn::minibatchutterancesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, *m_lattices, m_latticeMap, true));
-            m_frameSource->setverbosity(m_verbosity);
+            //m_frameSource.reset(new msra::dbn::minibatchutterancesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, *m_lattices, m_latticeMap, true));
+            //m_frameSource->setverbosity(m_verbosity);
         }
         else if (!_wcsicmp(readMethod.c_str(), L"rollingWindow"))
         {
@@ -488,23 +489,25 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 #endif
             }
 
-            const bool mayhavenoframe = false;
-            int addEnergy = 0;
+            //const bool mayhavenoframe = false;
+            //int addEnergy = 0;
 
-            m_frameSource.reset(new msra::dbn::minibatchframesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, pagePaths, mayhavenoframe, addEnergy));
-            m_frameSource->setverbosity(m_verbosity);
+            //m_frameSource.reset(new msra::dbn::minibatchframesourcemulti(infilesmulti, labelsmulti, m_featDims, m_labelDims, numContextLeft, numContextRight, randomize, pagePaths, mayhavenoframe, addEnergy));
+            //m_frameSource->setverbosity(m_verbosity);
         }
         else
         {
             RuntimeError("readMethod must be 'rollingWindow' or 'blockRandomize'");
         }
+
+        m_transformer = std::make_shared<MonolithicTransformer>(readerConfig, m_elementSize);
     }
 
     //StartMinibatchLoop - Startup a minibatch loop 
     // requestedMBSize - [in] size of the minibatch (number of frames, etc.)
     // epoch - [in] epoch number for this loop
     // requestedEpochSamples - [in] number of samples to randomize, defaults to requestDataSize which uses the number of samples there are in the dataset
-    void FrameModePacker::StartDistributedMinibatchLoop(size_t requestedMBSize, size_t epoch, size_t subsetNum, size_t numSubsets, size_t requestedEpochSamples /*= requestDataSize*/)
+    void FrameModePacker::StartDistributedMinibatchLoop(size_t requestedMBSize, size_t epoch, size_t /*subsetNum*/, size_t /*numSubsets*/, size_t /*requestedEpochSamples = requestDataSize*/)
     {
         assert(subsetNum < numSubsets);
         assert((subsetNum == 0) && (numSubsets == 1));
@@ -537,7 +540,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             LogicError("nbrUttsInEachRecurrentIter cannot be more than 1 in frame mode reading.");
         }
 
-        size_t datapasses = 1;
+      /*  size_t datapasses = 1;
         size_t totalFrames = m_frameSource->totalframes();
 
         size_t extraFrames = totalFrames%requestedMBSize;
@@ -564,19 +567,21 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         else if (requestedEpochSamples == requestDataSize)
         {
             requestedEpochSamples = totalFrames;
-        }
+        }*/
 
-        m_mbiter.reset(new msra::dbn::minibatchiterator(*m_frameSource, epoch, requestedEpochSamples, requestedMBSize, subsetNum, numSubsets, datapasses));
+        m_noData = false;
+        m_requestedMBSize = requestedMBSize;
+        /*m_mbiter.reset(new msra::dbn::minibatchiterator(*m_frameSource, epoch, requestedEpochSamples, requestedMBSize, subsetNum, numSubsets, datapasses));
         // Advance the MB iterator until we find some data or reach the end of epoch
         while ((m_mbiter->currentmbframes() == 0) && *m_mbiter)
         {
             (*m_mbiter)++;
         }
 
-        m_noData = false;
+        
         if (!(*m_mbiter))
             m_noData = true;
-
+            */
         if (!m_featuresBufferMultiIO.empty())
         {
             if (m_featuresBufferMultiIO[0] != nullptr) // check first feature, if it isn't NULL, safe to assume all are not NULL? 
@@ -629,40 +634,12 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         }
     }
 
-    class ScopeTimer
-    {
-        Timer m_aggregateTimer;
-        size_t m_verbosity;
-        std::string m_message;
-
-    public:
-        ScopeTimer(size_t verbosity, const std::string& message)
-            : m_verbosity(verbosity)
-            , m_message(message)
-        {
-            if (m_verbosity > 2)
-            {
-                m_aggregateTimer.Start();
-            }
-        }
-
-        ~ScopeTimer()
-        {
-            if (m_verbosity > 2)
-            {
-                m_aggregateTimer.Stop();
-                double time = m_aggregateTimer.ElapsedSeconds();
-                fprintf(stderr, m_message.c_str(), time);
-            }
-        }
-    };
-
     Minibatch FrameModePacker::GetMinibatch()
     {
         assert(m_numSeqsPerMB == 1);
 
         ScopeTimer scopeTimer(m_verbosity, "Total Minibatch read time = %.8g\n");
-        bool skip;
+        bool skip = false;
         Minibatch mb;
         do
         {
@@ -673,11 +650,12 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 return mb;
             }
 
-            skip = (!m_partialMinibatch && (m_mbiter->requestedframes() != m_mbNumTimeSteps) && (m_frameSource->totalframes() > m_mbNumTimeSteps));
-            if (skip)
-            {
-                ReNewBufferForMultiIO(0);
-            }
+            // skip = (!m_partialMinibatch && (m_mbiter->requestedframes() != m_mbNumTimeSteps) && (m_frameSource->totalframes() > m_mbNumTimeSteps));
+            // false. Not clear why we would have this condition for the frame mode. 
+            // if (skip)
+            // {
+                //ReNewBufferForMultiIO(0);
+                // }
         }
         while (skip); // keep going if we didn't get the right size minibatch
 
@@ -804,43 +782,69 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             return false;
         }
 
+        std::vector<std::map<size_t, Sequence>> sequences;
+        for (size_t currentIndex = 0; currentIndex < this->m_requestedMBSize; ++currentIndex)
+        {
+            auto sequence = m_transformer->getNextSequence();
+            if (sequence.empty())
+            {
+                m_noData = true;
+                break;
+            }
+
+            sequences.push_back(sequence);
+        }
+
+        if (sequences.size() != this->m_requestedMBSize)
+        {
+            if (parallelSequenceNumber == 0)
+                m_numFramesToProcess[parallelSequenceNumber] = 0;
+            return false;
+        }
+
         size_t numOfFea = m_featuresBufferMultiIO.size();
         size_t numOfLabel = m_labelsBufferMultiIO.size();
-
         size_t totalFeatNum = 0;
-        foreach_index(id, m_featuresBufferAllocatedMultiIO)
+        size_t featureSequenceIndex = parallelSequenceNumber*numOfFea;
+        for (auto it = m_featureNameToIdMap.begin(); it != m_featureNameToIdMap.end(); ++it)
         {
-            const msra::dbn::matrixstripe featOri = m_mbiter->frames(id);
-            size_t fdim = featOri.rows();
-            const size_t actualmbsizeOri = featOri.cols();
-            m_featuresStartIndexMultiUtt[id + parallelSequenceNumber*numOfFea] = totalFeatNum;
-            totalFeatNum = fdim * actualmbsizeOri + m_featuresStartIndexMultiUtt[id + parallelSequenceNumber*numOfFea];
+            size_t id = m_featureNameToIdMap[it->first];
+            size_t inputId = m_nameToId[it->first];
+
+            size_t dim = sequences[0][inputId].frameDescription->Size();
+            const size_t actualmbsizeOri = sequences.size();
+
+            m_featuresStartIndexMultiUtt[id + featureSequenceIndex] = totalFeatNum;
+            totalFeatNum = dim * actualmbsizeOri + m_featuresStartIndexMultiUtt[id + featureSequenceIndex];
         }
+
         if ((m_featuresBufferMultiUtt[parallelSequenceNumber] == NULL) || (m_featuresBufferAllocatedMultiUtt[parallelSequenceNumber] < totalFeatNum))
         {
             // eldak : should use simple new
             m_featuresBufferMultiUtt[parallelSequenceNumber] = //AllocateIntermediateBuffer(totalFeatNum, m_elementSize);
-            std::shared_ptr<void>(new char[totalFeatNum * m_elementSize], [](char* p) {delete[] p; });
+                std::shared_ptr<void>(new char[totalFeatNum * m_elementSize], [](char* p) { delete[] p; });
             m_featuresBufferAllocatedMultiUtt[parallelSequenceNumber] = totalFeatNum;
         }
 
         size_t totalLabelsNum = 0;
+        size_t labelSequenceIndex = parallelSequenceNumber*numOfLabel;
         for (auto it = m_labelNameToIdMap.begin(); it != m_labelNameToIdMap.end(); ++it)
         {
             size_t id = m_labelNameToIdMap[it->first];
-            size_t dim = m_labelNameToDimMap[it->first];
+            size_t inputId = m_nameToId[it->first];
 
-            const vector<size_t> & uids = m_mbiter->labels(id);
-            size_t actualmbsizeOri = uids.size();
-            m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel] = totalLabelsNum;
-            totalLabelsNum = m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel] + dim * actualmbsizeOri;
+            size_t dim = sequences[0][inputId].frameDescription->Size();
+            const size_t actualmbsizeOri = sequences.size();
+
+            m_labelsStartIndexMultiUtt[id + labelSequenceIndex] = totalLabelsNum;
+            totalLabelsNum = m_labelsStartIndexMultiUtt[id + labelSequenceIndex] + dim * actualmbsizeOri;
         }
 
         if ((m_labelsBufferMultiUtt[parallelSequenceNumber] == NULL) || (m_labelsBufferAllocatedMultiUtt[parallelSequenceNumber] < totalLabelsNum))
         {
             // eldak: should use simple new.
             m_labelsBufferMultiUtt[parallelSequenceNumber] = //AllocateIntermediateBuffer(totalLabelsNum, m_elementSize);
-            std::shared_ptr<void>(new char[totalLabelsNum * m_elementSize], [](char* p) {delete[] p;});
+                std::shared_ptr<void>(new char[totalLabelsNum * m_elementSize], [](char* p) {delete[] p; });
 
             m_labelsBufferAllocatedMultiUtt[parallelSequenceNumber] = totalLabelsNum;
         }
@@ -848,11 +852,14 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         memset(m_labelsBufferMultiUtt[parallelSequenceNumber].get(), 0, m_elementSize*totalLabelsNum);
 
         bool first = true;
-        foreach_index(id, m_featuresBufferMultiIO)
+        for (auto it = m_featureNameToIdMap.begin(); it != m_featureNameToIdMap.end(); ++it)
         {
-            const msra::dbn::matrixstripe featOri = m_mbiter->frames(id);
-            const size_t actualmbsizeOri = featOri.cols();
-            size_t fdim = featOri.rows();
+            size_t id = m_featureNameToIdMap[it->first];
+            size_t inputId = m_nameToId[it->first];
+
+            size_t fdim = sequences[0][inputId].frameDescription->Size();
+            const size_t actualmbsizeOri = sequences.size();
+
             if (first)
             {
                 m_numFramesToProcess[parallelSequenceNumber] = actualmbsizeOri;
@@ -865,69 +872,186 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                     RuntimeError("The multi-IO features has inconsistent number of frames!");
                 }
             }
-            assert(actualmbsizeOri == m_mbiter->currentmbframes());
+            assert(actualmbsizeOri == sequences.size());
 
 
             for (int k = 0; k < actualmbsizeOri; k++) // column major, so iterate columns
             {
+                const void* sequence = sequences[k][inputId].data;
+
                 // copy over the entire column at once, need to do this because SSEMatrix may have gaps at the end of the columns
-                memcpy_s(&((char*)m_featuresBufferMultiUtt[parallelSequenceNumber].get())[(k*fdim + m_featuresStartIndexMultiUtt[id + parallelSequenceNumber*numOfFea]) * m_elementSize], m_elementSize*fdim, &featOri(0, k), m_elementSize*fdim);
+                memcpy_s(&((char*)m_featuresBufferMultiUtt[parallelSequenceNumber].get())[(k*fdim + m_featuresStartIndexMultiUtt[id + featureSequenceIndex]) * m_elementSize], m_elementSize*fdim, sequence, m_elementSize*fdim);
             }
         }
 
         for (auto it = m_labelNameToIdMap.begin(); it != m_labelNameToIdMap.end(); ++it)
         {
             size_t id = m_labelNameToIdMap[it->first];
-            size_t dim = m_labelNameToDimMap[it->first];
+            size_t inputId = m_nameToId[it->first];
 
-            const vector<size_t> & uids = m_mbiter->labels(id);
-            size_t actualmbsizeOri = uids.size();
+            size_t fdim = sequences[0][inputId].frameDescription->Size();
+            const size_t actualmbsizeOri = sequences.size();
 
-
-            // loop through the columns and set one value to 1
-            // in the future we want to use a sparse matrix here
-            for (int k = 0; k < actualmbsizeOri; k++)
+            if (first)
             {
-                assert(uids[k] < dim);
-                // eldak: dirty hack for now - the values should come from the underlying layer, not from the packer.
-                if (m_elementSize == sizeof(float))
+                m_numFramesToProcess[parallelSequenceNumber] = actualmbsizeOri;
+                first = false;
+            }
+            else
+            {
+                if (m_numFramesToProcess[parallelSequenceNumber] != actualmbsizeOri)
                 {
-                    ((float*)m_labelsBufferMultiUtt[parallelSequenceNumber].get())[k*dim + uids[k] + m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel]] = 1;
-                }
-                else
-                {
-                    ((double*)m_labelsBufferMultiUtt[parallelSequenceNumber].get())[k*dim + uids[k] + m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel]] = 1;
+                    RuntimeError("The multi-IO features has inconsistent number of frames!");
                 }
             }
-        }
-        //lattice
-        if (m_latticeBufferMultiUtt[parallelSequenceNumber] != NULL)
-        {
-            m_latticeBufferMultiUtt[parallelSequenceNumber].reset();
-        }
+            assert(actualmbsizeOri == sequences.size());
 
-        if (m_mbiter->haslattice())
-        {
-            assert(false);
+
+            for (int k = 0; k < actualmbsizeOri; k++) // column major, so iterate columns
+            {
+                const void* sequence = sequences[k][inputId].data;
+
+                // copy over the entire column at once, need to do this because SSEMatrix may have gaps at the end of the columns
+                memcpy_s(&((char*)m_labelsBufferMultiUtt[parallelSequenceNumber].get())[(k*fdim + m_labelsStartIndexMultiUtt[id + labelSequenceIndex]) * m_elementSize], m_elementSize*fdim, sequence, m_elementSize*fdim);
+            }
         }
-
-        ScopeTimer mbIterAdvancementTimer(m_verbosity, "Time to advance mbiter = %.8g\n");
-        // Advance the MB iterator until we find some data or reach the end of epoch
-        do
-        {
-            (*m_mbiter)++;
-        } while ((m_mbiter->currentmbframes() == 0) && *m_mbiter);
-
-        if (!(*m_mbiter))
-            m_noData = true;
 
         return true;
     }
 
+    //bool FrameModePacker::ReNewBufferForMultiIO(size_t parallelSequenceNumber)
+    //{
+    //    if (m_noData)
+    //    {
+    //        if (parallelSequenceNumber == 0)
+    //            m_numFramesToProcess[parallelSequenceNumber] = 0;
+    //        return false;
+    //    }
+
+    //    size_t numOfFea = m_featuresBufferMultiIO.size();
+    //    size_t numOfLabel = m_labelsBufferMultiIO.size();
+
+    //    size_t totalFeatNum = 0;
+    //    foreach_index(id, m_featuresBufferAllocatedMultiIO)
+    //    {
+    //        const msra::dbn::matrixstripe featOri = m_mbiter->frames(id);
+    //        size_t fdim = featOri.rows();
+    //        const size_t actualmbsizeOri = featOri.cols();
+    //        m_featuresStartIndexMultiUtt[id + parallelSequenceNumber*numOfFea] = totalFeatNum;
+    //        totalFeatNum = fdim * actualmbsizeOri + m_featuresStartIndexMultiUtt[id + parallelSequenceNumber*numOfFea];
+    //    }
+    //    if ((m_featuresBufferMultiUtt[parallelSequenceNumber] == NULL) || (m_featuresBufferAllocatedMultiUtt[parallelSequenceNumber] < totalFeatNum))
+    //    {
+    //        // eldak : should use simple new
+    //        m_featuresBufferMultiUtt[parallelSequenceNumber] = //AllocateIntermediateBuffer(totalFeatNum, m_elementSize);
+    //        std::shared_ptr<void>(new char[totalFeatNum * m_elementSize], [](char* p) {delete[] p; });
+    //        m_featuresBufferAllocatedMultiUtt[parallelSequenceNumber] = totalFeatNum;
+    //    }
+
+    //    size_t totalLabelsNum = 0;
+    //    for (auto it = m_labelNameToIdMap.begin(); it != m_labelNameToIdMap.end(); ++it)
+    //    {
+    //        size_t id = m_labelNameToIdMap[it->first];
+    //        size_t dim = m_labelNameToDimMap[it->first];
+
+    //        const vector<size_t> & uids = m_mbiter->labels(id);
+    //        size_t actualmbsizeOri = uids.size();
+    //        m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel] = totalLabelsNum;
+    //        totalLabelsNum = m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel] + dim * actualmbsizeOri;
+    //    }
+
+    //    if ((m_labelsBufferMultiUtt[parallelSequenceNumber] == NULL) || (m_labelsBufferAllocatedMultiUtt[parallelSequenceNumber] < totalLabelsNum))
+    //    {
+    //        // eldak: should use simple new.
+    //        m_labelsBufferMultiUtt[parallelSequenceNumber] = //AllocateIntermediateBuffer(totalLabelsNum, m_elementSize);
+    //        std::shared_ptr<void>(new char[totalLabelsNum * m_elementSize], [](char* p) {delete[] p;});
+
+    //        m_labelsBufferAllocatedMultiUtt[parallelSequenceNumber] = totalLabelsNum;
+    //    }
+
+    //    memset(m_labelsBufferMultiUtt[parallelSequenceNumber].get(), 0, m_elementSize*totalLabelsNum);
+
+    //    bool first = true;
+    //    foreach_index(id, m_featuresBufferMultiIO)
+    //    {
+    //        const msra::dbn::matrixstripe featOri = m_mbiter->frames(id);
+    //        const size_t actualmbsizeOri = featOri.cols();
+    //        size_t fdim = featOri.rows();
+    //        if (first)
+    //        {
+    //            m_numFramesToProcess[parallelSequenceNumber] = actualmbsizeOri;
+    //            first = false;
+    //        }
+    //        else
+    //        {
+    //            if (m_numFramesToProcess[parallelSequenceNumber] != actualmbsizeOri)
+    //            {
+    //                RuntimeError("The multi-IO features has inconsistent number of frames!");
+    //            }
+    //        }
+    //        assert(actualmbsizeOri == m_mbiter->currentmbframes());
+
+
+    //        for (int k = 0; k < actualmbsizeOri; k++) // column major, so iterate columns
+    //        {
+    //            // copy over the entire column at once, need to do this because SSEMatrix may have gaps at the end of the columns
+    //            memcpy_s(&((char*)m_featuresBufferMultiUtt[parallelSequenceNumber].get())[(k*fdim + m_featuresStartIndexMultiUtt[id + parallelSequenceNumber*numOfFea]) * m_elementSize], m_elementSize*fdim, &featOri(0, k), m_elementSize*fdim);
+    //        }
+    //    }
+
+    //    for (auto it = m_labelNameToIdMap.begin(); it != m_labelNameToIdMap.end(); ++it)
+    //    {
+    //        size_t id = m_labelNameToIdMap[it->first];
+    //        size_t dim = m_labelNameToDimMap[it->first];
+
+    //        const vector<size_t> & uids = m_mbiter->labels(id);
+    //        size_t actualmbsizeOri = uids.size();
+
+
+    //        // loop through the columns and set one value to 1
+    //        // in the future we want to use a sparse matrix here
+    //        for (int k = 0; k < actualmbsizeOri; k++)
+    //        {
+    //            assert(uids[k] < dim);
+    //            // eldak: dirty hack for now - the values should come from the underlying layer, not from the packer.
+    //            if (m_elementSize == sizeof(float))
+    //            {
+    //                ((float*)m_labelsBufferMultiUtt[parallelSequenceNumber].get())[k*dim + uids[k] + m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel]] = 1;
+    //            }
+    //            else
+    //            {
+    //                ((double*)m_labelsBufferMultiUtt[parallelSequenceNumber].get())[k*dim + uids[k] + m_labelsStartIndexMultiUtt[id + parallelSequenceNumber*numOfLabel]] = 1;
+    //            }
+    //        }
+    //    }
+    //    //lattice
+    //    if (m_latticeBufferMultiUtt[parallelSequenceNumber] != NULL)
+    //    {
+    //        m_latticeBufferMultiUtt[parallelSequenceNumber].reset();
+    //    }
+
+    //    if (m_mbiter->haslattice())
+    //    {
+    //        assert(false);
+    //    }
+
+    //    ScopeTimer mbIterAdvancementTimer(m_verbosity, "Time to advance mbiter = %.8g\n");
+    //    // Advance the MB iterator until we find some data or reach the end of epoch
+    //    do
+    //    {
+    //        (*m_mbiter)++;
+    //    } while ((m_mbiter->currentmbframes() == 0) && *m_mbiter);
+
+    //    if (!(*m_mbiter))
+    //        m_noData = true;
+
+    //    return true;
+    //}
+
     std::shared_ptr<void> FrameModePacker::AllocateIntermediateBuffer(size_t numElements, size_t elementSize)
     {
-        return std::shared_ptr<void>(m_memoryProvider->alloc(elementSize, numElements), [this](void* p) {
-            this->m_memoryProvider->free(p);
-        });
+        return std::shared_ptr<void>(
+            m_memoryProvider->alloc(elementSize, numElements),
+            [this](void* p) { this->m_memoryProvider->free(p); });
     }
 }}}

@@ -16,10 +16,10 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     class MonolithicTransformer : public Transformer
     {
     public:
-        MonolithicTransformer(const ConfigParameters & readerConfig);
+        MonolithicTransformer(const ConfigParameters & readerConfig, size_t elementSize);
 
+        virtual void SetEpochConfiguration(const EpochConfiguration& config);
         virtual std::vector<InputDescriptionPtr> getInputs() const override;
-
         virtual std::map<InputId, Sequence> getNextSequence() override;
 
         virtual ~MonolithicTransformer()
@@ -32,6 +32,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             category,
         };
 
+        std::vector<FrameDescription> m_featureFrameDescriptions;
+        std::vector<FrameDescription> m_labelFrameDescriptions;
+
         /*not used by necessary to initialize the source*/
         msra::asr::simplesenonehmm m_hset;
         unique_ptr<msra::dbn::latticesource> m_lattices;
@@ -42,18 +45,13 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         intargvector m_numSeqsPerMBForAllEpochs;
         size_t m_numSeqsPerMB;                  // requested number of parallel sequences
         bool m_noData;
-        MBLayoutPtr m_pMBLayout;
         std::vector<size_t> m_featDims;
         std::map<std::wstring, size_t> m_nameToTypeMap;
         std::map<std::wstring, size_t> m_featureNameToIdMap;
         std::map<std::wstring, size_t> m_featureNameToDimMap;
-        std::vector<std::shared_ptr<void>> m_featuresBufferMultiIO;
-        std::vector<size_t> m_featuresBufferAllocatedMultiIO;
         std::vector<size_t> m_labelDims;
         std::map<std::wstring, size_t> m_labelNameToIdMap;
         std::map<std::wstring, size_t> m_labelNameToDimMap;
-        std::vector<std::shared_ptr<void>> m_labelsBufferMultiIO;
-        std::vector<size_t> m_labelsBufferAllocatedMultiIO;
         int m_verbosity;
         bool m_partialMinibatch;
         unique_ptr<msra::dbn::minibatchiterator> m_mbiter;
@@ -62,21 +60,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         vector<size_t> m_numFramesToProcess;    // [seq index] number of frames available (left to return) in each parallel sequence
         vector<size_t> m_numValidFrames;        // [seq index] valid #frames in each parallel sequence. Frames (s, t) with t >= m_numValidFrames[s] are NoInput.
 
-        std::vector<std::shared_ptr<void>> m_featuresBufferMultiUtt;
-        std::vector<size_t> m_featuresBufferAllocatedMultiUtt;
-        std::vector<std::shared_ptr<void>> m_labelsBufferMultiUtt;
-        std::vector<size_t> m_labelsBufferAllocatedMultiUtt;
-        std::vector<size_t> m_featuresStartIndexMultiUtt;
-        std::vector<size_t> m_labelsStartIndexMultiUtt;
         std::map<std::wstring, size_t> m_nameToId;
-
-        //for lattice uids and phoneboundaries
-        std::vector<shared_ptr<const msra::dbn::latticepair>>  m_latticeBufferMultiUtt;
-        std::vector<std::vector<size_t>> m_labelsIDBufferMultiUtt;
-        std::vector<std::vector<size_t>> m_phoneboundaryIDBufferMultiUtt;
-        std::vector<shared_ptr<const msra::dbn::latticepair>>  m_extraLatticeBufferMultiUtt;
-        std::vector<std::vector<size_t>> m_extraLabelsIDBufferMultiUtt;
-        std::vector<std::vector<size_t>> m_extraPhoneboundaryIDBufferMultiUtt;
     };
 
     typedef std::shared_ptr<MonolithicTransformer> MonolithicTransformerPtr;

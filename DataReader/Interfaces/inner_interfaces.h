@@ -10,7 +10,19 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     {
         std::vector<size_t> dimensions;
         size_t elementSize;
+
+        size_t Size() const
+        {
+            size_t result = 1;
+            for (auto d: dimensions)
+            {
+                result *= d;
+            }
+
+            return result;
+        }
     };
+
 
     // Defines identifier and length of a Sequence.
     struct SequenceDescription
@@ -25,7 +37,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     {
         SequenceDescription* description;
         FrameDescription* frameDescription;
-        char* data;
+        void* data;
         size_t numberOfFrames;
     };
 
@@ -76,6 +88,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     class Transformer
     {
     public:
+        virtual void SetEpochConfiguration(const EpochConfiguration& config) = 0;
         virtual std::vector<InputDescriptionPtr> getInputs() const = 0;
         virtual ~Transformer() = 0 {}
         virtual std::map<InputId, Sequence> getNextSequence() = 0;

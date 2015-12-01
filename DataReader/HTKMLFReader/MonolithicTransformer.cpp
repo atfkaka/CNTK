@@ -29,11 +29,13 @@ typedef unsigned int UNINT32;
 #endif
 #pragma warning (disable: 4127) // conditional expression is constant; "if (sizeof(ElemType)==sizeof(float))" triggers this
 
+#include "TimerUtility.h"
 #include "Utils.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
-    MonolithicTransformer::MonolithicTransformer(const ConfigParameters & readerConfig)
+    MonolithicTransformer::MonolithicTransformer(const ConfigParameters & readerConfig, size_t elementSize)
+        : m_elementSize(elementSize)
     {
         intargvector numberOfuttsPerMinibatchForAllEpochs =
             readerConfig(L"nbruttsineachrecurrentiter", ConfigParameters::Array(intargvector(vector<int>{ 1 })));
@@ -49,7 +51,6 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         }
 
         m_numSeqsPerMB = m_numSeqsPerMBForAllEpochs[0];
-        m_pMBLayout->Init(m_numSeqsPerMB, 0, true); // (SGD will ask before entering actual reading --TODO: This is hacky.)
 
         m_noData = false;
 
@@ -123,13 +124,16 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 InvalidArgument("feature type must be 'real'");
             }
 
+            FrameDescription featureFrameDescription;
+            featureFrameDescription.elementSize = m_elementSize;
+            featureFrameDescription.dimensions.push_back(m_featDims[i]);
+            m_featureFrameDescriptions.push_back(featureFrameDescription);
+
+
             m_featureNameToIdMap[featureNames[i]] = iFeat;
             scriptpaths.push_back(thisFeature(L"scpFile"));
             RootPathInScripts.push_back(thisFeature(L"prefixPathInSCP", L""));
             m_featureNameToDimMap[featureNames[i]] = m_featDims[i];
-
-            m_featuresBufferMultiIO.push_back(nullptr);
-            m_featuresBufferAllocatedMultiIO.push_back(0);
 
             m_nameToId.insert(std::make_pair(featureNames[i], input_index++));
             iFeat++;
@@ -179,8 +183,10 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             }
             mlfpathsmulti.push_back(mlfpaths);
 
-            m_labelsBufferMultiIO.push_back(nullptr);
-            m_labelsBufferAllocatedMultiIO.push_back(0);
+            FrameDescription labelFrameDescription;
+            labelFrameDescription.elementSize = m_elementSize;
+            labelFrameDescription.dimensions.push_back(m_labelDims[i]);
+            m_labelFrameDescriptions.push_back(labelFrameDescription);
 
             m_nameToId.insert(std::make_pair(labelNames[i], input_index++));
             iLabel++;
@@ -390,6 +396,67 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         }
     }
 
+    void MonolithicTransformer::SetEpochConfiguration(const EpochConfiguration& config)
+    {
+        assert(config.workerRank < config.numberOfWorkers);
+        assert((config.workerRank == 0) && (config.numberOfWorkers == 1));
+        size_t requestedEpochSamples = config.totalSize;
+
+        m_mbNumTimeSteps = config.minibatchSize;       // note: ignored in frame mode and full-sequence mode
+        m_numSeqsPerMB = m_numSeqsPerMBForAllEpochs[config.index];
+
+        // resize the arrays
+        // These are sized to the requested number. If not all can be filled, it will still return this many, just with gaps.
+        // In frame mode, m_numSeqsPerMB must be 1. However, the returned layout has one 1-frame sequence per frame.
+        m_numFramesToProcess.assign(m_numSeqsPerMB, 0);
+        m_numValidFrames.assign(m_numSeqsPerMB, 0);
+
+        if ((m_numSeqsPerMB > 1))
+        {
+            LogicError("nbrUttsInEachRecurrentIter cannot be more than 1 in frame mode reading.");
+        }
+
+        size_t datapasses = 1;
+        size_t totalFrames = m_frameSource->totalframes();
+
+        size_t extraFrames = totalFrames%config.minibatchSize;
+        size_t minibatches = totalFrames / config.minibatchSize;
+
+        // if we are allowing partial minibatches, do nothing, and let it go through
+        if (!m_partialMinibatch)
+        {
+            // we don't want any partial frames, so round total frames to be an even multiple of our mbSize
+            if (totalFrames > config.minibatchSize)
+                totalFrames -= extraFrames;
+
+            if (requestedEpochSamples == requestDataSize)
+            {
+                requestedEpochSamples = totalFrames;
+            }
+            else if (minibatches > 0)   // if we have any full minibatches
+            {
+                // since we skip the extraFrames, we need to add them to the total to get the actual number of frames requested
+                size_t sweeps = (requestedEpochSamples - 1) / totalFrames; // want the number of sweeps we will skip the extra, so subtract 1 and divide
+                requestedEpochSamples += extraFrames*sweeps;
+            }
+        }
+        else if (requestedEpochSamples == requestDataSize)
+        {
+            requestedEpochSamples = totalFrames;
+        }
+
+        m_mbiter.reset(new msra::dbn::minibatchiterator(*m_frameSource, config.index, requestedEpochSamples, 1, config.workerRank, config.numberOfWorkers, datapasses));
+        // Advance the MB iterator until we find some data or reach the end of epoch
+        while ((m_mbiter->currentmbframes() == 0) && *m_mbiter)
+        {
+            (*m_mbiter)++;
+        }
+
+        m_noData = false;
+        if (!(*m_mbiter))
+            m_noData = true;
+    }
+
     std::vector<InputDescriptionPtr> MonolithicTransformer::getInputs() const
     {
         std::vector<InputDescriptionPtr> result;
@@ -406,6 +473,84 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
     std::map<InputId, Sequence> MonolithicTransformer::getNextSequence()
     {
-        throw std::logic_error("The method or operation is not implemented.");
+        if (m_noData)
+        {
+            return std::map<InputId, Sequence>();
+        }
+
+        std::map<size_t, Sequence> result;
+        for (auto it = m_featureNameToIdMap.begin(); it != m_featureNameToIdMap.end(); ++it)
+        {
+            Sequence r;
+            size_t id = m_featureNameToIdMap[it->first];
+
+            // eldak: leak here.
+            const msra::dbn::matrixstripe featOri = m_mbiter->frames(id);
+            const size_t dimensions = featOri.rows();
+            const void* tmp = &featOri(0, 0);
+
+            r.numberOfFrames = 1;
+            r.frameDescription = &m_featureFrameDescriptions[id];
+
+            // eldak: leak leak leak. who is responsible for clearing this? who does caching?
+            void* buffer = nullptr;
+            if (m_elementSize == sizeof(float))
+            {
+                buffer = new float[featOri.rows()];
+            }
+            else
+            {
+                buffer = new double[featOri.rows()];
+            }
+
+            memset(buffer, 0, m_elementSize * dimensions);
+            memcpy_s(buffer, m_elementSize * dimensions, tmp, m_elementSize * dimensions);
+            r.data = buffer;
+
+            result.insert(std::make_pair(m_nameToId[it->first], r));
+        }
+
+        for (auto it = m_labelNameToIdMap.begin(); it != m_labelNameToIdMap.end(); ++it)
+        {
+            Sequence r;
+            size_t id = m_labelNameToIdMap[it->first];
+            size_t dim = m_labelNameToDimMap[it->first];
+
+            const vector<size_t>& uids = m_mbiter->labels(id);
+
+            // eldak: leak here.
+            if (m_elementSize == sizeof(float))
+            {
+                float* tmp = new float[dim];
+                memset(tmp, 0, m_elementSize * dim);
+                tmp[uids[0]] = 1;
+                r.data = tmp;
+                r.numberOfFrames = 1;
+                r.frameDescription = &m_labelFrameDescriptions[id];
+            }
+            else
+            {
+                double* tmp = new double[dim];
+                tmp[uids[0]] = 1;
+                r.data = tmp;
+                r.numberOfFrames = 1;
+                r.frameDescription = &m_labelFrameDescriptions[id];
+            }
+            result.insert(std::make_pair(m_nameToId[it->first], r));
+        }
+
+        // Advance the MB iterator until we find some data or reach the end of epoch
+        ScopeTimer mbIterAdvancementTimer(m_verbosity, "Time to advance mbiter = %.8g\n");
+
+        do
+        {
+            (*m_mbiter)++;
+        }
+        while ((m_mbiter->currentmbframes() == 0) && *m_mbiter);
+
+        if (!(*m_mbiter))
+            m_noData = true;
+
+        return result;
     }
 }}}
