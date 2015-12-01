@@ -34,6 +34,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
         std::vector<FrameDescription> m_featureFrameDescriptions;
         std::vector<FrameDescription> m_labelFrameDescriptions;
+        std::vector<InputDescriptionPtr> m_inputs;
 
         /*not used by necessary to initialize the source*/
         msra::asr::simplesenonehmm m_hset;

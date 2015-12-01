@@ -135,7 +135,15 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             RootPathInScripts.push_back(thisFeature(L"prefixPathInSCP", L""));
             m_featureNameToDimMap[featureNames[i]] = m_featDims[i];
 
-            m_nameToId.insert(std::make_pair(featureNames[i], input_index++));
+            m_nameToId.insert(std::make_pair(featureNames[i], input_index));
+
+            InputDescriptionPtr input = std::make_shared<InputDescription>();
+            input->name = featureNames[i];
+            input->id = input_index;
+            input->sampleLayout = std::make_shared<ImageLayout>(std::vector<size_t> { m_featDims[i] });
+            m_inputs.push_back(input);
+
+            input_index++;
             iFeat++;
         }
 
@@ -188,7 +196,15 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             labelFrameDescription.dimensions.push_back(m_labelDims[i]);
             m_labelFrameDescriptions.push_back(labelFrameDescription);
 
-            m_nameToId.insert(std::make_pair(labelNames[i], input_index++));
+            m_nameToId.insert(std::make_pair(labelNames[i], input_index));
+
+            InputDescriptionPtr input = std::make_shared<InputDescription>();
+            input->name = labelNames[i];
+            input->id = input_index;
+            input->sampleLayout = std::make_shared<ImageLayout>(std::vector<size_t> { m_labelDims[i] });
+            m_inputs.push_back(input);
+
+            input_index++;
             iLabel++;
         }
 
@@ -459,16 +475,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
     std::vector<InputDescriptionPtr> MonolithicTransformer::getInputs() const
     {
-        std::vector<InputDescriptionPtr> result;
-        for (auto i : m_nameToId)
-        {
-            auto inputDescription = std::make_shared<InputDescription>();
-            inputDescription->name = i.first;
-            inputDescription->id = i.second;
-            result.push_back(inputDescription);
-        }
-
-        return result;
+        return m_inputs;
     }
 
     std::map<InputId, Sequence> MonolithicTransformer::getNextSequence()

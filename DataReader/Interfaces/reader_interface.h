@@ -23,17 +23,19 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
     typedef size_t InputId;
 
+    typedef std::shared_ptr<ImageLayout> SampleLayoutPtr;
+
     // Input description.
     struct InputDescription
     {
         std::wstring name;
         InputId id;
+        SampleLayoutPtr sampleLayout;
         std::string targetLayoutType;
         std::map<std::string, std::string> properties;
     };
     typedef std::shared_ptr<InputDescription> InputDescriptionPtr;
 
-    typedef std::shared_ptr<ImageLayout> SampleLayoutPtr;
 
     struct Layout
     {

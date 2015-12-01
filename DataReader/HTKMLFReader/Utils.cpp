@@ -60,4 +60,15 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         }
     }
 
+    void Utils::CheckMinibatchSizes(const intargvector& numberOfuttsPerMinibatchForAllEpochs)
+    {
+        for (int i = 0; i < numberOfuttsPerMinibatchForAllEpochs.size(); i++)
+        {
+            if (numberOfuttsPerMinibatchForAllEpochs[i] < 1)
+            {
+                LogicError("nbrUttsInEachRecurrentIter cannot be less than 1.");
+            }
+        }
+    }
+
 }}}

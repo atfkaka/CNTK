@@ -24,5 +24,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             std::vector<std::wstring>& labels,
             std::vector<std::wstring>& hmms,
             std::vector<std::wstring>& lattices);
+
+        static void CheckMinibatchSizes(const intargvector& numberOfuttsPerMinibatchForAllEpochs);
     };
 }}}
