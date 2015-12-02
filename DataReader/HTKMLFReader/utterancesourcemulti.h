@@ -1045,164 +1045,184 @@ public:
 
         size_t mbframes = 0;
         const std::vector<char> noboundaryflags;    // dummy
+
+        // find utterance position for globalts
+        // There must be a precise match; it is not possible to specify frames that are not on boundaries.
+        auto positer = randomizedutteranceposmap.find (globalts);
+        if (positer == randomizedutteranceposmap.end())
+            LogicError("getbatch: invalid 'globalts' parameter; must match an existing utterance boundary");
+        const size_t spos = positer->second;
+
+        size_t numsequences = framemode ? _totalframes : numutterances;
+
+        // determine how many utterances will fit into the requested minibatch size
+        mbframes = randomizedutterancerefs[spos].numframes;   // at least one utterance, even if too long
+        size_t epos;
+        for (epos = spos + 1; epos < numsequences /* numutterances */ && ((mbframes + randomizedutterancerefs[epos].numframes) < framesrequested); epos++)  // add more utterances as long as they fit within requested minibatch size
+            mbframes += randomizedutterancerefs[epos].numframes;
+
+        // do some paging housekeeping
+        // This will also set the feature-kind information if it's the first time.
+        // Free all chunks left of the range.
+        // Page-in all chunks right of the range.
+        // We are a little more blunt for now: Free all outside the range, and page in only what is touched. We could save some loop iterations.
+        const size_t windowbegin = positionchunkwindows[spos].windowbegin();
+        const size_t windowend =   positionchunkwindows[epos-1].windowend();
+        for (size_t k = 0; k < windowbegin; k++)
+            releaserandomizedchunk (k);
+        for (size_t k = windowend; k < randomizedchunks[0].size(); k++)
+            releaserandomizedchunk (k);
+        for (size_t pos = spos; pos < epos; pos++)
+            if ((randomizedutterancerefs[pos].chunkindex % numsubsets) == subsetnum)
+                readfromdisk |= requirerandomizedchunk(randomizedutterancerefs[pos].chunkindex, windowbegin, windowend); // (window range passed in for checking only)
+
+        // Note that the above loop loops over all chunks incl. those that we already should have.
+        // This has an effect, e.g., if 'numsubsets' has changed (we will fill gaps).
+
+        // determine the true #frames we return, for allocation--it is less than mbframes in the case of MPI/data-parallel sub-set mode
+        size_t tspos = 0;
+        for (size_t pos = spos; pos < epos; pos++)
+        {
+            const auto & uttref = randomizedutterancerefs[pos];
+            if ((uttref.chunkindex % numsubsets) != subsetnum)            // chunk not to be returned for this MPI node
+                continue;
+
+            tspos += uttref.numframes;
+        }
+
+        // resize feat and uids
+        feat.resize(vdim.size());
+        uids.resize(classids.size());
+        phoneboundaries.resize(classids.size());
+        sentendmark.resize(vdim.size());
+        assert(feat.size()==vdim.size());
+        assert(feat.size()==randomizedchunks.size());
+
+#define EXPERIMENTAL_UNIFIED_PATH
+#ifdef EXPERIMENTAL_UNIFIED_PATH
+        // TODO should still work for !framemode; for framemode more work is needed:
+        // - subsetsizes computation - augmentation still crashes
+        foreach_index(i, feat)
+        {
+            feat[i].resize (vdim[i], tspos /* TODO versus allocframes */ );
+
+            if (i==0)
+            {
+                foreach_index(j, uids)
+                {
+                    if (issupervised())             // empty means unsupervised training -> return empty uids
+                    {
+                        uids[j].resize(tspos);
+                        phoneboundaries[j].resize(tspos);
+                    }
+                    else
+                    {
+                        uids[i].clear();
+                        phoneboundaries[i].clear();
+                    }
+                    latticepairs.clear();               // will push_back() below
+                    transcripts.clear();
+                }
+                foreach_index(j, sentendmark)
+                {
+                    sentendmark[j].clear();
+                }
+            }
+        }
+
+        if (verbosity > 0)
+            fprintf(stderr, "getbatch: getting utterances %lu..%lu (%lu subset of %lu frames out of %lu requested) in sweep %lu\n",
+                    spos, (epos - 1), tspos, mbframes, framesrequested, sweep);
+        tspos = 0;   // relative start of utterance 'pos' within the returned minibatch
+        for (size_t pos = spos; pos < epos; pos++)
+        {
+            const auto & uttref = randomizedutterancerefs[pos];
+            if ((uttref.chunkindex % numsubsets) != subsetnum)            // chunk not to be returned for this MPI node
+                continue;
+
+            size_t n = 0;
+            foreach_index(i, randomizedchunks)
+            {
+                const auto & chunk = randomizedchunks[i][uttref.chunkindex];
+                const auto & chunkdata = chunk.getchunkdata();
+                assert((numsubsets > 1) || (uttref.globalts == globalts + tspos));
+                auto uttframes = chunkdata.getutteranceframes (uttref.utteranceindex);
+                matrixasvectorofvectors uttframevectors (uttframes);    // (wrapper that allows m[j].size() and m[j][i] as required by augmentneighbors())
+                n = uttref.numframes;
+                const size_t uttNumFramesFromVector = uttframevectors.size();
+                sentendmark[i].push_back(n + tspos);
+                // TODO rejoin
+                assert (uttNumFramesFromVector == uttframes.cols()); uttNumFramesFromVector;
+                assert (n == (framemode ? 1 : uttNumFramesFromVector));
+                assert (chunkdata.numframes (uttref.utteranceindex) == uttNumFramesFromVector);
+
+                size_t frameIndex = uttref.frameindex;
+
+                // copy the frames and class labels
+                for (size_t t = 0; t < n; t++, frameIndex++)          // t = time index into source utterance
+                {
+                    size_t leftextent, rightextent;
+                    // page in the needed range of frames
+                    // TODO hoist?
+                    if (leftcontext[i] == 0 && rightcontext[i] == 0)
+                    {
+                        leftextent = rightextent = augmentationextent(uttframevectors[frameIndex].size(), vdim[i]);
+                    }
+                    else
+                    {
+                        leftextent = leftcontext[i];
+                        rightextent = rightcontext[i];
+                    }
+
+                    // TODO memory-safe, maybe not correct
+                    augmentneighbors(uttframevectors, noboundaryflags, frameIndex, leftextent, rightextent, feat[i], t /* frameIndex */ + tspos);
+                    //augmentneighbors(uttframevectors, noboundaryflags, frameIndex, leftextent, rightextent, feat[i], currmpinodeframecount);
+                }
+
+                // copy the frames and class labels
+                if (i==0)
+                {
+                    auto uttclassids = getclassids (uttref);
+                    auto uttphoneboundaries = getphonebound(uttref);
+                    foreach_index(j, uttclassids)
+                    {
+                        for (size_t t = 0; t < n; t++)          // t = time index into source utterance
+                        {
+                            if (issupervised())
+                            {
+                                uids[j][t + tspos] = uttclassids[j][t];
+                                phoneboundaries[j][t + tspos] = uttphoneboundaries[j][t];
+                            }
+                        }
+
+                        if (!this->lattices.empty())
+                        {
+                            auto latticepair = chunkdata.getutterancelattice (uttref.utteranceindex);
+                            latticepairs.push_back (latticepair);
+                            // look up reference
+                            const auto & key = latticepair->getkey();
+                            if (!allwordtranscripts.empty())
+                            {
+                                const auto & transcript = allwordtranscripts.find (key)->second;
+                                transcripts.push_back (transcript.words);
+                            }
+                        }
+                    }
+                }
+            }
+            tspos += n;
+        }
+
+        foreach_index(i, feat)
+        {
+            assert(tspos == feat[i].cols());
+        }
+#endif
+
         if (!framemode)      // regular utterance mode
         {
             assert(0); // looking at frame-mode scenario for now
-
-            // find utterance position for globalts
-            // There must be a precise match; it is not possible to specify frames that are not on boundaries.
-            auto positer = randomizedutteranceposmap.find (globalts);
-            if (positer == randomizedutteranceposmap.end())
-                LogicError("getbatch: invalid 'globalts' parameter; must match an existing utterance boundary");
-            const size_t spos = positer->second;
-
-            // determine how many utterances will fit into the requested minibatch size
-            mbframes = randomizedutterancerefs[spos].numframes;   // at least one utterance, even if too long
-            size_t epos;
-            for (epos = spos + 1; epos < numutterances && ((mbframes + randomizedutterancerefs[epos].numframes) < framesrequested); epos++)  // add more utterances as long as they fit within requested minibatch size
-                mbframes += randomizedutterancerefs[epos].numframes;
-
-            // do some paging housekeeping
-            // This will also set the feature-kind information if it's the first time.
-            // Free all chunks left of the range.
-            // Page-in all chunks right of the range.
-            // We are a little more blunt for now: Free all outside the range, and page in only what is touched. We could save some loop iterations.
-            const size_t windowbegin = positionchunkwindows[spos].windowbegin();
-            const size_t windowend =   positionchunkwindows[epos-1].windowend();
-            for (size_t k = 0; k < windowbegin; k++)
-                releaserandomizedchunk (k);
-            for (size_t k = windowend; k < randomizedchunks[0].size(); k++)
-                releaserandomizedchunk (k);
-            for (size_t pos = spos; pos < epos; pos++)
-                if ((randomizedutterancerefs[pos].chunkindex % numsubsets) == subsetnum)
-                    readfromdisk |= requirerandomizedchunk(randomizedutterancerefs[pos].chunkindex, windowbegin, windowend); // (window range passed in for checking only)
-
-            // Note that the above loop loops over all chunks incl. those that we already should have.
-            // This has an effect, e.g., if 'numsubsets' has changed (we will fill gaps).
-
-            // determine the true #frames we return, for allocation--it is less than mbframes in the case of MPI/data-parallel sub-set mode
-            size_t tspos = 0;
-            for (size_t pos = spos; pos < epos; pos++)
-            {
-                const auto & uttref = randomizedutterancerefs[pos];
-                if ((uttref.chunkindex % numsubsets) != subsetnum)            // chunk not to be returned for this MPI node
-                    continue;
-
-                tspos += uttref.numframes;
-            }
-
-            // resize feat and uids
-            feat.resize(vdim.size());
-            uids.resize(classids.size());
-            phoneboundaries.resize(classids.size());
-            sentendmark.resize(vdim.size());
-            assert(feat.size()==vdim.size());
-            assert(feat.size()==randomizedchunks.size());
-            foreach_index(i, feat)
-            {
-                feat[i].resize (vdim[i], tspos);
-
-                if (i==0)
-                {
-                    foreach_index(j, uids)
-                    {
-                        if (issupervised())             // empty means unsupervised training -> return empty uids
-                        {
-                            uids[j].resize(tspos);
-                            phoneboundaries[j].resize(tspos);
-                        }
-                        else
-                        {
-                            uids[i].clear();
-                            phoneboundaries[i].clear();
-                        }
-                        latticepairs.clear();               // will push_back() below
-                        transcripts.clear();
-                    }
-                    foreach_index(j, sentendmark)
-                    {
-                        sentendmark[j].clear();
-                    }
-                }
-            }
-            // return these utterances
-            if (verbosity > 0)
-                fprintf(stderr, "getbatch: getting utterances %d..%d (%d subset of %d frames out of %d requested) in sweep %d\n", (int)spos, (int)(epos - 1), (int)tspos, (int)mbframes, (int)framesrequested, (int)sweep);
-            tspos = 0;   // relative start of utterance 'pos' within the returned minibatch
-            for (size_t pos = spos; pos < epos; pos++)
-            {
-                const auto & uttref = randomizedutterancerefs[pos];
-                if ((uttref.chunkindex % numsubsets) != subsetnum)            // chunk not to be returned for this MPI node
-                    continue;
-
-                size_t n = 0;
-                foreach_index(i, randomizedchunks)
-                {
-                    const auto & chunk = randomizedchunks[i][uttref.chunkindex];
-                    const auto & chunkdata = chunk.getchunkdata();
-                    assert((numsubsets > 1) || (uttref.globalts == globalts + tspos));
-                    auto uttframes = chunkdata.getutteranceframes (uttref.utteranceindex);
-                    matrixasvectorofvectors uttframevectors (uttframes);    // (wrapper that allows m[j].size() and m[j][i] as required by augmentneighbors())
-                    n = uttframevectors.size();
-                    sentendmark[i].push_back(n + tspos);
-                    assert (n == uttframes.cols() && uttref.numframes == n && chunkdata.numframes (uttref.utteranceindex) == n);
-
-                    // copy the frames and class labels
-                    for (size_t t = 0; t < n; t++)          // t = time index into source utterance
-                    {
-                        size_t leftextent, rightextent;
-                        // page in the needed range of frames
-                        if (leftcontext[i] == 0 && rightcontext[i] == 0)
-                        {
-                            leftextent = rightextent = augmentationextent(uttframevectors[t].size(), vdim[i]);
-                        }
-                        else
-                        {
-                            leftextent = leftcontext[i];
-                            rightextent = rightcontext[i];
-                        }
-                        augmentneighbors(uttframevectors, noboundaryflags, t, leftextent, rightextent, feat[i], t + tspos);
-                        //augmentneighbors(uttframevectors, noboundaryflags, t, feat[i], t + tspos);
-                    }
-
-                    // copy the frames and class labels
-                    if (i==0)
-                    {
-                        auto uttclassids = getclassids (uttref);
-                        auto uttphoneboudaries = getphonebound(uttref);
-                        foreach_index(j, uttclassids)
-                        {
-                            for (size_t t = 0; t < n; t++)          // t = time index into source utterance
-                            {
-                                if (issupervised())
-                                {
-                                uids[j][t + tspos] = uttclassids[j][t];
-                                    phoneboundaries[j][t + tspos] = uttphoneboudaries[j][t];
-                                }
-                            }
-
-                            if (!this->lattices.empty())
-                            {
-                                auto latticepair = chunkdata.getutterancelattice (uttref.utteranceindex);
-                                latticepairs.push_back (latticepair);
-                                // look up reference
-                                const auto & key = latticepair->getkey();
-                                if (!allwordtranscripts.empty())
-                                {
-                                    const auto & transcript = allwordtranscripts.find (key)->second;
-                                    transcripts.push_back (transcript.words);
-                                }
-                            }
-                        }
-                    }
-                }
-                tspos += n;
-            }
-
-            foreach_index(i, feat)
-            {
-                assert(tspos == feat[i].cols());
-            }
+            // TODO code was moved up
         }
         else
         {
