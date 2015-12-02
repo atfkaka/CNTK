@@ -1098,7 +1098,7 @@ public:
         assert(feat.size()==vdim.size());
         assert(feat.size()==randomizedchunks.size());
 
-#define EXPERIMENTAL_UNIFIED_PATH
+#undef EXPERIMENTAL_UNIFIED_PATH
 #ifdef EXPERIMENTAL_UNIFIED_PATH
         // TODO should still work for !framemode; for framemode more work is needed:
         // - subsetsizes computation - augmentation still crashes
