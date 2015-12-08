@@ -1046,6 +1046,25 @@ public:
         size_t mbframes = 0;
         const std::vector<char> noboundaryflags;    // dummy
 
+        sentendmark;
+        phoneboundaries;
+#define EXPERIMENTAL_UNIFIED_PATH
+#ifdef EXPERIMENTAL_UNIFIED_PATH
+
+        //const size_t numChunks = allchunks[0].size();
+        const size_t numStreams = allchunks.size();
+        const size_t numLabelStreams = classids.size();
+
+        // TODO some of these only set after first read?
+        assert(vdim.size() == numStreams);
+        assert(leftcontext.size() == numStreams);
+        assert(rightcontext.size() == numStreams);
+        assert(sampperiod.size() == numStreams);
+        assert(featkind.size() == numStreams);
+        assert(featdim.size() == numStreams);
+        assert(classids.size() == numLabelStreams);
+        assert(framemode || phoneboundaries.size() == numLabelStreams);
+
         // find utterance position for globalts
         // There must be a precise match; it is not possible to specify frames that are not on boundaries.
         auto positer = randomizedutteranceposmap.find (globalts);
@@ -1090,16 +1109,16 @@ public:
             tspos += uttref.numframes;
         }
 
-        // resize feat and uids
-        feat.resize(vdim.size());
-        uids.resize(classids.size());
-        phoneboundaries.resize(classids.size());
-        sentendmark.resize(vdim.size());
-        assert(feat.size()==vdim.size());
-        assert(feat.size()==randomizedchunks.size());
+        // TODO for framemode, must return same number of frames (single-frame sequences) for each worker
 
-#undef EXPERIMENTAL_UNIFIED_PATH
-#ifdef EXPERIMENTAL_UNIFIED_PATH
+        // resize feat and uids
+        feat.resize(numStreams);
+        uids.resize(numLabelStreams);
+        phoneboundaries.resize(numLabelStreams);
+        sentendmark.resize(numStreams);
+        assert(feat.size() == vdim.size());
+        assert(feat.size() == randomizedchunks.size());
+
         // TODO should still work for !framemode; for framemode more work is needed:
         // - subsetsizes computation - augmentation still crashes
         foreach_index(i, feat)
@@ -1157,13 +1176,14 @@ public:
                 assert (chunkdata.numframes (uttref.utteranceindex) == uttNumFramesFromVector);
 
                 size_t frameIndex = uttref.frameindex;
+                assert(framemode || frameIndex == 0);
 
                 // copy the frames and class labels
                 for (size_t t = 0; t < n; t++, frameIndex++)          // t = time index into source utterance
                 {
                     size_t leftextent, rightextent;
                     // page in the needed range of frames
-                    // TODO hoist?
+                    // TODO hoist using featdim[i] instead of uttframevectors[frameIndex].size();
                     if (leftcontext[i] == 0 && rightcontext[i] == 0)
                     {
                         leftextent = rightextent = augmentationextent(uttframevectors[frameIndex].size(), vdim[i]);
@@ -1175,7 +1195,7 @@ public:
                     }
 
                     // TODO memory-safe, maybe not correct
-                    augmentneighbors(uttframevectors, noboundaryflags, frameIndex, leftextent, rightextent, feat[i], t /* frameIndex */ + tspos);
+                    augmentneighbors(uttframevectors, noboundaryflags, frameIndex, leftextent, rightextent, feat[i], t /* frameIndex */ + tspos); // TODO i think this should be the right version
                     //augmentneighbors(uttframevectors, noboundaryflags, frameIndex, leftextent, rightextent, feat[i], currmpinodeframecount);
                 }
 
@@ -1186,12 +1206,17 @@ public:
                     auto uttphoneboundaries = getphonebound(uttref);
                     foreach_index(j, uttclassids)
                     {
-                        for (size_t t = 0; t < n; t++)          // t = time index into source utterance
+                        // TODO also need to compensate for frame index here
+                        frameIndex = uttref.frameindex;
+                        for (size_t t = 0; t < n; t++, frameIndex++)          // t = time index into source utterance
                         {
                             if (issupervised())
                             {
-                                uids[j][t + tspos] = uttclassids[j][t];
-                                phoneboundaries[j][t + tspos] = uttphoneboundaries[j][t];
+                                uids[j][t + tspos] = uttclassids[j][frameIndex];
+                                if (!framemode) // TODO right?
+                                {
+                                    phoneboundaries[j][t + tspos] = uttphoneboundaries[j][frameIndex];
+                                }
                             }
                         }
 
@@ -1219,6 +1244,7 @@ public:
         }
 #endif
 
+#if 0
         if (!framemode)      // regular utterance mode
         {
             assert(0); // looking at frame-mode scenario for now
@@ -1233,12 +1259,14 @@ public:
 
             // determine window range
             // We enumerate all frames--can this be done more efficiently?
-            const size_t firstchunk = chunkforframepos (globalts);
-            const size_t lastchunk = chunkforframepos (globalte-1);
+            const size_t firstchunk = rand->chunkforframepos (globalts);
+            const size_t lastchunk = rand->chunkforframepos (globalte-1);
 
             assert(lastchunk <= firstchunk + 1); // shouldn't really cover more than two chunks...?
-            const size_t windowbegin = randomizedchunks[0][firstchunk].windowbegin;
-            const size_t windowend = randomizedchunks[0][lastchunk].windowend;
+            const size_t windowbegin = rand->getChunkWindowBegin(firstchunk);
+            const size_t windowend = rand->getChunkWindowEnd(lastchunk);
+            const size_t numChunks = allchunks[0].size();
+            const size_t numStreams = allchunks.size();
             if (verbosity > 0)
                 fprintf (stderr, "getbatch: getting randomized frames [%d..%d] (%d frames out of %d requested) in sweep %d; chunks [%d..%d] -> chunk window [%d..%d)\n",
                      (int)globalts, (int)globalte, (int)mbframes, (int)framesrequested, (int)sweep, (int)firstchunk, (int)lastchunk, (int)windowbegin, (int)windowend);
@@ -1248,7 +1276,7 @@ public:
             for (size_t k = windowbegin; k < windowend; k++)
                 if ((k % numsubsets) == subsetnum)        // in MPI mode, we skip chunks this way
                     readfromdisk |= requirerandomizedchunk(k, windowbegin, windowend); // (window range passed in for checking only, redundant here)
-            for (size_t k = windowend; k < randomizedchunks[0].size(); k++)
+            for (size_t k = windowend; k < numChunks; k++)
                 releaserandomizedchunk (k);
 
             // determine the true #frames we return--it is less than mbframes in the case of MPI/data-parallel sub-set mode
@@ -1259,7 +1287,7 @@ public:
             {
                 const size_t framepos = (globalts + i) % _totalframes;  // (for comments, see main loop below)
                 //const sequenceref & frameref = randomizedframerefs[framepos];
-                const sequenceref & frameref = randomizedutterancerefs[framepos];
+                const randomizer::sequenceref & frameref = rand->getSequenceRef(framepos);
                 subsetsizes[frameref.chunkindex % numsubsets]++;
             }
             size_t j = subsetsizes[subsetnum];        // return what we have  --TODO: we can remove the above full computation again now
@@ -1269,7 +1297,7 @@ public:
             feat.resize(vdim.size());
             uids.resize(classids.size());
             assert(feat.size()==vdim.size());
-            assert(feat.size()==randomizedchunks.size());
+            assert(feat.size()==numStreams);
             foreach_index(i, feat)
             {
                 feat[i].resize(vdim[i], allocframes);
@@ -1296,7 +1324,7 @@ public:
                 // map to time index inside arrays
                 const size_t framepos = (globalts + j) % _totalframes;  // using mod because we may actually run beyond the sweep for the last call
                 //const sequenceref & frameref = randomizedframerefs[framepos];
-                const sequenceref & frameref = randomizedutterancerefs[framepos];
+                const randomizer::sequenceref & frameref = rand->getSequenceRef(framepos);
 
                 // in MPI/data-parallel mode, skip frames that are not in chunks loaded for this MPI node
                 if ((frameref.chunkindex % numsubsets) != subsetnum)
@@ -1305,10 +1333,9 @@ public:
                 // random utterance
                 readfromdisk |= requirerandomizedchunk (frameref.chunkindex, windowbegin, windowend);    // (this is just a check; should not actually page in anything)
 
-                foreach_index(i, randomizedchunks)
+                for (size_t i = 0; i < numStreams; i++)
                 {
-                    const auto & chunk = randomizedchunks[i][frameref.chunkindex];
-                    const auto & chunkdata = chunk.getchunkdata();
+                    const auto & chunkdata = rand->getChunkData(i, frameref.chunkindex);
                     auto uttframes = chunkdata.getutteranceframes (frameref.utteranceindex);
                     matrixasvectorofvectors uttframevectors (uttframes);    // (wrapper that allows m[.].size() and m[.][.] as required by augmentneighbors())
                     const size_t n = uttframevectors.size();
@@ -1341,6 +1368,7 @@ public:
                 currmpinodeframecount++;
             }
         }
+#endif
         timegetbatch = timergetbatch;
 
         // this is the number of frames we actually moved ahead in time
