@@ -39,16 +39,20 @@ set PATH=%PATH%;%CYGWIN_BIN%
 
 if not defined a_noe2e (
 if not defined a_norelease (
+if not defined a_nogpu (
     python2.7.exe Tests/TestDriver.py run -d gpu -f release Speech/QuickE2E
     if errorlevel 1 exit /b 1
+)
 
     python2.7.exe Tests/TestDriver.py run -d cpu -f release Speech/QuickE2E
     if errorlevel 1 exit /b 1
 )
 
 if not defined a_nodebug (
+if not defined a_nogpu (
     python2.7.exe Tests/TestDriver.py run -d gpu -f debug Speech/QuickE2E
     if errorlevel 1 exit /b 1
+)
 
     python2.7.exe Tests/TestDriver.py run -d cpu -f debug Speech/QuickE2E
     if errorlevel 1 exit /b 1
