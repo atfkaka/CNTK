@@ -11,4 +11,6 @@ class RandomSeedFixture
 public:
     RandomSeedFixture();
     unsigned long IncrementCounter();
+
+    ~RandomSeedFixture();
 };

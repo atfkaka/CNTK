@@ -27,3 +27,10 @@ unsigned long RandomSeedFixture::IncrementCounter()
 {
     return ++s_counter;
 }
+
+RandomSeedFixture::~RandomSeedFixture()
+{
+    GPUMatrix<float>::DestroyCurandObject();
+    GPUMatrix<double>::DestroyCurandObject();
+}
+
