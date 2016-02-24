@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-command=Train:Predict
+command=Train
 
 modelPath="%(ModelPath)s"		
 deviceId=-1						    # CPU
@@ -32,7 +32,6 @@ Train=[
 		minibatchSize=10
 		learningRatesPerMB=0.1	            
 		maxEpochs=50
-        randomize = "none"
 	]
 	
 	reader = [
@@ -55,31 +54,4 @@ Train=[
 		]
 	]
 ]
-
-Predict=[
-	action="write"
-	
-	reader = [
-		readerType = "UCIFastReader"
-		file = "%(PredictInputFile)s"
-		miniBatchMode = "partial"		
-		verbosity = 1
-		
-		features=[
-			start = 0
-			dim = $FeatureDimension$
-		]
-	
-		labels=[
-			start = $FeatureDimension$		      
-			dim = $LabelDimension$		          
-            #labelDim = ?? # number of distinct values / necessary for categorial tasks
-			labelType=%(LabelType)s     # 'category' or 'regression' 
-            labelMappingFile="%(LabelMappingFile)s" 
-		]
-	]
-	
-	outputPath = "%(PredictOutputFile)s"		# dump the output as text
-]
-
 

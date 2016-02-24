@@ -6,6 +6,9 @@ import os
 from keras.backend.common import _FLOATX, _EPSILON
 import numpy as np
 
+CNTK_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_template.cntk")
+CNTK_EXECUTABLE_PATH = r"f:\cntk-bin\cntk\cntk"
+
 class Context(object):
     def __init__(self, model):
         self.directory = os.path.abspath('_cntk_%s'%id(model))
@@ -58,11 +61,17 @@ class Node(object):
                 get_output_shape=lambda a,b: np.asarray(a).shape
                 )
 
+    def get_cntk_param_string(self, param_variable_names=None):
+        return ""
+
+    #def get_cntk_repr(self):
+        #return self.
+
     def get_value(self):
         return self.value
 
     def get_shape(self):
-        if self.value:
+        if self.value is not None:
             return self.value.shape
         else:
             #print(self)
@@ -96,17 +105,66 @@ class Operator(Node):
     def __init__(self, name, params, **kwargs):
         super(Operator, self).__init__(name, params, **kwargs)
 
+    def get_cntk_param_string(self, param_variable_names=None):
+        if len(param_variable_names)==0:
+            raise ValueError("expected one or more parameter variable names")
+
+        if self.name == "Times": # TODO ugly hack until we have Transpose()
+            assert len(param_variable_names)==2
+            param_variable_names = reversed(param_variable_names)
+
+        params = ", ".join(param_variable_names) if self.params is not None else ""
+
+        return params
+
+
 class Input(Node):
     def __init__(self, shape, **kwargs):
         super(Input, self).__init__('Input', **kwargs)
         self.get_output_shape=lambda : shape
+
+    def get_cntk_param_string(self, param_variable_names=None):
+        if len(param_variable_names)!=0:
+            raise ValueError("expected no parameter variable names",
+                    param_variable_names)
+
+        if self.var_name == 'labels':
+            params = "$LabelDimension$"
+        elif self.var_name == 'features':
+            params = "$FeatureDimension$"
+
+        return params
+
+class LearnableParameter(Node):
+    def __init__(self, **kwargs):
+        #import ipdb;ipdb.set_trace()
+        super(LearnableParameter, self).__init__('LearnableParameter', **kwargs)
+        self.get_output_shape=lambda : kwargs['value'].shape
+
+    def get_cntk_param_string(self, param_variable_names=None):
+        if len(param_variable_names)!=0:
+            raise ValueError("expected no parameter variable names",
+                    param_variable_names)
+
+        shape = self.get_output_shape()
+        if len(shape)==1:
+            cols = shape[0]
+            params = cols
+        elif len(shape)==2:
+            rows = shape[1]
+            cols = shape[0]
+            params = "%s, %s"%(rows, cols)
+        else:
+            raise ValueError("expected either 1 or 2-dimensional shape", shape) 
+
+        return params
 
 def placeholder(shape):
     return Input(shape, var_name="features")
 
 def variable(value, dtype=_FLOATX, name=None):
     value = np.asarray(value, dtype=dtype)
-    node = Node('LearnableParameter', get_output_shape=lambda: value.shape)
+    node = LearnableParameter(value=value, get_output_shape=lambda: value.shape)
     return node
 
 # lin alg
