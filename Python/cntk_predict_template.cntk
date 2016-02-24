@@ -1,44 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-command=Train
+command=Predict
 
 modelPath="%(ModelPath)s"		
 deviceId=-1						    # CPU
 FeatureDimension=%(FeatureDimension)s
 LabelDimension=%(LabelDimension)s
 
-Train=[
-	action="train"
-	
-	NDLNetworkBuilder=[
-	
-    run=sample
-
-      sample=[
-
-%(ModelDescription)s
-  
-        FeatureNodes=(features)
-        LabelNodes=(labels)
-        CriteriaNodes=(%(CriteriaNodes)s)
-        #EvalNodes=(%(EvalNodes)s)
-        #OutputNodes=(%(OutputNodes)s)
-		OutputNodes=(v4)
-      ]   
-    ]
-	
-	SGD = [	
-		epochSize=0		                    # =0 means size of the training set
-		minibatchSize=10
-		learningRatesPerMB=0.1	            
-		maxEpochs=50
-	]
+Predict=[
+	action="write"
 	
 	reader = [
 		readerType = "UCIFastReader"
-		file = "%(TrainFile)s"
-		miniBatchMode = "partial"		
+		file = "%(PredictInputFile)s"
+		randomize = "none"
 		verbosity = 1
 		
 		features=[
@@ -49,10 +25,13 @@ Train=[
 		labels=[
 			start = $FeatureDimension$		      
 			dim = $LabelDimension$		          
-            #labelDim=2
+            #labelDim = ?? # number of distinct values / necessary for categorial tasks
 			labelType=%(LabelType)s     # 'category' or 'regression' 
             labelMappingFile="%(LabelMappingFile)s" 
 		]
 	]
+	
+	outputPath = "%(PredictOutputFile)s"		# dump the output as text
 ]
+
 
