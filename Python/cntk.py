@@ -7,7 +7,8 @@ from keras.backend.common import _FLOATX, _EPSILON
 import numpy as np
 
 CNTK_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_template.cntk")
-CNTK_EXECUTABLE_PATH = r"f:\cntk-bin\cntk\cntk"
+CNTK_PREDICT_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_predict_template.cntk")
+CNTK_EXECUTABLE_PATH = r"f:\CNTK-bin\cntk\cntk"
 
 class Context(object):
     def __init__(self, model):
@@ -129,9 +130,9 @@ class Input(Node):
                     param_variable_names)
 
         if self.var_name == 'labels':
-            params = "$LabelDimension$"
+            params = "$NumOfClasses$, 1"
         elif self.var_name == 'features':
-            params = "$FeatureDimension$"
+            params = "$FeatureDimension$, 1"
 
         return params
 
@@ -151,7 +152,7 @@ class LearnableParameter(Node):
             cols = shape[0]
             params = cols
         elif len(shape)==2:
-            rows = shape[1]
+            rows = shape[0] # hack
             cols = shape[0]
             params = "%s, %s"%(rows, cols)
         else:
