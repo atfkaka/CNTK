@@ -23,7 +23,7 @@ Train=[
         LabelNodes=(labels)
         CriteriaNodes=(%(CriteriaNodes)s)
         #EvalNodes=(%(EvalNodes)s)
-        #OutputNodes=(%(OutputNodes)s)
+        OutputNodes=(%(OutputNodes)s)
       ]   
     ]
 	
