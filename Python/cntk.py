@@ -8,7 +8,7 @@ import numpy as np
 
 CNTK_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_template.cntk")
 CNTK_PREDICT_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_predict_template.cntk")
-CNTK_EXECUTABLE_PATH = r"f:\CNTK-bin\cntk\cntk"
+CNTK_EXECUTABLE_PATH = r"E:\CNTK\x64\Debug\cntk"
 
 class Context(object):
     def __init__(self, model):
@@ -150,7 +150,7 @@ class LearnableParameter(Node):
         shape = self.get_output_shape()
         if len(shape)==1:
             cols = shape[0]
-            params = cols
+            params = "$NumOfClasses$"
         elif len(shape)==2:
             rows = shape[0] # hack
             cols = shape[0]
