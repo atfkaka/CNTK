@@ -427,6 +427,7 @@ void HTKMLFReader<ElemType>::PrepareForTrainingOrTesting(const ConfigRecordType&
         foreach_index (i, infilesmulti[0])
         {
             msra::asr::htkfeatreader::parsedpath ppath(infilesmulti[0][i]);
+            wstring basoglu = (wstring) ppath;
             const wstring key = regex_replace((wstring) ppath, wregex(L"\\.[^\\.\\\\/:]*$"), wstring()); // delete extension (or not if none)
             restrictmlftokeys.insert(key);
         }
