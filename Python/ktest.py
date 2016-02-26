@@ -28,4 +28,12 @@ model.compile(loss='categorical_crossentropy', optimizer=sgd)
 model.fit(X_train, y_train, nb_epoch=20, batch_size=16, show_accuracy=True)
 
 #Predict
-model.predict(ins)
+actual = model.predict(ins)
+print("Input:")
+print(np.hstack([X_train, y_train[np.newaxis].T]))
+print("Predicted (class probabilities for class 0 and 1) + prediction")
+print(np.hstack([actual, np.array(actual[:,0]<actual[:,1])[np.newaxis].T]))
+assert len(actual)==len(X_train)
+assert np.all(actual[:4][:,0] > actual[:4][:,1])
+assert np.all(actual[-4:][:,0] < actual[-4:][:,1])
+
