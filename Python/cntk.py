@@ -79,9 +79,6 @@ class Node(object):
         if self.value is not None:
             return self.value.shape
         else:
-            #print(self)
-            #if not self.get_output_shape:
-                #import ipdb;ipdb.set_trace()
             if self.params:
                 print("params: "+str(self.params))
 
@@ -135,7 +132,6 @@ class Input(Node):
 
 class LearnableParameter(Node):
     def __init__(self, **kwargs):
-        #import ipdb;ipdb.set_trace()
         super(LearnableParameter, self).__init__('LearnableParameter', **kwargs)
         self.get_output_shape=lambda : kwargs['value'].shape
 
@@ -146,11 +142,9 @@ class LearnableParameter(Node):
 
         shape = self.get_output_shape()
         if len(shape)==1:
-            #import ipdb;ipdb.set_trace()
             cols = shape[0]
             params = "$NumOfClasses$" # hack
         elif len(shape)==2:
-            #import ipdb;ipdb.set_trace()
             rows = shape[0] # hack
             cols = shape[0]
             params = "%s, %s"%(rows, cols)
@@ -169,7 +163,6 @@ def variable(value, dtype=_FLOATX, name=None):
 
 # lin alg
 def plus_check(a,b):
-    #import ipdb;ipdb.set_trace()
     if not hasattr(a, 'get_shape') or not hasattr(b, 'get_shape'):
         return True
 
@@ -193,8 +186,6 @@ def times_check(a,b):
     return a_shape[1]==b_shape[0]
 
 def times(left, right):
-    #import ipdb;ipdb.set_trace()
-
     return Operator("Times", (left, right),
             get_output_shape=lambda a,b: (a.get_shape()[0], b.get_shape()[1]),
             check=times_check

@@ -31,9 +31,9 @@ Train=[
 	
 	SGD = [	
 		epochSize=0		                    # =0 means size of the training set
-		minibatchSize=2
-		learningRatesPerMB=0.1	            
-		maxEpochs=10
+		minibatchSize=%(MinibatchSize)i
+		learningRatesPerMB=%(LearningRate)f
+		maxEpochs=%(MaxEpochs)i
 	]
 	
 	reader = [
