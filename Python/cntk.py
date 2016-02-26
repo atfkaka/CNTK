@@ -89,22 +89,15 @@ class Node(object):
             else:
                 return self.get_output_shape()
 
-
-    def __coerce__(self, other):
-        # TODO
-        return 0.
-
-    def __float__(self):
-        # TODO
-        return 0.
-
     def eval(self, **kw):
-        # TODO
-        return 0.
+        raise NotImplementedError
 
     def __str__(self):
         return "%s / params=%s / value=%s"%(self.name, self.params, self.value)
 
+# Because CNTK stores the sample in a transposed form, we need to
+# switch parameters for some operators
+BIN_OPS_WITH_REVERSED_PARAMETERS = {'Times'}
 
 class Operator(Node):
     def __init__(self, name, params, **kwargs):
@@ -114,8 +107,8 @@ class Operator(Node):
         if len(param_variable_names)==0:
             raise ValueError("expected one or more parameter variable names")
 
-        if self.name == "Times": # TODO ugly hack until we have Transpose()
-            assert len(param_variable_names)==2
+        if self.name in BIN_OPS_WITH_REVERSED_PARAMETERS: 
+            assert len(param_variable_names)==2 # not sure what to do otherwise
             param_variable_names = reversed(param_variable_names)
 
         params = ", ".join(param_variable_names) if self.params is not None else ""
@@ -153,9 +146,11 @@ class LearnableParameter(Node):
 
         shape = self.get_output_shape()
         if len(shape)==1:
+            #import ipdb;ipdb.set_trace()
             cols = shape[0]
-            params = "$NumOfClasses$"
+            params = "$NumOfClasses$" # hack
         elif len(shape)==2:
+            #import ipdb;ipdb.set_trace()
             rows = shape[0] # hack
             cols = shape[0]
             params = "%s, %s"%(rows, cols)
