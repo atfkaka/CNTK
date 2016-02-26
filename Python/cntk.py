@@ -6,9 +6,13 @@ import os
 from keras.backend.common import _FLOATX, _EPSILON
 import numpy as np
 
-CNTK_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_template.cntk")
+CNTK_TRAIN_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_train_template.cntk")
 CNTK_PREDICT_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "cntk_predict_template.cntk")
-CNTK_EXECUTABLE_PATH = r"E:\CNTK\x64\Debug\cntk"
+
+if "CNTK_EXECUTABLE_PATH" not in os.environ:
+    raise ValueError("you need to point environmental variable 'CNTK_EXECUTABLE_PATH' to the CNTK binary")
+
+CNTK_EXECUTABLE_PATH = os.environ['CNTK_EXECUTABLE_PATH']
 
 class Context(object):
     def __init__(self, model):
