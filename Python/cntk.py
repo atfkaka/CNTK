@@ -141,11 +141,14 @@ class LearnableParameter(Node):
                     param_variable_names)
 
         shape = self.get_output_shape()
+
+        # TODO this makes only sense as the first layer for a
+        # classification problem.
         if len(shape)==1:
-            cols = shape[0]
-            params = "$NumOfClasses$" # hack
+            params = "$NumOfClasses$" 
         elif len(shape)==2:
-            rows = shape[0] # hack
+            # TODO have layer's output_dim and input_dim a word on this
+            rows = shape[0] 
             cols = shape[0]
             params = "%s, %s"%(rows, cols)
         else:
@@ -161,7 +164,6 @@ def variable(value, dtype=_FLOATX, name=None):
     node = LearnableParameter(value=value, get_output_shape=lambda: value.shape)
     return node
 
-# lin alg
 def plus_check(a,b):
     if not hasattr(a, 'get_shape') or not hasattr(b, 'get_shape'):
         return True

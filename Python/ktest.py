@@ -8,11 +8,15 @@ import numpy as np
 nsamples = 20
 X_train = np.array(list(zip(range(nsamples), range(nsamples))))
 y_train = np.hstack([np.zeros(nsamples//2), np.ones(nsamples//2)])
-ins = [X_train] +[y_train,]
+ins = [X_train] +[y_train]
+
+# CNTK would transform the label input to an indicator resulting in two
+# dimensions for two classes 
+num_classes = 2
 
 #Build the model
 model = Sequential()
-model.add(Dense(output_dim=1, input_dim=2, init='uniform'))
+model.add(Dense(output_dim=1, input_dim=num_classes, init='uniform'))
 model.add(Activation('softmax'))
 
 #Define the optimizer
