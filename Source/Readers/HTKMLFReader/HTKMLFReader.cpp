@@ -428,6 +428,8 @@ void HTKMLFReader<ElemType>::PrepareForTrainingOrTesting(const ConfigRecordType&
         {
             msra::asr::htkfeatreader::parsedpath ppath(infilesmulti[0][i]);
             wstring basoglu = (wstring) ppath;
+            fprintf(stderr, "ppath: %ls\n", basoglu.c_str());
+
             const wstring key = regex_replace((wstring) ppath, wregex(L"\\.[^\\.\\\\/:]*$"), wstring()); // delete extension (or not if none)
             restrictmlftokeys.insert(key);
         }

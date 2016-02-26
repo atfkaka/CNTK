@@ -154,7 +154,6 @@ static void DisableLegacyUsage(const ConfigParameters& TopLevelConfig, const Con
     }
 }
 
-volatile bool infiniteLoop = true;
 
 // process the command
 template <typename ElemType>
@@ -164,11 +163,6 @@ void DoCommands(const ConfigParameters& config)
 
     int numCPUThreads = config(L"numCPUThreads", "0");
     numCPUThreads = CPUMatrix<ElemType>::SetNumThreads(numCPUThreads);
-
-    while (infiniteLoop) {
-        sleep(20);
-        std::cerr << "sleeping" << endl;
-    }
 
     if (numCPUThreads > 0)
     {
