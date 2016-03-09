@@ -920,7 +920,8 @@ bool HTKMLFReader<ElemType>::PopulateUtteranceInMinibatch(
                 {
                     for (int d = 0; d < dim; d++)
                     {
-                        m_featuresBufferMultiIO[id][((k + mbOffset) * m_numberOfuttsPerMinibatch + uttIndex) * dim + d] = m_featuresBufferMultiUtt[uttIndex][j * dim + d + m_featuresStartIndexMultiUtt[id + uttIndex * numOfFea]];
+                        m_featuresBufferMultiIO[id][((k + mbOffset) * m_numberOfuttsPerMinibatch + uttIndex) * dim + d] = 
+                            m_featuresBufferMultiUtt[uttIndex][j * dim + d + m_featuresStartIndexMultiUtt[id + uttIndex * numOfFea]];
                     }
                 }
             }
@@ -946,7 +947,8 @@ bool HTKMLFReader<ElemType>::PopulateUtteranceInMinibatch(
             {
                 for (int d = 0; d < dim; d++)
                 {
-                    m_labelsBufferMultiIO[id][((k + mbOffset) * m_numberOfuttsPerMinibatch + uttIndex) * dim + d] = m_labelsBufferMultiUtt[uttIndex][j * dim + d + m_labelsStartIndexMultiUtt[id + uttIndex * numOfLabel]];
+                    m_labelsBufferMultiIO[id][((k + mbOffset) * m_numberOfuttsPerMinibatch + uttIndex) * dim + d] = 
+                        m_labelsBufferMultiUtt[uttIndex][j * dim + d + m_labelsStartIndexMultiUtt[id + uttIndex * numOfLabel]];
                 }
             }
         }
@@ -1900,7 +1902,7 @@ bool HTKMLFReader<ElemType>::SetNetOutput(
     const Matrix<ElemType>& outputs,
     const MBLayoutPtr pMBLayout)
 {
-    // Set the likelihoods for the utterance with which we can comput the
+    // Set the likelihoods for the utterance with which we can compute the
     // derivatives. Note that the minibatch may only contain partial output
     // for the utterance, <m_uttDerivBuffer> takes care of "gluing" them
     // together.
@@ -1987,7 +1989,7 @@ size_t HTKMLFReader<ElemType>::ReadLabelToTargetMappingFile(const std::wstring& 
 // GetData - Gets metadata from the specified section (into CPU memory)
 // sectionName - section name to retrieve data from
 // numRecords - number of records to read
-// data - pointer to data buffer, if NULL, dataBufferSize will be set to size of required buffer to accomidate request
+// data - pointer to data buffer, if NULL, dataBufferSize will be set to size of required buffer to accommodate request
 // dataBufferSize - [in] size of the databuffer in bytes
 //                  [out] size of buffer filled with data
 // recordStart - record to start reading from, defaults to zero (start of data)
