@@ -188,17 +188,16 @@ void ImageDataDeserializer::CreateSequenceDescriptions(std::string mapPath, size
         description.m_id = lineIndex;
         description.m_chunkId = lineIndex;
         description.m_path = imagePath;
-		try
-		{
-			description.m_classId = std::stoi(classId);
-		}
-		catch (std::exception)
-		{
-			RuntimeError(
-				"Image '%s' has invalid class id '%s', which could not be converted to an integer.",
-				imagePath.c_str(),
-				classId.c_str());
-		}
+        try
+        {
+            description.m_classId = std::stoi(classId);
+        }
+        catch (std::exception)
+        {
+            RuntimeError("Image '%s' has invalid class id '%s', which could not be converted to an integer.",
+                        imagePath.c_str(),
+                        classId.c_str());
+        }
         description.m_key.m_major = description.m_id;
         description.m_key.m_minor = 0;
 
@@ -206,7 +205,7 @@ void ImageDataDeserializer::CreateSequenceDescriptions(std::string mapPath, size
         {
             RuntimeError(
                 "Image '%s' has invalid class id '%d'. Expected label dimension is '%d'.",
-				imagePath.c_str(),
+                imagePath.c_str(),
                 static_cast<int>(description.m_classId),
                 static_cast<int>(labelDimension));
         }
