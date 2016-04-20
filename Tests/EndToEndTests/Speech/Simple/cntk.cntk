@@ -13,6 +13,8 @@ deviceId=$DeviceNumber$
 outputNodeNames=ScaledLogLikelihood
 traceLevel=1
 
+numMBsToShowResult=1
+
 #######################################
 #  TRAINING CONFIG (Simple, Fixed LR) #
 #######################################
