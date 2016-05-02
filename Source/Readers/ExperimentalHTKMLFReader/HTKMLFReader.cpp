@@ -174,8 +174,6 @@ void HTKMLFReader::StartEpoch(const EpochConfiguration& config)
         RuntimeError("Epoch size cannot be 0.");
     }
 
-
-
     if (m_packingMode == PackingMode::truncated)
     {
         size_t minibatchSize = config.m_minibatchSizeInSamples;

@@ -53,7 +53,7 @@ void Bundler::CreateChunkDescriptions()
 
     m_chunks.reserve(chunks.size());
 
-    // If there is not cleaning required simply build chunks based on the chunk descriptions of the primary deserializer.
+    // If there is no cleaning required simply build chunks based on the chunk descriptions of the primary deserializer.
     if (!m_cleanse)
     {
         for (const auto& c : chunks)
@@ -92,6 +92,7 @@ void Bundler::CreateChunkDescriptions()
                 {
                     isValid = false;
                     invalid.insert(sequenceIndex);
+                    // TODO log for verbose
                     break;
                 }
             }
@@ -113,8 +114,9 @@ void Bundler::CreateChunkDescriptions()
             cd->m_original = chunks[chunkIndex];
             m_chunks.push_back(cd);
             cd->m_invalid = std::move(invalid);
-        }
+        } // TODO else output something
     }
+    // TODO error if no sequences after cleaning
 }
 
 // Gets chunk descriptions.
@@ -212,6 +214,7 @@ public:
 
                 size_t currentIndex = sequenceIndex * m_numberOfInputs + deserializerIndex;
                 deserializers[deserializerIndex]->GetSequenceDescriptionByKey(sequences[sequenceIndex].m_key, s);
+                // TODO why don't we check for isValid here. If it's not okay, should at least output a message.
                 m_sequenceToSequence[currentIndex] = s.m_id;
 
                 ChunkPtr secondaryChunk;

@@ -42,6 +42,7 @@ struct MLFUtterance : SequenceDescription
 };
 
 MLFDataDeserializer::MLFDataDeserializer(CorpusDescriptorPtr corpus, const ConfigParameters& labelConfig, const std::wstring& name)
+    : m_numberOfSequences(0)
 {
     // The frame mode is currently specified once per configuration,
     // not in the configuration of a particular deserializer, but on a higher level in the configuration.
@@ -84,6 +85,8 @@ MLFDataDeserializer::MLFDataDeserializer(CorpusDescriptorPtr corpus, const Confi
     MLFUtterance description;
     description.m_isValid = true;
     size_t totalFrames = 0;
+
+    // TODO proper m_keyToSequence.resize(  ) and fill? from Corpus?
 
     auto& stringRegistry = corpus->GetStringRegistry();
     for (const auto& l : labels)
@@ -130,7 +133,17 @@ MLFDataDeserializer::MLFDataDeserializer(CorpusDescriptorPtr corpus, const Confi
         description.m_numberOfSamples = numberOfFrames;
         totalFrames += numberOfFrames;
         m_utteranceIndex.push_back(m_frames.size());
+
+        if (description.m_key.m_sequence < m_keyToSequence.size())
+        {
+            // TODO make nice
+            auto oldSize = m_keyToSequence.size();
+            m_keyToSequence.resize(description.m_key.m_sequence);
+            for (auto j = oldSize; j < m_keyToSequence.size(); j++)
+                m_keyToSequence[j] = SIZE_MAX;
+        }
         m_keyToSequence[description.m_key.m_sequence] = m_utteranceIndex.size() - 1;
+        m_numberOfSequences++;
 
         // TODO: Should be created by chunks only.
         MLFFrame f;
@@ -150,8 +163,8 @@ MLFDataDeserializer::MLFDataDeserializer(CorpusDescriptorPtr corpus, const Confi
 
     m_totalNumberOfFrames = totalFrames;
 
-    fprintf(stderr, "MLFDataDeserializer::MLFDataDeserializer: read %d sequences\n", (int)m_frames.size());
-    fprintf(stderr, "MLFDataDeserializer::MLFDataDeserializer: read %d utterances\n", (int)m_keyToSequence.size());
+    fprintf(stderr, "MLFDataDeserializer::MLFDataDeserializer: read %d sequences\n", (int)m_frames.size()); // TODO nomenclature: sequences?
+    fprintf(stderr, "MLFDataDeserializer::MLFDataDeserializer: read %d utterances\n", (int)m_numberOfSequences);
 
     // Initializing stream description - a single stream of MLF data.
     StreamDescriptionPtr stream = std::make_shared<StreamDescription>();
@@ -193,7 +206,7 @@ ChunkDescriptions MLFDataDeserializer::GetChunkDescriptions()
 {
     auto cd = std::make_shared<ChunkDescription>();
     cd->m_id = 0;
-    cd->m_numberOfSequences = m_frameMode ? m_frames.size() : m_keyToSequence.size();
+    cd->m_numberOfSequences = m_frameMode ? m_frames.size() : m_numberOfSequences;
     cd->m_numberOfSamples = m_frames.size();
     return ChunkDescriptions{cd};
 }
@@ -201,10 +214,10 @@ ChunkDescriptions MLFDataDeserializer::GetChunkDescriptions()
 // Gets sequences for a particular chunk.
 void MLFDataDeserializer::GetSequencesForChunk(size_t, std::vector<SequenceDescription>& result)
 {
-    result.reserve(m_frames.size());
     if (m_frameMode)
     {
         // Because it is a frame mode, creating a sequence for each frame.
+        result.reserve(m_frames.size());
         for (size_t i = 0; i < m_frames.size(); ++i)
         {
             SequenceDescription f;
@@ -220,7 +233,8 @@ void MLFDataDeserializer::GetSequencesForChunk(size_t, std::vector<SequenceDescr
     else
     {
         // Creating sequence description per utterance.
-        for (size_t i = 0; i < m_utteranceIndex.size() - 1; ++i)
+        result.reserve(m_utteranceIndex.size());
+        for (size_t i = 0; i < m_utteranceIndex.size() - 1 /* TODO ? */; ++i)
         {
             SequenceDescription f;
             f.m_key.m_sequence = m_frames[m_utteranceIndex[i]].m_key.m_sequence;
@@ -248,14 +262,14 @@ struct MLFSequenceData : SparseSequenceData
     std::vector<ElemType> m_values;
     std::unique_ptr<IndexType[]> m_indicesPtr;
 
-    MLFSequenceData(size_t numberOfSamples) : 
+    MLFSequenceData(size_t numberOfSamples) :
         m_values(numberOfSamples, 1),
         m_indicesPtr(new IndexType[numberOfSamples])
     {
         if (numberOfSamples > numeric_limits<IndexType>::max())
         {
             RuntimeError("Number of samples in an MLFSequence (%" PRIu64 ") "
-                "exceeds the maximum allowed value (%" PRIu64 ")\n", 
+                "exceeds the maximum allowed value (%" PRIu64 ")\n",
                 numberOfSamples, (size_t)numeric_limits<IndexType>::max());
         }
 
@@ -305,8 +319,10 @@ static SequenceDescription s_InvalidSequence { 0, 0, 0, false };
 
 void MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
 {
-    auto sequenceId = m_keyToSequence.find(key.m_sequence);
-    if (sequenceId == m_keyToSequence.end())
+
+    auto sequenceId = key.m_sequence < m_keyToSequence.size() ? m_keyToSequence[key.m_sequence] : SIZE_MAX;
+
+    if (sequenceId == SIZE_MAX)
     {
         result = s_InvalidSequence;
         return;
@@ -314,16 +330,16 @@ void MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
 
     if (m_frameMode)
     {
-        size_t index = m_utteranceIndex[sequenceId->second] + key.m_sample;
+        size_t index = m_utteranceIndex[sequenceId] + key.m_sample;
         result = m_frames[index];
     }
     else
     {
         result.m_key.m_sequence = key.m_sequence;
         result.m_key.m_sample = 0;
-        result.m_id = sequenceId->second;
-        result.m_chunkId = m_frames[m_utteranceIndex[sequenceId->second]].m_chunkId;
-        result.m_numberOfSamples = m_utteranceIndex[sequenceId->second + 1] - m_utteranceIndex[sequenceId->second];
+        result.m_id = sequenceId;
+        result.m_chunkId = m_frames[m_utteranceIndex[sequenceId]].m_chunkId;
+        result.m_numberOfSamples = m_utteranceIndex[sequenceId + 1] - m_utteranceIndex[sequenceId];
         result.m_isValid = true;
     }
 }

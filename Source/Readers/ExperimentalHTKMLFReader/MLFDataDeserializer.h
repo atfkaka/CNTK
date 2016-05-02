@@ -47,7 +47,9 @@ private:
     void GetSequenceById(size_t sequenceId, std::vector<SequenceDataPtr>& result);
 
     // Key to sequence map.
-    std::map<size_t, size_t> m_keyToSequence;
+    //std::map<size_t, size_t> m_keyToSequence;
+    std::vector<size_t> m_keyToSequence;
+    size_t m_numberOfSequences;
 
     // Array of all labels.
     msra::dbn::biggrowablevector<msra::dbn::CLASSIDTYPE> m_classIds;
@@ -69,7 +71,7 @@ private:
     // We do no allocate data for all input sequences, only returning a pointer to existing category.
     std::vector<SparseSequenceDataPtr> m_categories;
 
-    // A list of category indices 
+    // A list of category indices
     // (a list of numbers from 0 to N, where N = (number of categories -1))
     std::vector<IndexType> m_categoryIndices;
 
