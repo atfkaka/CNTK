@@ -90,15 +90,16 @@
 
   <!-- TODO warn if ConfigurationType not (yet) defined -->
 
-  <PropertyGroup Condition="'$(ConfigurationType)' == 'StaticLibrary'">
+  <PropertyGroup Condition="'$(ConfigurationType)' == 'StaticLibrary' Or '$(ConfigurationType)' == 'Application'">
     <UseDebugLibraries>$(DebugBuild)</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>$(ReleaseBuild)</WholeProgramOptimization>
     <LinkIncremental>$(DebugBuild)</LinkIncremental>
   </PropertyGroup>
+  <!-- TODO <UseOfMfc>false</UseOfMfc> for Application? -->
 
-  <ItemDefinitionGroup Condition="'$(ConfigurationType)' == 'StaticLibrary'">
+  <ItemDefinitionGroup Condition="'$(ConfigurationType)' == 'StaticLibrary' Or '$(ConfigurationType)' == 'Application'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -111,7 +112,7 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(ConfigurationType)' == 'StaticLibrary' And $(DebugBuild)">
+  <ItemDefinitionGroup Condition="('$(ConfigurationType)' == 'StaticLibrary' Or '$(ConfigurationType)' == 'Application') And $(DebugBuild)">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -121,7 +122,7 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(ConfigurationType)' == 'StaticLibrary' And $(ReleaseBuild)">
+  <ItemDefinitionGroup Condition="('$(ConfigurationType)' == 'StaticLibrary' Or '$(ConfigurationType)' == 'Application') And $(ReleaseBuild)">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>

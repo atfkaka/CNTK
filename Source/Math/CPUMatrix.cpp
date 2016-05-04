@@ -61,13 +61,6 @@
 #define BLAS_COLMAJOR (int) MatrixOrder::ColMajor,
 #endif
 
-#define SWAP(a, b)  \
-    {               \
-        (a) ^= (b); \
-        (b) ^= (a); \
-        (a) ^= (b); \
-    }
-#define IDX2C(i, j, ld) (((j) * (ld)) + (i)) // 0 based indexing
 namespace Microsoft { namespace MSR { namespace CNTK {
 
 int MATH_API TracingGPUMemoryAllocator::m_traceLevel = 0;
