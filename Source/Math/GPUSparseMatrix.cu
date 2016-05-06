@@ -971,10 +971,10 @@ void GPUSparseMatrix<ElemType>::MultiplyAndWeightedAdd(ElemType alpha, const GPU
 	if (lhs.IsEmpty() || rhs.IsEmpty())
 		LogicError("GPUSparseMatrix::MultiplyAndWeightedAdd:  one of the input matrix is empty.");
 
-	int m = transposeA ? (int)lhs.GetNumCols() : (int)lhs.GetNumRows();
-	int k = transposeA ? (int)lhs.GetNumRows() : (int)lhs.GetNumCols();
-	int l = transposeB ? (int)rhs.GetNumCols() : (int)rhs.GetNumRows();
-	int n = transposeB ? (int)rhs.GetNumRows() : (int)rhs.GetNumCols();
+	int m = transposeA ? (int) lhs.GetNumCols() : (int) lhs.GetNumRows();
+	int k = transposeA ? (int) lhs.GetNumRows() : (int) lhs.GetNumCols();
+	int l = transposeB ? (int) rhs.GetNumCols() : (int) rhs.GetNumRows();
+	int n = transposeB ? (int) rhs.GetNumRows() : (int) rhs.GetNumCols();
 
 	assert(m > 0 && k > 0 && l > 0 && n > 0); // converting from size_t to int may cause overflow
 	assert(k == l);
@@ -989,40 +989,40 @@ void GPUSparseMatrix<ElemType>::MultiplyAndWeightedAdd(ElemType alpha, const GPU
 		c.VerifySize(m, n); // Can't resize if beta != 0
 
 	c.PrepareDevice();
-	int blocksPerGrid = (int)ceil(1.0 * m * n / GridDim::maxThreadsPerBlock);
+	int blocksPerGrid = (int) ceil(1.0 * m * n / GridDim::maxThreadsPerBlock);
 	if (rhs.GetFormat() == MatrixFormat::matrixFormatSparseCSC)
 	{
 		if (!transposeB) {
 			SyncGuard syncGuard;
-			_dense1DMultSparseAndWeightedAddToDense<ElemType> << <blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream >> >(
+			_dense1DMultSparseAndWeightedAddToDense<ElemType><<<blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream>>>(
 				m,     // rowDense
 				k,     // colDense
 				n,     // colSparse
 				alpha,
-				reinterpret_cast<const ElemType*>(lhs.Data()),     // dense
+				reinterpret_cast<const ElemType*>(lhs.Data()),        // dense
 				transposeA,
-				reinterpret_cast<const ElemType*>(rhs.Buffer()),     // sparse nz values 
+				reinterpret_cast<const ElemType*>(rhs.Buffer()),      // sparse nz values 
 				rhs.RowLocation(),
 				rhs.ColLocation(),
 				beta,
-				reinterpret_cast<ElemType*>(c.Data())   // dense target						
+				reinterpret_cast<ElemType*>(c.Data())                 // dense target						
 				);
 		}
 		else {
 			GPUSparseMatrix<ElemType> rhsTranspose = rhs.Transpose();
 			SyncGuard syncGuard;
-			_dense1DMultSparseAndWeightedAddToDense<ElemType> << <blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream >> >(
+			_dense1DMultSparseAndWeightedAddToDense<ElemType><<<blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream>>>(
 				m,     // rowDense
 				k,     // colDense
 				n,     // colSparse
 				alpha,
-				reinterpret_cast<const ElemType*>(lhs.Data()),     // dense
+				reinterpret_cast<const ElemType*>(lhs.Data()),                // dense
 				transposeA,
 				reinterpret_cast<const ElemType*>(rhsTranspose.Buffer()),     // sparse nz values 
 				rhsTranspose.RowLocation(),
 				rhsTranspose.ColLocation(),
 				beta,
-				reinterpret_cast<ElemType*>(c.Data())   // dense target						
+				reinterpret_cast<ElemType*>(c.Data())                         // dense target						
 				);
 		}
 	}
@@ -1031,35 +1031,35 @@ void GPUSparseMatrix<ElemType>::MultiplyAndWeightedAdd(ElemType alpha, const GPU
 		if (!transposeB) {
 			GPUSparseMatrix<ElemType> rhsTranspose = rhs.Transpose();
 			SyncGuard syncGuard;
-			_dense1DMultSparseAndWeightedAddToDense<ElemType> << <blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream >> >(
+			_dense1DMultSparseAndWeightedAddToDense<ElemType><<<blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream>>>(
 				m,     // rowDense
 				k,     // colDense
 				n,     // colSparse
 				alpha,
-				reinterpret_cast<const ElemType*>(lhs.Data()),     // dense
+				reinterpret_cast<const ElemType*>(lhs.Data()),                // dense
 				transposeA,
 				reinterpret_cast<const ElemType*>(rhsTranspose.Buffer()),     // sparse nz values 
 				rhsTranspose.ColLocation(),
 				rhsTranspose.RowLocation(),
 				beta,
-				reinterpret_cast<ElemType*>(c.Data())   // dense target						
+				reinterpret_cast<ElemType*>(c.Data())                         // dense target						
 				);
 		}
 		else
 		{
 			SyncGuard syncGuard;
-			_dense1DMultSparseAndWeightedAddToDense<ElemType> << <blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream >> >(
+			_dense1DMultSparseAndWeightedAddToDense<ElemType><<<blocksPerGrid, GridDim::maxThreadsPerBlock, 0, t_stream>>>(
 				m,     // rowDense
 				k,     // colDense
 				n,     // colSparse
 				alpha,
-				reinterpret_cast<const ElemType*>(lhs.Data()),     // dense
+				reinterpret_cast<const ElemType*>(lhs.Data()),         // dense
 				transposeA,
-				reinterpret_cast<const ElemType*>(rhs.Buffer()),     // sparse nz values 
+				reinterpret_cast<const ElemType*>(rhs.Buffer()),       // sparse nz values 
 				rhs.ColLocation(),
 				rhs.RowLocation(),
 				beta,
-				reinterpret_cast<ElemType*>(c.Data())   // dense target						
+				reinterpret_cast<ElemType*>(c.Data())                  // dense target						
 				);
 		}
 	}
