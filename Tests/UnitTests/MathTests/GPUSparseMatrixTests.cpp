@@ -155,6 +155,96 @@ BOOST_FIXTURE_TEST_CASE(GPUSparseTimesDense, RandomSeedFixture)
     BOOST_CHECK_EQUAL(6 + 1, ccpu(3, 4));
 }
 
+BOOST_FIXTURE_TEST_CASE(GPUDenseTimesSparseRandomCSR, RandomSeedFixture)
+{
+	const size_t dim1 = 100;
+	const size_t dim2 = 100;
+	const size_t dim3 = 100;
+	const bool matrixTransA( false );
+	const bool matrixTransB( false );
+
+	// DENSE
+	GPUMatrix<float> lhs = GPUMatrix<float>::RandomGaussian(dim1, dim2, c_deviceIdZero, 1.0f, 4.0f, IncrementCounter());
+
+	// SPARSE
+	GPUMatrix<float> rhsDense(c_deviceIdZero);
+	rhsDense.AssignTruncateBottomOf(GPUMatrix<float>::RandomUniform(dim2, dim3, c_deviceIdZero, -3.0f, 0.1f, IncrementCounter()), 0);
+	GPUSparseMatrix<float> rhs(rhsDense, MatrixFormat::matrixFormatSparseCSR);
+
+	// RESULT
+	GPUMatrix<float> result = GPUMatrix<float>::Ones(dim1, dim3, c_deviceIdZero);
+
+	GPUSparseMatrix<float>::MultiplyAndWeightedAdd(1, lhs, matrixTransA, rhs, matrixTransB, 1, result);
+
+	float *arr = result.CopyToArray();
+	CPUMatrix<float> gpu_result(dim1, dim3, arr, MatrixFlags::matrixFlagNormal);
+	delete[] arr;
+
+	// CPU RESULTS
+	CPUMatrix<float> cpu_result = CPUMatrix<float>::Ones(dim1, dim3);
+
+	float *arrAs = lhs.CopyToArray();
+	float *arrBs = rhsDense.CopyToArray();
+
+	CPUMatrix<float> cpu_a(dim1, dim2, arrAs, MatrixFlags::matrixFlagNormal);
+	CPUMatrix<float> cpu_b(dim2, dim3, arrBs, MatrixFlags::matrixFlagNormal);
+	delete[] arrAs, arrBs;
+
+	CPUMatrix<float>::MultiplyAndWeightedAdd(1, cpu_a, matrixTransA, cpu_b, matrixTransB, 1, cpu_result);
+
+	// Check correctness with CPU results
+	for (int i = 0; i < dim1; i++) {
+		for (int j = 0; j < dim3; j++) {
+			BOOST_CHECK(fabs(gpu_result(i, j)-cpu_result(i, j)) < c_epsilonFloatE4);
+		}
+	}
+}
+
+BOOST_FIXTURE_TEST_CASE(GPUDenseTimesSparseRandomCSC, RandomSeedFixture)
+{
+	const size_t dim1 = 100;
+	const size_t dim2 = 100;
+	const size_t dim3 = 100;
+	const bool matrixTransA( false );
+	const bool matrixTransB( false );
+
+	// DENSE
+	GPUMatrix<float> lhs = GPUMatrix<float>::RandomGaussian(dim1, dim2, c_deviceIdZero, 1.0f, 4.0f, IncrementCounter());
+
+	// SPARSE
+	GPUMatrix<float> rhsDense(c_deviceIdZero);
+	rhsDense.AssignTruncateBottomOf(GPUMatrix<float>::RandomUniform(dim2, dim3, c_deviceIdZero, -3.0f, 0.1f, IncrementCounter()), 0);
+	GPUSparseMatrix<float> rhs(rhsDense, MatrixFormat::matrixFormatSparseCSC);
+
+	// RESULT
+	GPUMatrix<float> result = GPUMatrix<float>::Ones(dim1, dim3, c_deviceIdZero);
+
+	GPUSparseMatrix<float>::MultiplyAndWeightedAdd(1, lhs, matrixTransA, rhs, matrixTransB, 1, result);
+
+	float *arr = result.CopyToArray();
+	CPUMatrix<float> gpu_result(dim1, dim3, arr, MatrixFlags::matrixFlagNormal);
+	delete[] arr;
+
+	// CPU RESULTS
+	CPUMatrix<float> cpu_result = CPUMatrix<float>::Ones(dim1, dim3);
+
+	float *arrAs = lhs.CopyToArray();
+	float *arrBs = rhsDense.CopyToArray();
+
+	CPUMatrix<float> cpu_a(dim1, dim2, arrAs, MatrixFlags::matrixFlagNormal);
+	CPUMatrix<float> cpu_b(dim2, dim3, arrBs, MatrixFlags::matrixFlagNormal);
+	delete[] arrAs, arrBs;
+
+	CPUMatrix<float>::MultiplyAndWeightedAdd(1, cpu_a, matrixTransA, cpu_b, matrixTransB, 1, cpu_result);
+
+	// Check correctness with CPU results
+	for (int i = 0; i < dim1; i++) {
+		for (int j = 0; j < dim3; j++) {
+			BOOST_CHECK(fabs(gpu_result(i, j) - cpu_result(i, j)) < c_epsilonFloatE4);
+		}
+	}
+}
+
 #if 0
 // TODO commented temporarily, this test (or underlying code) needs fixes
 

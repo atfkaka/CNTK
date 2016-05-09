@@ -455,6 +455,7 @@ private:
     size_t ElemCountFromBufferSize() const;
     DEVICEID_TYPE PrepareDevice(const DEVICEID_TYPE deviceId = -1) const;
     size_t IdentifyRowsWithValues() const;
+
 };
 
 }}}
