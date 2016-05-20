@@ -54,11 +54,11 @@ private:
     // Number of sequences
     size_t m_numberOfSequences = 0;
 
-    // Array of all labels.
-    msra::dbn::biggrowablevector<msra::dbn::CLASSIDTYPE> m_classIds;
+    // Array of all label label runs as pairs of start frame and class ID.
+    std::vector<std::pair<size_t, msra::dbn::CLASSIDTYPE>> m_classIdRuns; // TODO biggrowablevector?
 
-    // Index of utterances in the m_classIds.
-    msra::dbn::biggrowablevector<size_t> m_utteranceIndex;
+    // For each utterance, start frame and index into m_classIdRuns.
+    std::vector<pair<size_t, size_t>> m_utteranceInfo; // TODO biggrowablevector?
 
     // Type of the data this serializer provides.
     ElementType m_elementType;

@@ -138,6 +138,7 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
         size_t numberOfFrames = 0;
 
         size_t lastFrameFromLastRange = 0;
+        size_t firstRunIndex = m_classIdRuns.size();
 
         for (const auto& timespan : utterance)
         {
@@ -157,14 +158,13 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
                 RuntimeError("CLASSIDTYPE has too few bits");
             }
 
-            for (size_t t = timespan.firstframe; t < timespan.firstframe + timespan.numframes; t++)
-            {
-                m_classIds.push_back(timespan.classid);
-                numberOfFrames++;
-            }
+            numberOfFrames += timespan.numframes;
+            m_classIdRuns.push_back(make_pair(timespan.firstframe, timespan.classid));
         }
+        m_classIdRuns.push_back(make_pair(lastFrameFromLastRange, static_cast<msra::dbn::CLASSIDTYPE>(-1)));
+        // TODO consider changing to total, not relative frames
 
-        m_utteranceIndex.push_back(totalFrames);
+        m_utteranceInfo.push_back(make_pair(totalFrames, firstRunIndex));
         totalFrames += numberOfFrames;
 
         if (m_keyToSequence.size() <= id)
@@ -172,10 +172,10 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
             m_keyToSequence.resize(id + 1, SIZE_MAX);
         }
         assert(m_keyToSequence[id] == SIZE_MAX);
-        m_keyToSequence[id] = m_utteranceIndex.size() - 1;
+        m_keyToSequence[id] = m_utteranceInfo.size() - 1;
         m_numberOfSequences++;
     }
-    m_utteranceIndex.push_back(totalFrames);
+    m_utteranceInfo.push_back(make_pair(totalFrames, m_classIdRuns.size()));
 
     m_totalNumberOfFrames = totalFrames;
 
@@ -277,15 +277,37 @@ void MLFDataDeserializer::GetSequenceById(size_t sequenceId, vector<SequenceData
 {
     if (m_frameMode)
     {
-        size_t label = m_classIds[sequenceId];
+        const auto & next = std::upper_bound(
+            m_utteranceInfo.begin(),
+            m_utteranceInfo.end(),
+            sequenceId,
+            [](size_t fi, const pair<size_t, size_t> &a)
+        {
+            return fi < a.first;
+        });
+        const auto & prev = next - 1;
+
+        const auto & run = std::upper_bound(
+            &m_classIdRuns[prev->second],
+            &m_classIdRuns[next->second - 1],
+            sequenceId - prev->first,
+            [](size_t fi, const pair<size_t, msra::dbn::CLASSIDTYPE> &a)
+        {
+            return fi < a.first;
+        });
+
+        // TODO more checks
+        size_t label = (run - 1)->second;
         assert(label < m_categories.size());
         result.push_back(m_categories[label]);
     }
     else
     {
         // Packing labels for the utterance into sparse sequence.
-        size_t startFrameIndex = m_utteranceIndex[sequenceId];
-        size_t numberOfSamples = m_utteranceIndex[sequenceId + 1] - startFrameIndex;
+        size_t startFrameIndex = m_utteranceInfo[sequenceId].first;
+        size_t startRunIndex = m_utteranceInfo[sequenceId].second;
+        size_t numberOfSamples = m_utteranceInfo[sequenceId + 1].first - startFrameIndex;
+        size_t endRunIndex = m_utteranceInfo[sequenceId + 1].second - 1;
         SparseSequenceDataPtr s;
         if (m_elementType == ElementType::tfloat)
         {
@@ -297,11 +319,15 @@ void MLFDataDeserializer::GetSequenceById(size_t sequenceId, vector<SequenceData
             s = make_shared<MLFSequenceData<double>>(numberOfSamples);
         }
 
-        for (size_t i = 0; i < numberOfSamples; i++)
+        for (size_t i = 0, j = startRunIndex; j < endRunIndex; j++)
         {
-            size_t frameIndex = startFrameIndex + i;
-            size_t label = m_classIds[frameIndex];
-            s->m_indices[i] = static_cast<IndexType>(label);
+            size_t runLength = m_classIdRuns[j + 1].first - m_classIdRuns[j].first;
+            size_t label = m_classIdRuns[j].second;
+
+            while (runLength--)
+            {
+                s->m_indices[i++] = static_cast<IndexType>(label);
+            }
         }
         result.push_back(s);
     }
@@ -326,7 +352,8 @@ void MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
 
     if (m_frameMode)
     {
-        size_t index = m_utteranceIndex[sequenceId] + key.m_sample;
+        size_t index = m_utteranceInfo[sequenceId].first + key.m_sample;
+        assert(index < m_utteranceInfo[sequenceId + 1].first);
         result.m_id = index;
         result.m_numberOfSamples = 1;
     }
@@ -334,7 +361,7 @@ void MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
     {
         assert(result.m_key.m_sample == 0);
         result.m_id = sequenceId;
-        result.m_numberOfSamples = m_utteranceIndex[sequenceId + 1] - m_utteranceIndex[sequenceId];
+        result.m_numberOfSamples = m_utteranceInfo[sequenceId + 1].first - m_utteranceInfo[sequenceId].first;
     }
 }
 
