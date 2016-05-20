@@ -120,8 +120,6 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
 
     m_elementType = config.GetElementType();
 
-    MLFUtterance description;
-    description.m_isValid = true;
     size_t totalFrames = 0;
 
     auto& stringRegistry = corpus->GetStringRegistry();
@@ -136,21 +134,18 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
         if (!stringRegistry.TryGet(l.first, id))
             continue;
 
-        description.m_key.m_sequence = id;
-
         const auto& utterance = l.second;
-        description.m_sequenceStart = m_classIds.size();
-        description.m_isValid = true;
         size_t numberOfFrames = 0;
 
-        foreach_index(i, utterance)
+        size_t lastFrameFromLastRange = 0;
+
+        for (const auto& timespan : utterance)
         {
-            const auto& timespan = utterance[i];
-            if ((i == 0 && timespan.firstframe != 0) ||
-                (i > 0 && utterance[i - 1].firstframe + utterance[i - 1].numframes != timespan.firstframe))
+            if (timespan.firstframe != lastFrameFromLastRange)
             {
                 RuntimeError("Labels are not in the consecutive order MLF in label set: %ls", l.first.c_str());
             }
+            lastFrameFromLastRange += timespan.numframes;
 
             if (timespan.classid >= dimension)
             {
@@ -169,16 +164,15 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
             }
         }
 
-        description.m_numberOfSamples = numberOfFrames;
         m_utteranceIndex.push_back(totalFrames);
         totalFrames += numberOfFrames;
 
-        if (m_keyToSequence.size() <= description.m_key.m_sequence)
+        if (m_keyToSequence.size() <= id)
         {
-            m_keyToSequence.resize(description.m_key.m_sequence + 1, SIZE_MAX);
+            m_keyToSequence.resize(id + 1, SIZE_MAX);
         }
-        assert(m_keyToSequence[description.m_key.m_sequence] == SIZE_MAX);
-        m_keyToSequence[description.m_key.m_sequence] = m_utteranceIndex.size() - 1;
+        assert(m_keyToSequence[id] == SIZE_MAX);
+        m_keyToSequence[id] = m_utteranceIndex.size() - 1;
         m_numberOfSequences++;
     }
     m_utteranceIndex.push_back(totalFrames);
