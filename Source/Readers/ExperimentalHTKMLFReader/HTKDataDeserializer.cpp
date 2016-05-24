@@ -254,7 +254,6 @@ void HTKDataDeserializer::GetSequencesForChunk(size_t chunkId, vector<SequenceDe
                 f.m_key.m_sequence = sequence;
                 f.m_key.m_sample = k;
                 f.m_id = offsetInChunk++;
-                f.m_isValid = true;
                 f.m_numberOfSamples = 1;
                 result.push_back(f);
             }
@@ -267,7 +266,6 @@ void HTKDataDeserializer::GetSequencesForChunk(size_t chunkId, vector<SequenceDe
             f.m_key.m_sequence = sequence;
             f.m_key.m_sample = 0;
             f.m_id = offsetInChunk++;
-            f.m_isValid = true;
             f.m_numberOfSamples = utterance->GetNumberOfFrames();
             result.push_back(f);
         }
@@ -472,7 +470,6 @@ bool HTKDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
     const auto& sequence = chunk.GetUtterance(iter->second.second);
     d.m_chunkId = sequence->GetChunkId();
     d.m_id = m_frameMode ? sequence->GetStartFrameIndexInsideChunk() + key.m_sample : sequence->GetIndexInsideChunk();
-    d.m_isValid = true;
     d.m_numberOfSamples = m_frameMode ? 1 : sequence->GetNumberOfFrames();
     return true;
 }

@@ -90,10 +90,9 @@ void Bundler::CreateChunkDescriptions()
             size_t sequenceSamples = sequence.m_numberOfSamples;
             for (size_t deserializerIndex = 1; deserializerIndex < m_deserializers.size(); ++deserializerIndex)
             {
-                m_deserializers[deserializerIndex]->GetSequenceDescriptionByKey(sequenceDescriptions[sequenceIndex].m_key, s);
-                if (!s.m_isValid)
+                isValid = m_deserializers[deserializerIndex]->GetSequenceDescriptionByKey(sequenceDescriptions[sequenceIndex].m_key, s);
+                if (!isValid)
                 {
-                    isValid = false;
                     invalid.insert(sequenceIndex);
                     break;
                 }
@@ -177,7 +176,6 @@ void Bundler::GetSequencesForChunk(size_t chunkId, std::vector<SequenceDescripti
             for (size_t deserializerIndex = 1; deserializerIndex < m_deserializers.size(); ++deserializerIndex)
             {
                 m_deserializers[deserializerIndex]->GetSequenceDescriptionByKey(sequence.m_key, s);
-                assert(s.m_isValid);
                 sequenceSamples = std::max(sequenceSamples, s.m_numberOfSamples);
             }
             sequence.m_numberOfSamples = sequenceSamples;

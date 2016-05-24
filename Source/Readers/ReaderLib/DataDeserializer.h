@@ -41,7 +41,6 @@ struct SequenceDescription
     size_t m_chunkId;         // Each sequence belongs to an I/O chunk, how chunk is defined is specific to a
                               // particular data deserializer (or bundler). The randomizer guarantees to request
                               // sequences from only limited subset of chunks at any moment in time.
-    bool m_isValid;           // Indicates whether the sequence is valid.
     KeyType m_key;            // Sequence key, used for correlations between sequences of different deserializers.
 };
 

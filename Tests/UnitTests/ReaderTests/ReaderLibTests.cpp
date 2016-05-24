@@ -91,7 +91,6 @@ public:
                 i,
                 m_sequenceLength,
                 i / m_numSequencesPerChunk,
-                true,
                 { 0, i }
             });
         }
@@ -148,7 +147,6 @@ public:
                 i,
                 m_sequenceLength,
                 chunkId,
-                true,
                 { 0, i }
             });
         }

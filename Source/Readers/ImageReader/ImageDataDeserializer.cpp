@@ -242,7 +242,6 @@ void ImageDataDeserializer::CreateSequenceDescriptions(CorpusDescriptorPtr corpu
     PathReaderMap knownReaders;
     ImageSequenceDescription description;
     description.m_numberOfSamples = 1;
-    description.m_isValid = true;
 
     auto& stringRegistry = corpus->GetStringRegistry();
     for (size_t lineIndex = 0; std::getline(mapFile, line); ++lineIndex)

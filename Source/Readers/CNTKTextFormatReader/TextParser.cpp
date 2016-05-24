@@ -219,7 +219,6 @@ void TextParser<ElemType>::GetSequencesForChunk(size_t chunkId, std::vector<Sequ
             s.m_id,
             s.m_numberOfSamples,
             s.m_chunkId,
-            s.m_isValid,
             s.m_key
         });
     }
@@ -1191,8 +1190,6 @@ std::wstring TextParser<ElemType>::GetFileInfo()
     info << L"at offset " << GetFileOffset() << L" in the input file (" << m_filename << L")";
     return info.str();
 }
-
-static SequenceDescription s_InvalidSequence{0, 0, 0, false, {0, 0}};
 
 template <class ElemType>
 bool TextParser<ElemType>::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)

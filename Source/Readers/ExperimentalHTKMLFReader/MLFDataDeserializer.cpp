@@ -121,7 +121,6 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
     m_elementType = config.GetElementType();
 
     MLFUtterance description;
-    description.m_isValid = true;
     size_t numClasses = 0;
     size_t totalFrames = 0;
 
@@ -141,7 +140,6 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
 
         const auto& utterance = l.second;
         description.m_sequenceStart = m_classIds.size();
-        description.m_isValid = true;
         size_t numberOfFrames = 0;
 
         foreach_index(i, utterance)
@@ -330,7 +328,6 @@ bool MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
 
     result.m_chunkId = 0;
     result.m_key = key;
-    result.m_isValid = true;
 
     if (m_frameMode)
     {
