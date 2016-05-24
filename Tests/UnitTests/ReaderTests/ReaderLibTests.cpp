@@ -130,7 +130,7 @@ public:
         return chunk;
     }
 
-    virtual void GetSequenceDescriptionByKey(const KeyType&, SequenceDescription&) override
+    virtual bool GetSequenceDescriptionByKey(const KeyType&, SequenceDescription&) override
     {
         throw logic_error("Not implemented");
     }

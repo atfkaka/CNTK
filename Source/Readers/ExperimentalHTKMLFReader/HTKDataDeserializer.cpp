@@ -458,27 +458,23 @@ void HTKDataDeserializer::GetSequenceById(size_t chunkId, size_t id, vector<Sequ
     r.push_back(result);
 }
 
-static SequenceDescription s_InvalidSequence{0, 0, 0, false};
-
 // Gets sequence description by its key.
-void HTKDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& d)
+bool HTKDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& d)
 {
     assert(!m_primary);
     auto iter = m_keyToChunkLocation.find(key.m_sequence);
     if (iter == m_keyToChunkLocation.end())
     {
-        // Unknown sequence. Return invalid.
-        d = s_InvalidSequence;
+        return false;
     }
-    else
-    {
-        const auto& chunk = m_chunks[iter->second.first];
-        const auto& sequence = chunk.GetUtterance(iter->second.second);
-        d.m_chunkId = sequence->GetChunkId();
-        d.m_id = m_frameMode ? sequence->GetStartFrameIndexInsideChunk() + key.m_sample : sequence->GetIndexInsideChunk();
-        d.m_isValid = true;
-        d.m_numberOfSamples = m_frameMode ? 1 : sequence->GetNumberOfFrames();
-    }
+
+    const auto& chunk = m_chunks[iter->second.first];
+    const auto& sequence = chunk.GetUtterance(iter->second.second);
+    d.m_chunkId = sequence->GetChunkId();
+    d.m_id = m_frameMode ? sequence->GetStartFrameIndexInsideChunk() + key.m_sample : sequence->GetIndexInsideChunk();
+    d.m_isValid = true;
+    d.m_numberOfSamples = m_frameMode ? 1 : sequence->GetNumberOfFrames();
+    return true;
 }
 
 }}}

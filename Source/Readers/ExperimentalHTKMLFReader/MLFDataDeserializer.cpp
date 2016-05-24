@@ -318,17 +318,14 @@ void MLFDataDeserializer::GetSequenceById(size_t sequenceId, vector<SequenceData
     }
 }
 
-static SequenceDescription s_InvalidSequence { 0, 0, 0, false, { 0, 0 } };
-
-void MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
+bool MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
 {
 
     auto sequenceId = key.m_sequence < m_keyToSequence.size() ? m_keyToSequence[key.m_sequence] : SIZE_MAX;
 
     if (sequenceId == SIZE_MAX)
     {
-        result = s_InvalidSequence;
-        return;
+        return false;
     }
 
     result.m_chunkId = 0;
@@ -347,6 +344,7 @@ void MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
         result.m_id = sequenceId;
         result.m_numberOfSamples = m_utteranceIndex[sequenceId + 1] - m_utteranceIndex[sequenceId];
     }
+    return true;
 }
 
 }}}

@@ -38,7 +38,7 @@ public:
     virtual void GetSequencesForChunk(size_t, std::vector<SequenceDescription>&) override;
 
     // Gets sequence description by key.
-    void GetSequenceDescriptionByKey(const KeyType&, SequenceDescription&) override;
+    bool GetSequenceDescriptionByKey(const KeyType&, SequenceDescription&) override;
 
 private:
     // Creates a set of sequence descriptions.

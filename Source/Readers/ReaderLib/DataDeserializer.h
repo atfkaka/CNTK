@@ -159,8 +159,9 @@ public:
 
     // Gets sequence description by its key.
     // Used by deserializers not in driving/primary mode.
+    // Returns false if provided sequence is not valid.
     // TODO: Possibly move this out into a separate interface.
-    virtual void GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& description) = 0;
+    virtual bool GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& description) = 0;
 
     // Gets chunk data given its id.
     virtual ChunkPtr GetChunk(size_t chunkId) = 0;

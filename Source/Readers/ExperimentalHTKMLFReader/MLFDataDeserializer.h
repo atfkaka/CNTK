@@ -24,7 +24,7 @@ public:
     MLFDataDeserializer(CorpusDescriptorPtr corpus, const ConfigParameters& config, const std::wstring& streamName);
 
     // Retrieves sequence description by its key. Used for deserializers that are not in "primary"/"driving" mode.
-    void GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& s) override;
+    bool GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& s) override;
 
     // Gets description of all chunks.
     virtual ChunkDescriptions GetChunkDescriptions() override;

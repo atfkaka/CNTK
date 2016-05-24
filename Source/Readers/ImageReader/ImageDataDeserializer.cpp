@@ -357,19 +357,17 @@ cv::Mat FileByteReader::Read(size_t, const std::string& path, bool grayscale)
     return cv::imread(path, grayscale ? cv::IMREAD_GRAYSCALE : cv::IMREAD_COLOR);
 }
 
-static SequenceDescription s_invalidSequence{0, 0, 0, false};
-
-void ImageDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
+bool ImageDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
 {
     auto index = m_keyToSequence.find(key.m_sequence);
     // Checks whether it is a known sequence for us.
     if (key.m_sample != 0 || index == m_keyToSequence.end())
     {
-        result = s_invalidSequence;
-        return;
+        return false;
     }
 
     result = m_imageSequences[index->second];
+    return true;
 }
 
 }}}

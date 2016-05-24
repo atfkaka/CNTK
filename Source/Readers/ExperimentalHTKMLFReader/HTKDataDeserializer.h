@@ -35,7 +35,7 @@ public:
     virtual ChunkPtr GetChunk(size_t chunkId) override;
 
     // Gets sequence description by its key.
-    virtual void GetSequenceDescriptionByKey(const KeyType&, SequenceDescription&) override;
+    virtual bool GetSequenceDescriptionByKey(const KeyType&, SequenceDescription&) override;
 
 private:
     class HTKChunk;

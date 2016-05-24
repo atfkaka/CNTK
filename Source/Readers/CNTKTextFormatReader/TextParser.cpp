@@ -1195,17 +1195,17 @@ std::wstring TextParser<ElemType>::GetFileInfo()
 static SequenceDescription s_InvalidSequence{0, 0, 0, false, {0, 0}};
 
 template <class ElemType>
-void TextParser<ElemType>::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
+bool TextParser<ElemType>::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
 {
     const auto& keys = m_indexer->GetIndex().m_keyToSequenceInChunk;
     auto sequenceLocation = keys.find(key.m_sequence);
     if (sequenceLocation == keys.end())
     {
-        result = s_InvalidSequence;
-        return;
+        return false;
     }
 
     result = m_indexer->GetIndex().m_chunks[sequenceLocation->second.first].m_sequences[sequenceLocation->second.second];
+    return true;
 }
 
 template <class ElemType>

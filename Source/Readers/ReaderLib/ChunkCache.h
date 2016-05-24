@@ -37,7 +37,7 @@ public:
         return m_deserializer->GetSequencesForChunk(chunkId, descriptions);
     }
 
-    virtual void GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& description) override
+    virtual bool GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& description) override
     {
         return m_deserializer->GetSequenceDescriptionByKey(key, description);
     }
