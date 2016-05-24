@@ -155,7 +155,7 @@ void HTKDataDeserializer::InitializeChunkDescriptions(ConfigHelper& config)
     m_chunks.resize(0);
     m_chunks.reserve(m_totalNumberOfFrames / ChunkFrames);
 
-    int chunkId = -1;
+    ChunkIdType chunkId = CHUNKID_MAX;
     size_t startFrameInsideChunk = 0;
     foreach_index(i, utterances)
     {
@@ -218,7 +218,7 @@ ChunkDescriptions HTKDataDeserializer::GetChunkDescriptions()
     ChunkDescriptions chunks;
     chunks.reserve(m_chunks.size());
 
-    for (size_t i = 0; i < m_chunks.size(); ++i)
+    for (ChunkIdType i = 0; i < m_chunks.size(); ++i)
     {
         auto cd = make_shared<ChunkDescription>();
         cd->m_id = i;
@@ -233,7 +233,7 @@ ChunkDescriptions HTKDataDeserializer::GetChunkDescriptions()
 
 // Gets sequences for a particular chunk.
 // This information is used by the randomizer to fill in current windows of sequences.
-void HTKDataDeserializer::GetSequencesForChunk(size_t chunkId, vector<SequenceDescription>& result)
+void HTKDataDeserializer::GetSequencesForChunk(ChunkIdType chunkId, vector<SequenceDescription>& result)
 {
     const HTKChunkDescription& chunk = m_chunks[chunkId];
     result.reserve(m_frameMode ? chunk.GetTotalFrames() : chunk.GetNumberOfUtterances());
@@ -303,7 +303,7 @@ private:
 class HTKDataDeserializer::HTKChunk : public Chunk
 {
 public:
-    HTKChunk(HTKDataDeserializer* parent, size_t chunkId) : m_parent(parent), m_chunkId(chunkId)
+    HTKChunk(HTKDataDeserializer* parent, ChunkIdType chunkId) : m_parent(parent), m_chunkId(chunkId)
     {
         auto& chunkDescription = m_parent->m_chunks[chunkId];
 
@@ -331,11 +331,11 @@ public:
 private:
     DISABLE_COPY_AND_MOVE(HTKChunk);
     HTKDataDeserializer* m_parent;
-    size_t m_chunkId;
+    ChunkIdType m_chunkId;
 };
 
 // Gets a data chunk with the specified chunk id.
-ChunkPtr HTKDataDeserializer::GetChunk(size_t chunkId)
+ChunkPtr HTKDataDeserializer::GetChunk(ChunkIdType chunkId)
 {
     return make_shared<HTKChunk>(this, chunkId);
 };
@@ -412,7 +412,7 @@ private:
 
 // Get a sequence by its chunk id and sequence id.
 // Sequence ids are guaranteed to be unique inside a chunk.
-void HTKDataDeserializer::GetSequenceById(size_t chunkId, size_t id, vector<SequenceDataPtr>& r)
+void HTKDataDeserializer::GetSequenceById(ChunkIdType chunkId, size_t id, vector<SequenceDataPtr>& r)
 {
     const auto& chunkDescription = m_chunks[chunkId];
     size_t utteranceIndex = m_frameMode ? chunkDescription.GetUtteranceForChunkFrameIndex(id) : id;

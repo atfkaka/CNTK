@@ -28,13 +28,13 @@ public:
     ~TextParser();
 
     // Retrieves a chunk of data.
-    ChunkPtr GetChunk(size_t chunkId) override;
+    ChunkPtr GetChunk(ChunkIdType chunkId) override;
 
     // Get information about chunks.
     ChunkDescriptions GetChunkDescriptions() override;
 
     // Get information about particular chunk.
-    void GetSequencesForChunk(size_t chunkId, std::vector<SequenceDescription>& result) override;
+    void GetSequencesForChunk(ChunkIdType chunkId, std::vector<SequenceDescription>& result) override;
 
     bool GetSequenceDescriptionByKey(const KeyType&, SequenceDescription&) override;
 

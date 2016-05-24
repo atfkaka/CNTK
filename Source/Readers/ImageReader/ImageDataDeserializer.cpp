@@ -222,7 +222,7 @@ ChunkDescriptions ImageDataDeserializer::GetChunkDescriptions()
     return result;
 }
 
-void ImageDataDeserializer::GetSequencesForChunk(size_t chunkId, std::vector<SequenceDescription>& result)
+void ImageDataDeserializer::GetSequencesForChunk(ChunkIdType chunkId, std::vector<SequenceDescription>& result)
 {
     // Currently a single sequence per chunk.
     result.push_back(m_imageSequences[chunkId]);
@@ -296,7 +296,7 @@ void ImageDataDeserializer::CreateSequenceDescriptions(CorpusDescriptorPtr corpu
     }
 }
 
-ChunkPtr ImageDataDeserializer::GetChunk(size_t chunkId)
+ChunkPtr ImageDataDeserializer::GetChunk(ChunkIdType chunkId)
 {
     auto sequenceDescription = m_imageSequences[chunkId];
     return std::make_shared<ImageChunk>(sequenceDescription, *this);

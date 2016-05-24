@@ -243,13 +243,13 @@ ChunkDescriptions MLFDataDeserializer::GetChunkDescriptions()
 }
 
 // Gets sequences for a particular chunk.
-void MLFDataDeserializer::GetSequencesForChunk(size_t, vector<SequenceDescription>& result)
+void MLFDataDeserializer::GetSequencesForChunk(ChunkIdType, vector<SequenceDescription>& result)
 {
     UNUSED(result);
     LogicError("Mlf deserializer does not support primary mode - it cannot control chunking.");
 }
 
-ChunkPtr MLFDataDeserializer::GetChunk(size_t chunkId)
+ChunkPtr MLFDataDeserializer::GetChunk(ChunkIdType chunkId)
 {
     UNUSED(chunkId);
     assert(chunkId == 0);

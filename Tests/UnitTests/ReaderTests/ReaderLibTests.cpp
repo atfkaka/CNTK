@@ -90,12 +90,12 @@ public:
             m_descriptions.push_back(SequenceDescription {
                 i,
                 m_sequenceLength,
-                i / m_numSequencesPerChunk,
+                (ChunkIdType) (i / m_numSequencesPerChunk),
                 { 0, i }
             });
         }
 
-        for (size_t i = 0; i < numChunks; i++)
+        for (ChunkIdType i = 0; i < numChunks; i++)
         {
             m_chunkDescriptions.push_back(make_shared<ChunkDescription>(ChunkDescription {
                 i,
@@ -120,7 +120,7 @@ public:
         return m_streams;
     }
 
-    virtual ChunkPtr GetChunk(size_t chunkId) override
+    virtual ChunkPtr GetChunk(ChunkIdType chunkId) override
     {
         assert(chunkId < m_numChunks);
         size_t chunkBegin = chunkId * m_numSequencesPerChunk;
@@ -139,7 +139,7 @@ public:
         return m_chunkDescriptions;
     }
 
-    virtual void GetSequencesForChunk(size_t chunkId, vector<SequenceDescription>& descriptions) override
+    virtual void GetSequencesForChunk(ChunkIdType chunkId, vector<SequenceDescription>& descriptions) override
     {
         for (size_t i = chunkId * m_numSequencesPerChunk; i < (chunkId + 1) * m_numSequencesPerChunk; i++)
         {

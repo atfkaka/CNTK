@@ -29,7 +29,7 @@ public:
     explicit ImageDataDeserializer(const ConfigParameters& config);
 
     // Gets sequences by specified ids. Order of returned sequences corresponds to the order of provided ids.
-    virtual ChunkPtr GetChunk(size_t chunkId) override;
+    virtual ChunkPtr GetChunk(ChunkIdType chunkId) override;
 
     // Gets chunk descriptions.
     virtual ChunkDescriptions GetChunkDescriptions() override;

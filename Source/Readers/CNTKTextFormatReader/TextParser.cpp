@@ -41,7 +41,7 @@ public:
     std::map<size_t, SequenceBuffer> m_sequenceMap;
 
     // chunk id (copied from the descriptor)
-    size_t m_id;
+    ChunkIdType m_id;
 
     // a non-owned pointer to the parser that created this chunk
     TextParser* m_parser;
@@ -206,7 +206,7 @@ ChunkDescriptions TextParser<ElemType>::GetChunkDescriptions()
 }
 
 template <class ElemType>
-void TextParser<ElemType>::GetSequencesForChunk(size_t chunkId, std::vector<SequenceDescription>& result)
+void TextParser<ElemType>::GetSequencesForChunk(ChunkIdType chunkId, std::vector<SequenceDescription>& result)
 {
     const auto& index = m_indexer->GetIndex();
     const auto& chunk = index.m_chunks[chunkId];
@@ -271,7 +271,7 @@ void TextParser<ElemType>::TextDataChunk::GetSequence(size_t sequenceId, std::ve
 }
 
 template <class ElemType>
-ChunkPtr TextParser<ElemType>::GetChunk(size_t chunkId)
+ChunkPtr TextParser<ElemType>::GetChunk(ChunkIdType chunkId)
 {
     const auto& chunkDescriptor = m_indexer->GetIndex().m_chunks[chunkId];
     auto textChunk = make_shared<TextDataChunk>(chunkDescriptor, this);

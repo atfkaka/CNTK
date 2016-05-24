@@ -32,7 +32,7 @@ public:
         return m_deserializer->GetChunkDescriptions();
     }
 
-    virtual void GetSequencesForChunk(size_t chunkId, std::vector<SequenceDescription>& descriptions) override
+    virtual void GetSequencesForChunk(ChunkIdType chunkId, std::vector<SequenceDescription>& descriptions) override
     {
         return m_deserializer->GetSequencesForChunk(chunkId, descriptions);
     }
@@ -43,7 +43,7 @@ public:
     }
 
     // Gets chunk data given its id.
-    virtual ChunkPtr GetChunk(size_t chunkId);
+    virtual ChunkPtr GetChunk(ChunkIdType chunkId);
 
 private:
     // A map of currently loaded chunks

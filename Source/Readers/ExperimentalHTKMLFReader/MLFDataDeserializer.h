@@ -30,12 +30,12 @@ public:
     virtual ChunkDescriptions GetChunkDescriptions() override;
 
     // Get sequence descriptions of a particular chunk.
-    virtual void GetSequencesForChunk(size_t chunkId, std::vector<SequenceDescription>& s) override;
+    virtual void GetSequencesForChunk(ChunkIdType chunkId, std::vector<SequenceDescription>& s) override;
 
     // Retrieves a chunk with data.
     // TODO: Currently it is a single chunk => all labels are loaded into memory.
     // TODO: After we switch the timeline to work in chunks, we will also introduce chunking of labels.
-    virtual ChunkPtr GetChunk(size_t) override;
+    virtual ChunkPtr GetChunk(ChunkIdType) override;
 
 private:
     class MLFChunk;
