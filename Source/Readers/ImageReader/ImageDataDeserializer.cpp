@@ -280,10 +280,15 @@ void ImageDataDeserializer::CreateSequenceDescriptions(CorpusDescriptorPtr corpu
                 imagePath.c_str(), cid, labelDimension, lineIndex, mapPath.c_str());
         }
 
+        if (CHUNKID_MAX < curId + itemsPerLine)
+        {
+            RuntimeError("Maximum number of chunks exceeded.");
+        }
+
         for (size_t start = curId; curId < start + itemsPerLine; curId++)
         {
             description.m_id = curId;
-            description.m_chunkId = curId;
+            description.m_chunkId = (ChunkIdType)curId;
             description.m_path = imagePath;
             description.m_classId = cid;
             description.m_key.m_sequence = stringRegistry[sequenceKey];
