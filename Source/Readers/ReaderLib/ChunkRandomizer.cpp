@@ -129,7 +129,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             }
 
             // TODO verbosity or remove
-            fprintf(stderr, "chunk %u randomizationWindow [%u..%u)\n", chunkId, chunk.m_randomizationWindow.m_begin, chunk.m_randomizationWindow.m_end);
+            // fprintf(stderr, "chunk %u randomizationWindow [%u..%u)\n", chunkId, chunk.m_randomizationWindow.m_begin, chunk.m_randomizationWindow.m_end);
         }
     }
 }}}
