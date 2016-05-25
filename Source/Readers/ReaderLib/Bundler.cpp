@@ -101,7 +101,7 @@ void Bundler::CreateChunkDescriptions()
                     break;
                 }
 
-                sequenceSamples = std::max(sequenceSamples, s.m_numberOfSamples);
+                sequenceSamples = std::max<size_t>(sequenceSamples, s.m_numberOfSamples);
             }
 
             if (isValid)
@@ -176,7 +176,7 @@ void Bundler::GetSequencesForChunk(ChunkIdType chunkId, std::vector<SequenceDesc
             }
 
             auto sequence = sequences[sequenceIndex];
-            size_t sequenceSamples = sequence.m_numberOfSamples;
+            SequenceSampleCountType sequenceSamples = sequence.m_numberOfSamples;
             for (size_t deserializerIndex = 1; deserializerIndex < m_deserializers.size(); ++deserializerIndex)
             {
                 m_deserializers[deserializerIndex]->GetSequenceDescriptionByKey(sequence.m_key, s);

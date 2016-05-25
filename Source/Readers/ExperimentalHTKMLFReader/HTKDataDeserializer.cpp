@@ -266,7 +266,12 @@ void HTKDataDeserializer::GetSequencesForChunk(ChunkIdType chunkId, vector<Seque
             f.m_key.m_sequence = sequence;
             f.m_key.m_sample = 0;
             f.m_id = offsetInChunk++;
-            f.m_numberOfSamples = utterance->GetNumberOfFrames();
+            if (SEQUENCESAMPLECOUNT_MAX < utterance->GetNumberOfFrames())
+            {
+                RuntimeError("Maximum number of samples per sequence exceeded");
+            }
+
+            f.m_numberOfSamples = (SequenceSampleCountType) utterance->GetNumberOfFrames();
             result.push_back(f);
         }
     }
@@ -389,7 +394,11 @@ struct HTKFloatSequenceData : DenseSequenceData
 {
     HTKFloatSequenceData(FeatureMatrix&& data) : m_buffer(data)
     {
-        m_numberOfSamples = data.GetNumberOfColumns();
+        m_numberOfSamples = (SequenceSampleCountType)data.GetNumberOfColumns();
+        if (m_numberOfSamples != data.GetNumberOfColumns())
+        {
+            RuntimeError("Maximum number of samples per sequence exceeded.");
+        }
         m_data = m_buffer.GetData();
     }
 
@@ -402,7 +411,11 @@ struct HTKDoubleSequenceData : DenseSequenceData
 {
     HTKDoubleSequenceData(FeatureMatrix& data) : m_buffer(data.GetData(), data.GetData() + data.GetTotalSize())
     {
-        m_numberOfSamples = data.GetNumberOfColumns();
+        m_numberOfSamples = (SequenceSampleCountType)data.GetNumberOfColumns();
+        if (m_numberOfSamples != data.GetNumberOfColumns())
+        {
+            RuntimeError("Maximum number of samples per sequence exceeded.");
+        }
         m_data = m_buffer.data();
     }
 
@@ -470,7 +483,7 @@ bool HTKDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
     const auto& sequence = chunk.GetUtterance(iter->second.second);
     d.m_chunkId = sequence->GetChunkId();
     d.m_id = m_frameMode ? sequence->GetStartFrameIndexInsideChunk() + key.m_sample : sequence->GetIndexInsideChunk();
-    d.m_numberOfSamples = m_frameMode ? 1 : sequence->GetNumberOfFrames();
+    d.m_numberOfSamples = m_frameMode ? 1 : (SequenceSampleCountType)sequence->GetNumberOfFrames();
     return true;
 }
 

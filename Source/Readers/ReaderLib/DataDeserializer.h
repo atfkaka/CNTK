@@ -34,17 +34,20 @@ typedef std::shared_ptr<Chunk> ChunkPtr;
 typedef unsigned int ChunkIdType;
 #define CHUNKID_MAX ((ChunkIdType)(-1))
 
+typedef unsigned int SequenceSampleCountType;
+#define SEQUENCESAMPLECOUNT_MAX ((SequenceSampleCountType)(-1))
+
 // Defines main properties of a sequence.
 // Sequence descriptions are used by the randomizer to establish a global timeline for complete input.
 // A sequence is defined as an ordered set of samples (size == 1 is used for sample training).
 struct SequenceDescription
 {
-    size_t m_id;              // Sequence id, uniquely identifies the sequence.
-    size_t m_numberOfSamples; // Number of samples in a sequence.
-    ChunkIdType m_chunkId;    // Each sequence belongs to an I/O chunk, how chunk is defined is specific to a
-                              // particular data deserializer (or bundler). The randomizer guarantees to request
-                              // sequences from only limited subset of chunks at any moment in time.
-    KeyType m_key;            // Sequence key, used for correlations between sequences of different deserializers.
+    size_t m_id;                               // Sequence id, uniquely identifies the sequence.
+    SequenceSampleCountType m_numberOfSamples; // Number of samples in a sequence.
+    ChunkIdType m_chunkId;                     // Each sequence belongs to an I/O chunk, how chunk is defined is specific to a
+                                               // particular data deserializer (or bundler). The randomizer guarantees to request
+                                               // sequences from only limited subset of chunks at any moment in time.
+    KeyType m_key;                             // Sequence key, used for correlations between sequences of different deserializers.
 };
 
 typedef std::shared_ptr<SequenceDescription> SequenceDescriptionPtr;
@@ -61,7 +64,7 @@ struct SequenceDataBase
 
     // Sequence id.
     size_t m_id;
-    size_t m_numberOfSamples;      // Number of samples in the sequence
+    SequenceSampleCountType m_numberOfSamples;      // Number of samples in the sequence
 
     ChunkPtr m_chunk;
     // A non-owned pointer. The actual size is provided for particular sequences,

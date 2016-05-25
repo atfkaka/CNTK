@@ -140,7 +140,7 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
 
         const auto& utterance = l.second;
         description.m_sequenceStart = m_classIds.size();
-        size_t numberOfFrames = 0;
+        SequenceSampleCountType numberOfFrames = 0;
 
         foreach_index(i, utterance)
         {
@@ -159,6 +159,11 @@ void MLFDataDeserializer::InitializeChunkDescriptions(CorpusDescriptorPtr corpus
             if (timespan.classid != static_cast<msra::dbn::CLASSIDTYPE>(timespan.classid))
             {
                 RuntimeError("CLASSIDTYPE has too few bits");
+            }
+
+            if (SEQUENCESAMPLECOUNT_MAX < timespan.firstframe + timespan.numframes)
+            {
+                RuntimeError("Maximum number of sample per sequence exceeded.");
             }
 
             numClasses = max(numClasses, (size_t)(1u + timespan.classid));
@@ -274,8 +279,13 @@ struct MLFSequenceData : SparseSequenceData
                 numberOfSamples, (size_t)numeric_limits<IndexType>::max());
         }
 
+        if (SEQUENCESAMPLECOUNT_MAX < numberOfSamples)
+        {
+            RuntimeError("Maximum number of samples per sequence exceeded");
+        }
+
         m_nnzCounts.resize(numberOfSamples, static_cast<IndexType>(1));
-        m_numberOfSamples = numberOfSamples;
+        m_numberOfSamples = (SequenceSampleCountType) numberOfSamples;
         m_totalNnzCount = static_cast<IndexType>(numberOfSamples);
         m_indices = m_indicesPtr.get();
         m_data = m_values.data();
@@ -339,7 +349,7 @@ bool MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
     {
         assert(result.m_key.m_sample == 0);
         result.m_id = sequenceId;
-        result.m_numberOfSamples = m_utteranceIndex[sequenceId + 1] - m_utteranceIndex[sequenceId];
+        result.m_numberOfSamples = (SequenceSampleCountType) (m_utteranceIndex[sequenceId + 1] - m_utteranceIndex[sequenceId]);
     }
     return true;
 }
