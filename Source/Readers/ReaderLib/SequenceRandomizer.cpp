@@ -142,7 +142,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 "randomized window [%" PRIu64 "..%" PRIu64 "), randomization cursor %" PRIu64 "\n",
                 releasedChunks,
                 m_chunkWindowBegin, m_chunkWindowEnd,
-                m_randomizationCursor,
+                m_currentChunkCursor,
                 m_chunkWindowBegin, m_randomizedWindowEnd,
                 m_randomizationCursor);
     }
@@ -253,7 +253,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 "chunk window [%" PRIu64 "..%u), cursor %" PRIu64 ", "
                 "randomized window [%" PRIu64 "..%" PRIu64 "), randomization cursor %" PRIu64 "\n",
                 m_chunkWindowBegin, m_chunkWindowEnd,
-                m_randomizationCursor,
+                m_currentChunkCursor,
                 m_chunkWindowBegin, m_randomizedWindowEnd,
                 m_randomizationCursor);
     }
