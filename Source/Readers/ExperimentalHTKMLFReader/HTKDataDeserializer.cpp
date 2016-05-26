@@ -169,11 +169,11 @@ void HTKDataDeserializer::InitializeChunkDescriptions(ConfigHelper& config)
 
         // append utterance to last chunk
         HTKChunkDescription& currentChunk = m_chunks.back();
-        utterances[i].AssignToChunk(chunkId, currentChunk.GetNumberOfUtterances(), startFrameInsideChunk);
+        utterances[i].AssignToChunk(startFrameInsideChunk);
         if (!m_primary)
         {
             // Have to store key <-> utterance mapping for non primary deserializers.
-            m_keyToChunkLocation[utterances[i].GetId()] = make_pair(utterances[i].GetChunkId(), utterances[i].GetIndexInsideChunk());
+            m_keyToChunkLocation[utterances[i].GetId()] = make_pair(chunkId, currentChunk.GetNumberOfUtterances());
         }
         startFrameInsideChunk += utterances[i].GetNumberOfFrames();
         currentChunk.Add(move(utterances[i]));
@@ -479,10 +479,12 @@ bool HTKDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
         return false;
     }
 
-    const auto& chunk = m_chunks[iter->second.first];
-    const auto& sequence = chunk.GetUtterance(iter->second.second);
-    d.m_chunkId = sequence->GetChunkId();
-    d.m_id = m_frameMode ? sequence->GetStartFrameIndexInsideChunk() + key.m_sample : sequence->GetIndexInsideChunk();
+    auto chunkId = iter->second.first;
+    auto indexInsideChunk = iter->second.second;
+    const auto& chunk = m_chunks[chunkId];
+    const auto& sequence = chunk.GetUtterance(indexInsideChunk);
+    d.m_chunkId = (ChunkIdType)chunkId;
+    d.m_id = m_frameMode ? sequence->GetStartFrameIndexInsideChunk() + key.m_sample : indexInsideChunk;
     d.m_numberOfSamples = m_frameMode ? 1 : (SequenceSampleCountType)sequence->GetNumberOfFrames();
     return true;
 }
