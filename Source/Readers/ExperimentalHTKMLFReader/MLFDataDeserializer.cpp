@@ -279,11 +279,6 @@ struct MLFSequenceData : SparseSequenceData
                 numberOfSamples, (size_t)numeric_limits<IndexType>::max());
         }
 
-        if (SEQUENCELEN_MAX < numberOfSamples)
-        {
-            RuntimeError("Maximum number of samples per sequence exceeded");
-        }
-
         m_nnzCounts.resize(numberOfSamples, static_cast<IndexType>(1));
         m_numberOfSamples = (uint32_t) numberOfSamples;
         m_totalNnzCount = static_cast<IndexType>(numberOfSamples);
