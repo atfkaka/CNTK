@@ -114,15 +114,6 @@ void HTKDataDeserializer::InitializeChunkDescriptions(ConfigHelper& config)
         UtteranceDescription description(move(msra::asr::htkfeatreader::parsedpath(u)));
         size_t numberOfFrames = description.GetNumberOfFrames();
 
-        // TODO: we need at least 2 frames for boundary markers to work
-        // TODO: this should be removed when MLF deserializer is rewritten.
-        if (numberOfFrames < 2)
-        {
-            fprintf(stderr, "HTKDataDeserializer::HTKDataDeserializer: skipping utterance with %d frames because it has less than 2 frames: %s\n",
-                (int)numberOfFrames, description.GetKey().c_str());
-            continue;
-        }
-
         string key = description.GetKey();
         if (!m_corpus->IsIncluded(key))
         {
