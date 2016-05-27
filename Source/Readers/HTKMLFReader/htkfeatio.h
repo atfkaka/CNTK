@@ -870,7 +870,7 @@ public:
 };
 
 template <class ENTRY, class WORDSEQUENCE>
-class htkmlfreader : public map<wstring, vector<ENTRY>> // [key][i] the data
+class htkmlfreader : public std::vector<std::pair<wstring, vector<ENTRY>>> // [key][i] the data
 {
     wstring curpath;                                 // for error messages
     unordered_map<std::string, size_t> statelistmap; // for state <=> index
@@ -942,7 +942,8 @@ class htkmlfreader : public map<wstring, vector<ENTRY>> // [key][i] the data
         if (!restricttokeys.empty() && restricttokeys.find(key) == restricttokeys.end())
             return;
 
-        vector<ENTRY>& entries = (*this)[key]; // this creates a new entry
+        this->push_back(std::make_pair(key, std::vector<ENTRY>()));
+        vector<ENTRY>& entries = this->back().second;// (*this)[key]; // this creates a new entry
         if (!entries.empty())
             malformed(msra::strfun::strprintf("duplicate entry '%ls'", key.c_str()));
         entries.resize(e - s);
