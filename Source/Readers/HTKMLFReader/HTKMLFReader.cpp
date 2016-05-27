@@ -506,7 +506,8 @@ void HTKMLFReader<ElemType>::PrepareForTrainingOrTesting(const ConfigRecordType&
         static_assert(std::is_move_constructible<msra::asr::htkmlfreader<msra::asr::htkmlfentry, msra::lattices::lattice::htkmlfwordsequence>>::value,
                       "Type 'msra::asr::htkmlfreader' should be move constructible!");
 
-        labelsmulti.push_back(std::move(labels));
+        // DO NOT COMMIT!!!
+        //labelsmulti.push_back(std::move(labels));
     }
 
     if (EqualCI(readMethod, L"blockRandomize"))
