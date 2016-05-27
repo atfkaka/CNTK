@@ -17,14 +17,12 @@ class UtteranceDescription
     // Archive filename and frame range in that file.
     msra::asr::htkfeatreader::parsedpath m_path;
 
-    // Position of the first sample of the utterance inside the chunk.
-    size_t m_startFrameIndexInsideChunk;
     // Utterance id.
     size_t m_id;
 
 public:
     UtteranceDescription(msra::asr::htkfeatreader::parsedpath&& path)
-        : m_path(std::move(path)), m_startFrameIndexInsideChunk(0)
+        : m_path(std::move(path))
     {
     }
 
@@ -48,20 +46,8 @@ public:
         return m_path.GetLogicalPath();
     }
 
-    void AssignToChunk(size_t frameInsideChunk)
-    {
-        m_startFrameIndexInsideChunk = frameInsideChunk;
-    }
-
     size_t GetId() const  { return m_id; }
     void SetId(size_t id) { m_id = id; }
-
-    size_t GetStartFrameIndexInsideChunk() const { return m_startFrameIndexInsideChunk; }
-
-    void SetStartFrameInsideChunk(size_t startFrameIndexInsideChunk)
-    {
-        m_startFrameIndexInsideChunk = startFrameIndexInsideChunk;
-    }
 };
 
 }}}
