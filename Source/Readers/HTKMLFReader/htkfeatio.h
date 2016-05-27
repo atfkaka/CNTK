@@ -573,7 +573,8 @@ private:
 
         // done: swap it in
         int64_t bytepos = fgetpos(f);
-        setkind(kind, dim, H.sampperiod, ((std::wstring)ppath).empty() ? ppath.physicallocation() : ppath); // this checks consistency
+        auto location = ((std::wstring)ppath).empty() ? ppath.physicallocation() : (std::wstring)ppath;
+        setkind(kind, dim, H.sampperiod, location); // this checks consistency
         this->physicalpath.swap(physpath);
         this->physicaldatastart = bytepos;
         this->physicalframes = H.nsamples;
