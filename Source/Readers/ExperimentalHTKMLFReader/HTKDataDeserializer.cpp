@@ -137,8 +137,8 @@ void HTKDataDeserializer::InitializeChunkDescriptions(ConfigHelper& config)
         m_totalNumberOfFrames += numberOfFrames;
     }
 
-    const size_t MaxUtterancesPerChunk = 65535;
-    // distribute them over chunks
+    // TODO: We should be able to configure IO chunks based on size.
+    // distribute utterances over chunks
     // We simply count off frames until we reach the chunk size.
     // Note that we first randomize the chunks, i.e. when used, chunks are non-consecutive and thus cause the disk head to seek for each chunk.
 
@@ -148,20 +148,17 @@ void HTKDataDeserializer::InitializeChunkDescriptions(ConfigHelper& config)
     // A chunk constitutes of 15 minutes
     const size_t ChunkFrames = 15 * 60 * FramesPerSec; // number of frames to target for each chunk
 
-    // Loading an initial 24-hour range will involve 96 disk seeks, acceptable.
-    // When paging chunk by chunk, chunk size ~14 MB.
-
     m_chunks.resize(0);
     m_chunks.reserve(m_totalNumberOfFrames / ChunkFrames);
 
-    ChunkIdType chunkId = CHUNKID_MAX;
+    ChunkIdType chunkId = 0;
     foreach_index(i, utterances)
     {
         // if exceeding current entry--create a new one
         // I.e. our chunks are a little larger than wanted (on av. half the av. utterance length).
-        if (m_chunks.empty() || m_chunks.back().GetTotalFrames() > ChunkFrames || m_chunks.back().GetNumberOfUtterances() >= MaxUtterancesPerChunk)
+        if (m_chunks.empty() || m_chunks.back().GetTotalFrames() > ChunkFrames)
         {
-            m_chunks.push_back(HTKChunkDescription(++chunkId));
+            m_chunks.push_back(HTKChunkDescription(chunkId++));
         }
 
         // append utterance to last chunk
@@ -169,8 +166,9 @@ void HTKDataDeserializer::InitializeChunkDescriptions(ConfigHelper& config)
         if (!m_primary)
         {
             // Have to store key <-> utterance mapping for non primary deserializers.
-            m_keyToChunkLocation[utterances[i].GetId()] = make_pair(chunkId, currentChunk.GetNumberOfUtterances());
+            m_keyToChunkLocation[utterances[i].GetId()] = make_pair(currentChunk.GetChunkId(), currentChunk.GetNumberOfUtterances());
         }
+
         currentChunk.Add(move(utterances[i]));
     }
 
@@ -266,12 +264,12 @@ void HTKDataDeserializer::GetSequencesForChunk(ChunkIdType chunkId, vector<Seque
             f.m_key.m_sequence = sequence;
             f.m_key.m_sample = 0;
             f.m_id = offsetInChunk++;
-            if (SEQUENCESAMPLECOUNT_MAX < utterance->GetNumberOfFrames())
+            if (SEQUENCELEN_MAX < utterance->GetNumberOfFrames())
             {
                 RuntimeError("Maximum number of samples per sequence exceeded");
             }
 
-            f.m_numberOfSamples = (SequenceSampleCountType) utterance->GetNumberOfFrames();
+            f.m_numberOfSamples = (uint32_t) utterance->GetNumberOfFrames();
             result.push_back(f);
         }
     }
@@ -394,7 +392,7 @@ struct HTKFloatSequenceData : DenseSequenceData
 {
     HTKFloatSequenceData(FeatureMatrix&& data) : m_buffer(data)
     {
-        m_numberOfSamples = (SequenceSampleCountType)data.GetNumberOfColumns();
+        m_numberOfSamples = (uint32_t)data.GetNumberOfColumns();
         if (m_numberOfSamples != data.GetNumberOfColumns())
         {
             RuntimeError("Maximum number of samples per sequence exceeded.");
@@ -411,7 +409,7 @@ struct HTKDoubleSequenceData : DenseSequenceData
 {
     HTKDoubleSequenceData(FeatureMatrix& data) : m_buffer(data.GetData(), data.GetData() + data.GetTotalSize())
     {
-        m_numberOfSamples = (SequenceSampleCountType)data.GetNumberOfColumns();
+        m_numberOfSamples = (uint32_t)data.GetNumberOfColumns();
         if (m_numberOfSamples != data.GetNumberOfColumns())
         {
             RuntimeError("Maximum number of samples per sequence exceeded.");
@@ -485,7 +483,7 @@ bool HTKDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
     const auto& sequence = chunk.GetUtterance(utteranceIndexInsideChunk);
     d.m_chunkId = (ChunkIdType)chunkId;
     d.m_id = m_frameMode ? chunk.GetStartFrameIndexInsideChunk(utteranceIndexInsideChunk) + key.m_sample : utteranceIndexInsideChunk;
-    d.m_numberOfSamples = m_frameMode ? 1 : (SequenceSampleCountType)sequence->GetNumberOfFrames();
+    d.m_numberOfSamples = m_frameMode ? 1 : (uint32_t)sequence->GetNumberOfFrames();
     return true;
 }
 
