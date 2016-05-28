@@ -484,7 +484,7 @@ bool HTKDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
     const auto& chunk = m_chunks[chunkId];
     const auto& sequence = chunk.GetUtterance(utteranceIndexInsideChunk);
     d.m_chunkId = (ChunkIdType)chunkId;
-    d.m_id = m_frameMode ? chunk.GetStartFrameIndexInsideChunk(chunkId) + key.m_sample : utteranceIndexInsideChunk;
+    d.m_id = m_frameMode ? chunk.GetStartFrameIndexInsideChunk(utteranceIndexInsideChunk) + key.m_sample : utteranceIndexInsideChunk;
     d.m_numberOfSamples = m_frameMode ? 1 : (SequenceSampleCountType)sequence->GetNumberOfFrames();
     return true;
 }
