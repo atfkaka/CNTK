@@ -460,7 +460,6 @@ public:
         // casting to wstring yields the logical path
         operator wstring() const
         {
-            assert(!logicalpath.empty());
             return msra::strfun::utf16(logicalpath);
         }
 
