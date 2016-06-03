@@ -158,6 +158,90 @@ template class ReduceElementsNode<float>;
 template class ReduceElementsNode<double>;
 
 // -----------------------------------------------------------------------
+// ArgMinMaxNode
+// -----------------------------------------------------------------------
+
+template <class ElemType>
+/*virtual*/ void ArgMinMaxNode<ElemType>::CopyTo(ComputationNodeBasePtr nodeP, const std::wstring& newName, const CopyNodeFlags flags) const /*override*/
+{
+    Base::CopyTo(nodeP, newName, flags);
+    if (flags & CopyNodeFlags::copyNodeValue)
+    {
+        auto node = dynamic_pointer_cast<ArgMinMaxNode<ElemType>>(nodeP);
+        node->m_axis = m_axis;
+        node->m_maxMode = m_maxMode;
+    }
+}
+
+template <class ElemType>
+/*virtual*/ void ArgMinMaxNode<ElemType>::Load(File& fstream, size_t modelVersion) /*override*/
+{
+    Base::Load(fstream, modelVersion);
+    fstream >> m_axis >> m_maxMode;
+}
+
+template <class ElemType>
+/*virtual*/ void ArgMinMaxNode<ElemType>::Save(File& fstream) const /*override*/
+{
+    Base::Save(fstream);
+    fstream << m_axis << m_maxMode; // note: we serialize the string and not the opcode, since opcodes may change
+}
+
+template <class ElemType>
+/*virtual*/ void ArgMinMaxNode<ElemType>::ForwardProp(const FrameRange& fr) /*override*/
+{
+    // get the args
+    size_t rank = DetermineElementwiseTensorRank();
+    auto result = ValueTensorFor(rank, fr);
+    auto input = Input(0)->ValueTensorFor(rank, fr);
+
+    // the actual operation is a Copy with reduction, where the magic is in the reduction op
+    // TODO: put code for forward computation here
+}
+
+template <class ElemType>
+/*virtual*/ void ArgMinMaxNode<ElemType>::BackpropTo(const size_t inputIndex, const FrameRange& fr) /*override*/
+{
+    // Gradient is 0
+}
+
+template <class ElemType>
+/*virtual*/ bool ArgMinMaxNode<ElemType>::OutputUsedInComputingInputNodesGradients() const /*override*/
+{
+    return false;
+}
+
+template <class ElemType>
+/*virtual*/ bool ArgMinMaxNode<ElemType>::InputUsedInComputingInputNodesGradients(size_t inputIndex) const /*override*/
+{
+    return false;
+}
+
+template <class ElemType>
+/*virtual*/ void ArgMinMaxNode<ElemType>::Validate(bool isFinalValidationPass) /*override*/
+{
+    Base::Validate(isFinalValidationPass);
+    InferMBLayoutFromInputsForStandardCase(isFinalValidationPass);
+
+    let shape = Input(0)->GetSampleLayout();
+    auto dims = shape.GetDims();
+    if (m_axis == 0)
+        dims = { 1 };                       // entire sample is reduced to a scalar
+    else if (m_axis - 1 >= 0 && m_axis - 1 < dims.size())
+        dims[m_axis - 1] = 1;               // one axis is reduced to a scalar
+    else if (isFinalValidationPass)
+        InvalidArgument("The shape of %ls [%s] has no axis %d", NodeDescription().c_str(), string(shape).c_str(), m_axis);
+
+    SetDims(TensorShape(dims), Input(0)->HasMBLayout());
+}
+
+template class ArgMinMaxNode<float>;
+template class ArgMinMaxNode<double>;
+
+// -----------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------
 // Where(bitVector) -- extract indices of non-0 values in a sequence
 // -----------------------------------------------------------------------
 

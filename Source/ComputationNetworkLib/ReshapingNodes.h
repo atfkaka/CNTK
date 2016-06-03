@@ -223,6 +223,44 @@ private:
     ElementWiseOperator m_op; // the operation mapped to our internal opCode
 };
 
+
+
+// -----------------------------------------------------------------------
+// Computes for a specifed axis the index mwin highes/lowes value.
+//------------------------------------------------------------------------
+template <class ElemType>
+class ArgMinMaxNode : public ComputationNode<ElemType>, public NumInputs<1>
+{
+    typedef ComputationNode<ElemType> Base; 
+    UsingComputationNodeMembersBoilerplate;
+    static const std::wstring TypeName() { return L"ArgMinMax"; }
+
+public:
+    ArgMinMaxNode(DEVICEID_TYPE deviceId, const wstring& name, const bool maxMode = true /* maxMode == false --> compute argmin, compute armax otherwise */, int axis = 0) :
+        Base(deviceId, name), m_maxMode(maxMode), m_axis(axis)
+    {
+    }
+
+    ArgMinMaxNode(const ScriptableObjects::IConfigRecordPtr configp) :
+        ArgMinMaxNode(configp->Get(L"deviceId"), L"<placeholder>", configp->Get(L"maxMode"), configp->Get(L"axis"))
+    {
+        AttachInputsFromConfig(configp, this->GetExpectedNumInputs());
+    }
+
+    virtual void /*ComputationNodeBase::*/ CopyTo(ComputationNodeBasePtr nodeP, const std::wstring& newName, const CopyNodeFlags flags) const override;
+    virtual void /*ComputationNodeBase::*/ Load(File& fstream, size_t modelVersion) override;
+    virtual void /*ComputationNodeBase::*/ Save(File& fstream) const override;
+    virtual void /*ComputationNode::*/ ForwardProp(const FrameRange& fr) override;
+    virtual void /*ComputationNode::*/ BackpropTo(const size_t inputIndex, const FrameRange& fr) override;
+    virtual bool /*ComputationNodeBase::*/ OutputUsedInComputingInputNodesGradients() const override;
+    virtual bool /*ComputationNodeBase::*/ InputUsedInComputingInputNodesGradients(size_t childIndex) const override;
+    virtual void /*ComputationNodeBase::*/ Validate(bool isFinalValidationPass) override;
+
+private:
+    int m_axis;
+    bool m_maxMode;
+};
+
 // -----------------------------------------------------------------------
 // ReconcileDynamicAxis (dataInput, layoutInput)
 // This node copies data from 'dataInput' while it propagates the minibatch-layout information from 'layoutInput'.
