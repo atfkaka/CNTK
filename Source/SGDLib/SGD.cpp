@@ -1028,7 +1028,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
                 m_gradHeader->evalErrors[i] = localEpochEvalErrors.GetCriterion(i);
 
             bool samplesProcessed = m_distGradAgg->AggregateGradients(learnParamsGradients, m_gradHeader.get(), epochNumber);
-            noMoreSamplesToProcess = !samplesProcessed;
+            noMoreSamplesToProcess = !samplesProcessed && !wasDataRead;
 
             aggregateNumSamples          = m_gradHeader->numSamples;
             aggregateNumSamplesWithLabel = m_gradHeader->numSamplesWithLabel;
