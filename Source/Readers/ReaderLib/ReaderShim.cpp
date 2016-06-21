@@ -133,39 +133,28 @@ bool ReaderShim<ElemType>::GetMinibatch(StreamMinibatchInputs& matrices)
         }
     }
 
-    // Reset stale mb layouts.
-    // BUGBUG: This seems incorrect. (1) layouts should all be updated below, and (2) some of these layouts are the same, we are resetting them twice.
-    for (const auto& iter : matrices)
-    {
-        iter.second.pMBLayout->Init(1, 0);
-    }
-
     // a map to generate error messages when checking layout constraints. 
     map<wstring, wstring> layoutToInputMap;
-    if (!minibatch.m_data.empty())
+    // TODO: Use alternating pinned buffer in the packer, do not copy anything, but pack into the pinned memory.
+    // Copy returned minibatch to the matrices.
+    for (const auto& mx : matrices)
     {
-        // TODO: Use alternating pinned buffer in the packer, do not copy anything, but pack into the pinned memory.
-        // Copy returned minibatch to the matrices.
-        for (const auto& mx : matrices)
+        if (m_nameToStreamId.find(mx.first) == m_nameToStreamId.end())
         {
-            if (m_nameToStreamId.find(mx.first) == m_nameToStreamId.end())
-            {
-                string inputNames = EnumerateInputs(m_nameToStreamId);
-                RuntimeError("Could not map input '%ls' to the reader. Reader outputs only [%s].", 
-                    mx.first.c_str(), inputNames.c_str());
-            }
+            string inputNames = EnumerateInputs(m_nameToStreamId);
+            RuntimeError("Could not map input '%ls' to the reader. Reader outputs only [%s].", 
+                mx.first.c_str(), inputNames.c_str());
+        }
 
-            size_t streamId = m_nameToStreamId[mx.first];
-            
+        size_t streamId = m_nameToStreamId[mx.first];
+        auto& layout = mx.second.pMBLayout;
+        auto& matrix = matrices.GetInputMatrix<ElemType>(mx.first);
+
+        if (!minibatch.m_data.empty())
+        {
             const auto& stream = minibatch.m_data[streamId];
 
             m_numParallelSequences = stream->m_layout->GetNumParallelSequences();
-
-            // This assert no longer holds - different inputs have different sequence lengths, resulting in different number 
-            // of parallel samples.
-            // assert(m_numParallelSequences == minibatch.m_data.front()->m_layout->GetNumParallelSequences());
-
-            auto& layout = mx.second.pMBLayout;
 
             if (layout->GetNumCols() == 0)
             {
@@ -182,8 +171,12 @@ bool ReaderShim<ElemType>::GetMinibatch(StreamMinibatchInputs& matrices)
             }
 
             size_t sampleSize = m_streams[streamId]->m_sampleLayout->GetNumElements();
-            auto& matrix = matrices.GetInputMatrix<ElemType>(mx.first);
             FillMatrixFromStream(m_streams[streamId]->m_storageType, &matrix, sampleSize, stream);
+        }
+        else
+        {
+            layout->Init(1, 0);
+            matrix.Resize(1, 0);
         }
     }
 
