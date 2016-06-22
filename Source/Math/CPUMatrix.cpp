@@ -213,11 +213,11 @@ void CPUMatrix<ElemType>::Clear()
 #pragma region Aggregators for reduction operation
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
-// ArgMaxAggregation find lowest index with minum/maximum value. Indexes are implicitly provided by the order the values are 'added'.
+// ArgMaxMinAggregation finds lowest index with minum/maximum value. Indexes are implicitly provided by the order the values are 'added'.
 // The returned index is of type ElemType which will be typically some floating point. This is
 // not nice but we wont to return it as a node output. TODO: make sure the index always stays in a range that is exactly representable ElemType.
 //-----------------------------------------------------------------------------------------------------------------------------------------------
-template <class ElemType, bool ArgMax> class ArgMaxAggregation
+template <class ElemType, bool ArgMax /* switch between ArgMax and ArgMin */ > class ArgMaxMinAggregation
 {
     long m_index = 0;
     long m_result_index = 0;
@@ -233,7 +233,7 @@ public:
 
     void AddValue(ElemType val)
     {
-        if (ArgMax)  //ArgMin case
+        if (ArgMax)  //ArgMax case
         {
             if (val > m_extreme_value)
             {
@@ -6266,14 +6266,14 @@ struct TensorOpIteration<ElemType, OPFN, N, vectorizable, m, -1>
         }
         else if(reductionOp == ElementWiseOperator::opArgMax)
         {
-            ArgMaxAggregation<ElemType, true> aggregator;
-            TensorOpAggregation<ElemType, OPFN, ArgMaxAggregation<ElemType, true>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
+            ArgMaxMinAggregation<ElemType, true> aggregator;
+            TensorOpAggregation<ElemType, OPFN, ArgMaxMinAggregation<ElemType, true>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
             val = aggregator.AggregatedValue();
         }
         else if (reductionOp == ElementWiseOperator::opArgMin)
         {
-            ArgMaxAggregation<ElemType, false> aggregator;
-            TensorOpAggregation<ElemType, OPFN, ArgMaxAggregation<ElemType, false>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
+            ArgMaxMinAggregation<ElemType, false> aggregator;
+            TensorOpAggregation<ElemType, OPFN, ArgMaxMinAggregation<ElemType, false>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
             val = aggregator.AggregatedValue();
         }
 
