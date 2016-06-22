@@ -213,9 +213,9 @@ void CPUMatrix<ElemType>::Clear()
 #pragma region Aggregators for reduction operation
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
-// ArgMaxMinAggregation finds lowest index with minum/maximum value. Indexes are implicitly provided by the order the values are 'added'.
+// ArgMaxMinAggregation finds lowest index with maximum/minimum value. Indexes are implicitly provided by the order the values are 'added'.
 // The returned index is of type ElemType which will be typically some floating point. This is
-// not nice but we wont to return it as a node output. TODO: make sure the index always stays in a range that is exactly representable ElemType.
+// not nice but we want to return it as a node output. TODO: make sure the index always stays in a range that is exactly representable ElemType.
 //-----------------------------------------------------------------------------------------------------------------------------------------------
 template <class ElemType, bool ArgMax /* switch between ArgMax and ArgMin */ > class ArgMaxMinAggregation
 {
