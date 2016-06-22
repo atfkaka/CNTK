@@ -104,6 +104,8 @@ template <class ElemType>
     switch (m_op)
     {
     case ElementWiseOperator::opSum: return false;
+    case ElementWiseOperator::opArgMax: return false;
+    case ElementWiseOperator::opArgMin: return false;
     // will be different e.g. for LogPlus, Max, and Min
     }
     LogicError("Should not get here.");
@@ -115,6 +117,8 @@ template <class ElemType>
     switch (m_op)
     {
     case ElementWiseOperator::opSum: return false;
+    case ElementWiseOperator::opArgMax: return false;
+    case ElementWiseOperator::opArgMin: return false;
     // will be different for LogPlus, Max, and Min
     }
     LogicError("Should not get here.");
@@ -129,6 +133,10 @@ void ReduceElementsNode<ElemType>::ValidateOp()
     else
 #endif
     if (m_operation == L"Sum") m_op = ElementWiseOperator::opSum;
+    else
+    if (m_operation == L"ArgMax")  m_op = ElementWiseOperator::opArgMax;
+    else
+    if (m_operation == L"ArgMin")  m_op = ElementWiseOperator::opArgMax;
     // more here
     else InvalidArgument("%ls was given an invalid operation code '%ls'. Allowed are: 'Sum'. And a few more soon.", NodeDescription().c_str(), m_operation.c_str());
 }

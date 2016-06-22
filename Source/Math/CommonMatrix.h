@@ -96,8 +96,10 @@ enum ElementWiseOperator
     opCond /*a ? b : c*/,
     opClip, /*clip a within interval b..c*/
     opElementwiseProductWithLogSumDerivative,
-    opCopyIfEqual
+    opCopyIfEqual,
     // Note: not all that's implemented in CNTK ComputationNodes has an opcode yet.
+    opArgMax,
+    opArgMin
 };
 
 // helper to apply a C macro for all operations of each kind

@@ -206,6 +206,31 @@ void CPUMatrix<ElemType>::Clear()
 
 #pragma endregion Constructors and Destructor
 
+#pragma region Aggregators for reduction operation
+
+template <class ElemType> class ArgMaxAggregation
+{
+    long m_index = 0;
+    long m_max_index = 0;
+    ElemType m_maxVal = std::numeric_limits <ElemType>::min(); 
+
+public:
+    ElemType AggregatedValue()
+    {
+        return (ElemType)m_max_index;
+    }
+
+    void AddValue(ElemType val)
+    {
+        if (val > m_maxVal)
+        {
+            m_maxVal = val;
+            m_max_index = m_index;
+        }
+        m_index++;
+    }
+};
+
 #pragma region Basic Operators
 
 template <class ElemType>
@@ -6078,6 +6103,45 @@ struct TensorOpReduction<ElemType, OPFN, N, -1>
 };
 
 // -----------------------------------------------------------------------
+// function to compute the value for a given output location (perform reduction if needed)
+// -----------------------------------------------------------------------
+
+// perform loop over reduction index m
+// This function is declared inside a wrapper struct to allow partial specialization (m = -1).
+template <class ElemType, typename OPFN, typename Aggregator, size_t N, int m>
+struct TensorOpAggregation
+{
+    // reduction case (non-reduction case is specialized)
+    static inline void Loop(array<ElemType*, N> pointers, const OPFN& opfn, Aggregator& aggregator,
+    const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, N>& reducingStrides)
+    {
+        array<ptrdiff_t, N - 1> strides;   // N-1 because last one is the result pointer, which is unused in reduction
+        for (size_t i = 0; i < N - 1; i++) // N = a small constant, this will be unrolled
+            strides[i] = reducingStrides[i][(size_t)m];
+        for (size_t dim = reducingOpDims[(size_t)m]; dim-- > 0;)
+        {
+            // need to descend into one loop deeper
+            TensorOpAggregation<ElemType, OPFN, Aggregator, N, m - 1>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
+            // advance the pointers
+            for (size_t i = 0; i < N - 1; i++)
+                pointers[i] += strides[i]; // note: last pointer (result) is unused and untouched here
+        }
+    }
+};
+
+// perform loop over reduction index m
+// This is the specialized version for m = -1, which terminates the recursion.
+template <class ElemType, typename OPFN, typename Aggregator, size_t N>
+struct TensorOpAggregation<ElemType, OPFN, Aggregator, N, -1>
+{
+    static inline void Loop(array<ElemType*, N> pointers, const OPFN& opfn, Aggregator& aggregator,
+    const SmallVector<size_t>&, const array<SmallVector<ptrdiff_t>, N>&)
+    {
+        aggregator.AddValue(opfn(pointers)); // finally we are doing some work!!!
+    }
+};
+
+// -----------------------------------------------------------------------
 // perform loop over regular index k for N-nary operations (N counting the output)
 // -----------------------------------------------------------------------
 
@@ -6085,7 +6149,7 @@ struct TensorOpReduction<ElemType, OPFN, N, -1>
 template <class ElemType, typename OPFN, size_t N, bool vectorizable, int m, int k>
 struct TensorOpIteration
 {
-    static inline void Loop(ElemType beta, array<ElemType*, N> pointers, ElemType alpha, const OPFN& opfn,
+    static inline void Loop(ElemType beta, array<ElemType*, N> pointers, ElemType alpha, const OPFN& opfn, ElementWiseOperator reductionOp,
                             const SmallVector<size_t>& regularOpDims, const array<SmallVector<ptrdiff_t>, N>& regularStrides,
                             const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, N>& reducingStrides)
     {
@@ -6096,7 +6160,7 @@ struct TensorOpIteration
         for (size_t dim = regularOpDims[(size_t) k]; dim-- > 0;)
         {
             // need to descend into one loop deeper
-            TensorOpIteration<ElemType, OPFN, N, vectorizable, m, k - 1>::Loop(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+            TensorOpIteration<ElemType, OPFN, N, vectorizable, m, k - 1>::Loop(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
             // advance the pointers
             for (size_t i = 0; i < N; i++)
                 pointers[i] += strides[i];
@@ -6109,7 +6173,7 @@ struct TensorOpIteration
 template <class ElemType, typename OPFN>
 struct TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduction*/, 0 /*innermost loop*/>
 {
-    static inline void Loop(ElemType beta, array<ElemType*, 3> pointers, ElemType alpha, const OPFN& opfn,
+    static inline void Loop(ElemType beta, array<ElemType*, 3> pointers, ElemType alpha, const OPFN& opfn, ElementWiseOperator reductionOp,
                             const SmallVector<size_t>& regularOpDims, const array<SmallVector<ptrdiff_t>, 3>& regularStrides,
                             const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, 3>& reducingStrides)
     {
@@ -6121,15 +6185,15 @@ struct TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduc
         if (beta != 0)
 #pragma omp parallel for
             for (int k = 0; k < (int) K; k++)
-                TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(beta, array<ElemType*, 3>{pa + k, pb + k, pc + k}, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+                TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(beta, array<ElemType*, 3>{pa + k, pb + k, pc + k}, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
         else if (alpha != 1)
 #pragma omp parallel for
             for (int k = 0; k < (int) K; k++)
-                TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 3>{pa + k, pb + k, pc + k}, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+                TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 3>{pa + k, pb + k, pc + k}, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
         else
 #pragma omp parallel for
             for (int k = 0; k < (int) K; k++)
-                TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 3>{pa + k, pb + k, pc + k}, 1, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+                TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 3>{pa + k, pb + k, pc + k}, 1, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
         // TODO: According to Amit, the VS compiler is not able to vectorize into lambdas. Solution: change the lambda to take an N, or to implement the loop inside (with 1 element by default).
         // TODO: The signedness of k (required for omp) causes an extra sign-extend.
         // TODO: OMP adds LOTS of overhead. Do we need a guard, a min size when to use it?
@@ -6139,7 +6203,7 @@ struct TensorOpIteration<ElemType, OPFN, 3, true /*vectorizable*/, -1 /*no reduc
 template <class ElemType, typename OPFN>
 struct TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduction*/, 0 /*innermost loop*/>
 {
-    static inline void Loop(ElemType beta, array<ElemType*, 2> pointers, ElemType alpha, const OPFN& opfn,
+    static inline void Loop(ElemType beta, array<ElemType*, 2> pointers, ElemType alpha, const OPFN& opfn, ElementWiseOperator reductionOp,
                             const SmallVector<size_t>& regularOpDims, const array<SmallVector<ptrdiff_t>, 2>& regularStrides,
                             const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, 2>& reducingStrides)
     {
@@ -6150,27 +6214,39 @@ struct TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduc
         if (beta != 0)
 #pragma omp parallel for
             for (int k = 0; k < (int) K; k++)
-                TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(beta, array<ElemType*, 2>{pa + k, pb + k}, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+                TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(beta, array<ElemType*, 2>{pa + k, pb + k}, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
         else if (alpha != 1)
 #pragma omp parallel for
             for (int k = 0; k < (int) K; k++)
-                TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 2>{pa + k, pb + k}, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+                TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 2>{pa + k, pb + k}, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
         else
 #pragma omp parallel for
             for (int k = 0; k < (int) K; k++)
-                TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 2>{pa + k, pb + k}, 1, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+                TensorOpIteration<ElemType, OPFN, 2, true /*vectorizable*/, -1 /*no reduction*/, -1 /*scalar*/>::Loop(0, array<ElemType*, 2>{pa + k, pb + k}, 1, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     }
 };
 
 template <class ElemType, typename OPFN, size_t N, bool vectorizable, int m>
 struct TensorOpIteration<ElemType, OPFN, N, vectorizable, m, -1>
 {
-    static inline void Loop(ElemType beta, array<ElemType*, N> pointers, ElemType alpha, const OPFN& opfn,
+    static inline void Loop(ElemType beta, array<ElemType*, N> pointers, ElemType alpha, const OPFN& opfn, ElementWiseOperator reductionOp,
                             const SmallVector<size_t>&, const array<SmallVector<ptrdiff_t>, N>&,
                             const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, N>& reducingStrides)
     {
-        // we are at element level for the result: perform the op (there may still be reduction)
-        ElemType val = TensorOpReduction<ElemType, OPFN, N, m>::Loop(pointers, opfn, reducingOpDims, reducingStrides);
+        ElemType val=0;
+        if (reductionOp == ElementWiseOperator::opSum)
+        {
+            // we are at element level for the result: perform the op (there may still be reduction)
+            val = TensorOpReduction<ElemType, OPFN, N, m>::Loop(pointers, opfn, reducingOpDims, reducingStrides);
+        }
+        else if(reductionOp == ElementWiseOperator::opArgMax || reductionOp == ElementWiseOperator::opArgMin)
+        {
+            // we are at element level for the result: perform the op (there may still be reduction)
+            ArgMaxAggregation<ElemType> aggregator;
+            TensorOpAggregation<ElemType, OPFN, ArgMaxAggregation<ElemType>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
+            val = aggregator.AggregatedValue();
+        }
+
         // scale
         val *= alpha;
         // combine with previous value in target matrix, then write it out
@@ -6189,7 +6265,7 @@ struct TensorOpIteration<ElemType, OPFN, N, vectorizable, m, -1>
 
 // tensor operation with k+1 dimensions (-1 means scalar)
 template <class ElemType, typename OPFN, size_t N, int k>
-static void TensorOpWithRegularLoop(ElemType beta, const array<ElemType*, N>& pointers, ElemType alpha, const OPFN& opfn,
+static void TensorOpWithRegularLoop(ElemType beta, const array<ElemType*, N>& pointers, ElemType alpha, const OPFN& opfn, ElementWiseOperator reductionOp,
                                     const SmallVector<size_t>& regularOpDims, const array<SmallVector<ptrdiff_t>, N>& regularStrides,
                                     const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, N>& reducingStrides)
 {
@@ -6197,9 +6273,9 @@ static void TensorOpWithRegularLoop(ElemType beta, const array<ElemType*, N>& po
     switch (dims)
     {
     case 2:
-        return TensorOpIteration<ElemType, OPFN, N, false /*vectorizable*/, 1, k>::Loop(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+        return TensorOpIteration<ElemType, OPFN, N, false /*vectorizable*/, 1, k>::Loop(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     case 1:
-        return TensorOpIteration<ElemType, OPFN, N, false /*vectorizable*/, 0, k>::Loop(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+        return TensorOpIteration<ElemType, OPFN, N, false /*vectorizable*/, 0, k>::Loop(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     case 0:
     {
         // if all leading dimensions are 1, we can let the compiler do some unrolling
@@ -6207,9 +6283,9 @@ static void TensorOpWithRegularLoop(ElemType beta, const array<ElemType*, N>& po
         for (size_t i = 0; i < N; i++)
             leadingAllOne &= k >= 0 && regularStrides[i][0] == 1;
         if (leadingAllOne) // special version that uses a hard-coded increment of 1 for all leading dimensions
-            return TensorOpIteration<ElemType, OPFN, N, true /*vectorizable*/, -1, k>::Loop(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+            return TensorOpIteration<ElemType, OPFN, N, true /*vectorizable*/, -1, k>::Loop(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
         else
-            return TensorOpIteration<ElemType, OPFN, N, false /*vectorizable*/, -1, k>::Loop(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+            return TensorOpIteration<ElemType, OPFN, N, false /*vectorizable*/, -1, k>::Loop(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     }
     default:
         LogicError("TensorOp: %d non-flattened reduction dimensions are not supported.", (int) dims);
@@ -6219,7 +6295,7 @@ static void TensorOpWithRegularLoop(ElemType beta, const array<ElemType*, N>& po
 // tensor operation, generalized in number of arguments, operation already provided as a lambda
 // This function now expands into different k.
 template <class ElemType, typename OPFN, size_t N>
-static void TensorOpWithFn(ElemType beta, array<ElemType*, N> pointers, ElemType alpha, const OPFN& opfn,
+static void TensorOpWithFn(ElemType beta, array<ElemType*, N> pointers, ElemType alpha, const OPFN& opfn, ElementWiseOperator reductionOp,
                            const array<size_t, N>& offsets,
                            const SmallVector<size_t>& regularOpDims, const array<SmallVector<ptrdiff_t>, N>& regularStrides,
                            const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, N>& reducingStrides)
@@ -6230,15 +6306,15 @@ static void TensorOpWithFn(ElemType beta, array<ElemType*, N> pointers, ElemType
     switch (dims)
     {
     case 4:
-        return TensorOpWithRegularLoop<ElemType, OPFN, N, 3>(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+        return TensorOpWithRegularLoop<ElemType, OPFN, N, 3>(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     case 3:
-        return TensorOpWithRegularLoop<ElemType, OPFN, N, 2>(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+        return TensorOpWithRegularLoop<ElemType, OPFN, N, 2>(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     case 2:
-        return TensorOpWithRegularLoop<ElemType, OPFN, N, 1>(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+        return TensorOpWithRegularLoop<ElemType, OPFN, N, 1>(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     case 1:
-        return TensorOpWithRegularLoop<ElemType, OPFN, N, 0>(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+        return TensorOpWithRegularLoop<ElemType, OPFN, N, 0>(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     case 0:
-        return TensorOpWithRegularLoop<ElemType, OPFN, N, -1>(beta, pointers, alpha, opfn, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
+        return TensorOpWithRegularLoop<ElemType, OPFN, N, -1>(beta, pointers, alpha, opfn, reductionOp, regularOpDims, regularStrides, reducingOpDims, reducingStrides);
     default:
         LogicError("TensorOp: %d non-flattened input dimensions are not supported.", (int) dims);
     }
@@ -6256,8 +6332,8 @@ void CPUMatrix<ElemType>::TensorOp(ElemType beta, const CPUMatrix<ElemType>& a, 
                                    const SmallVector<size_t>& regularOpDims, const array<SmallVector<ptrdiff_t>, 2>& regularStrides,
                                    const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, 2>& reducingStrides)
 {
-    if (reductionOp != ElementWiseOperator::opSum) // TODO: enable the reduction ops
-        InvalidArgument("TensorOp: Unary reduction operations other than opSum not yet implemented.");
+    if (reductionOp != ElementWiseOperator::opSum && reductionOp != ElementWiseOperator::opArgMax && reductionOp != ElementWiseOperator::opArgMin) // TODO: enable the reduction ops
+        InvalidArgument("TensorOp: Unary reduction operations other than opSum, opArgMax, opArgMin are not yet implemented on CPU.");
 
 // TODO: Change the lambda to take a pointer and a number of elements, so that we can pass it 1 or 4 elements, in order for it to SSE-vectorize.
 #define CaseUnaryTensorOp(oper)                                                        \
@@ -6266,6 +6342,7 @@ void CPUMatrix<ElemType>::TensorOp(ElemType beta, const CPUMatrix<ElemType>& a, 
                               {                                                        \
                                   return Op##oper((*(pp[0])));                         \
                               },                                                       \
+                              reductionOp,                                             \
                               offsets, regularOpDims, regularStrides, reducingOpDims, reducingStrides)
 
     array<ElemType*, 2> pointers = {a.Data(), Data()};
@@ -6294,6 +6371,7 @@ void CPUMatrix<ElemType>::TensorOp(ElemType beta, const CPUMatrix<ElemType>& a, 
                               {                                                        \
                                   return Op##oper((*(pp[0])), (*(pp[1])));             \
                               },                                                       \
+                              reductionOp,                                             \
                               offsets, regularOpDims, regularStrides, reducingOpDims, reducingStrides)
 
     array<ElemType*, 3> pointers = {a.Data(), b.Data(), Data()};
@@ -6322,6 +6400,7 @@ void CPUMatrix<ElemType>::TensorOp(ElemType beta, const CPUMatrix<ElemType>& a, 
                               {                                                        \
                                   return Op##oper((*(pp[0])), (*(pp[1])), (*(pp[2]))); \
                               },                                                       \
+                              reductionOp,                                             \
                               offsets, regularOpDims, regularStrides, reducingOpDims, reducingStrides)
 
     array<ElemType*, 4> pointers = {a.Data(), b.Data(), c.Data(), Data()};
