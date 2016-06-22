@@ -208,28 +208,54 @@ void CPUMatrix<ElemType>::Clear()
 
 #pragma region Aggregators for reduction operation
 
-template <class ElemType> class ArgMaxAggregation
+//-----------------------------------------------------------------------------------------------------
+// Defining 'visitors' that do different kinds of aggreagtions ans the values 'shown' (using AddValue) 
+// Aggregated value is retrieved with method AggregatedValue().
+// The return the index as type ElemType which will be typically some floating point. This is
+// not nice but we woant to return it as a node output. TODO: make sure the index always stays in a range that is excatly representable 
+//-----------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// ArgMaxAggregation find lowest index with minum/maximum value. Indexes are implicitly provided by the order the values are 'added'.
+//----------------------------------------------------------------------------------------------------------------------------------
+template <class ElemType, bool ArgMax> class ArgMaxAggregation
 {
     long m_index = 0;
-    long m_max_index = 0;
-    ElemType m_maxVal = std::numeric_limits <ElemType>::min(); 
+    long m_result_index = 0;
+
+    // m_extreme_value holds the extreme values found so far. 
+    ElemType m_extreme_value = ArgMax ? std::numeric_limits <ElemType>::min() : std::numeric_limits <ElemType>::max();
 
 public:
     ElemType AggregatedValue()
     {
-        return (ElemType)m_max_index;
+        return (ElemType)m_result_index;
     }
 
     void AddValue(ElemType val)
     {
-        if (val > m_maxVal)
+        if (ArgMax)  //ArgMin case
         {
-            m_maxVal = val;
-            m_max_index = m_index;
+            if (val > m_extreme_value)
+            {
+                m_extreme_value = val;
+                m_result_index = m_index;
+            }
+        }
+        else if (!ArgMax) //ArgMin case
+        {
+            if (val < m_extreme_value)
+            {
+                m_extreme_value = val;
+                m_result_index = m_index;
+            }
         }
         m_index++;
     }
 };
+
+#pragma endregion Aggregators for reduction operation
+
 
 #pragma region Basic Operators
 
@@ -6234,16 +6260,21 @@ struct TensorOpIteration<ElemType, OPFN, N, vectorizable, m, -1>
                             const SmallVector<size_t>& reducingOpDims, const array<SmallVector<ptrdiff_t>, N>& reducingStrides)
     {
         ElemType val=0;
+        // we are at element level for the result: perform the op (there may still be reduction)
         if (reductionOp == ElementWiseOperator::opSum)
         {
-            // we are at element level for the result: perform the op (there may still be reduction)
             val = TensorOpReduction<ElemType, OPFN, N, m>::Loop(pointers, opfn, reducingOpDims, reducingStrides);
         }
-        else if(reductionOp == ElementWiseOperator::opArgMax || reductionOp == ElementWiseOperator::opArgMin)
+        else if(reductionOp == ElementWiseOperator::opArgMax)
         {
-            // we are at element level for the result: perform the op (there may still be reduction)
-            ArgMaxAggregation<ElemType> aggregator;
-            TensorOpAggregation<ElemType, OPFN, ArgMaxAggregation<ElemType>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
+            ArgMaxAggregation<ElemType, true> aggregator;
+            TensorOpAggregation<ElemType, OPFN, ArgMaxAggregation<ElemType, true>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
+            val = aggregator.AggregatedValue();
+        }
+        else if (reductionOp == ElementWiseOperator::opArgMin)
+        {
+            ArgMaxAggregation<ElemType, false> aggregator;
+            TensorOpAggregation<ElemType, OPFN, ArgMaxAggregation<ElemType, false>, N, m>::Loop(pointers, opfn, aggregator, reducingOpDims, reducingStrides);
             val = aggregator.AggregatedValue();
         }
 
