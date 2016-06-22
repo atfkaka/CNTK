@@ -206,18 +206,17 @@ void CPUMatrix<ElemType>::Clear()
 
 #pragma endregion Constructors and Destructor
 
+//-----------------------------------------------------------------------------------------------------
+// Defining 'visitors' that do different kinds of aggreagtions on the values 'shown' to them (using AddValue) 
+// Aggregated value is retrieved with method AggregatedValue().
+//-----------------------------------------------------------------------------------------------------
 #pragma region Aggregators for reduction operation
 
-//-----------------------------------------------------------------------------------------------------
-// Defining 'visitors' that do different kinds of aggreagtions ans the values 'shown' (using AddValue) 
-// Aggregated value is retrieved with method AggregatedValue().
-// The return the index as type ElemType which will be typically some floating point. This is
-// not nice but we woant to return it as a node output. TODO: make sure the index always stays in a range that is excatly representable 
-//-----------------------------------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------------
 // ArgMaxAggregation find lowest index with minum/maximum value. Indexes are implicitly provided by the order the values are 'added'.
-//----------------------------------------------------------------------------------------------------------------------------------
+// The returned index is of type ElemType which will be typically some floating point. This is
+// not nice but we wont to return it as a node output. TODO: make sure the index always stays in a range that is exactly representable ElemType.
+//-----------------------------------------------------------------------------------------------------------------------------------------------
 template <class ElemType, bool ArgMax> class ArgMaxAggregation
 {
     long m_index = 0;
