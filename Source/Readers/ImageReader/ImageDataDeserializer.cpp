@@ -329,7 +329,7 @@ void ImageDataDeserializer::CreateSequenceDescriptions(CorpusDescriptorPtr corpu
         }
     }
 
-	auto cmp = [](ImageSequenceDescription &a, ImageSequenceDescription &b) {
+	auto cmp = [](ImageSequenceDescription a, ImageSequenceDescription b) {
 		return a.m_id < b.m_id;
 	};
 
