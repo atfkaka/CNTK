@@ -163,7 +163,19 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 			if (node->IsOutOfDateWrtInputs())
 			{
 				node->BeginForwardProp();
+
+				float* inputData;
+				float* outputData;
+				for (auto& inputRaw : node->GetInputs()) {
+					std::shared_ptr<Matrix<float>> input = static_pointer_cast<Matrix<float>>(inputRaw->ValuePtr());
+					inputData = input->CopyToArray();
+				}
+
 				node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
+
+				std::shared_ptr<Matrix<float>> output = static_pointer_cast<Matrix<float>>(node->ValuePtr());
+				outputData = output->CopyToArray();
+
 				node->EndForwardProp();
 
 				node->BumpEvalTimeStamp();

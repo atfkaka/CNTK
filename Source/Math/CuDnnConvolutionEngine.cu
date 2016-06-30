@@ -134,7 +134,12 @@ public:
         {
             dims[j] = (int)geometry.KernelShape()[i];
             stride[j] = (int)geometry.GetStride(i);
-            pad[j] = geometry.GetLowerPad(i);
+			if (kind != PoolKind::Max) {
+				pad[j] = geometry.GetLowerPad(i);
+			}
+			else {
+				pad[j] = 0;
+			}
         }
 
         // Must use CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING to get the same results as in reference engine.
