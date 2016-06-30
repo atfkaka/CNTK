@@ -38,6 +38,11 @@ public:
     // Get the map file path that describes mapping of images into their labels.
     std::string GetMapPath() const;
 
+	std::string GetSortedSequencePath() const
+	{
+		return m_sortedSequencePath;
+	}
+
     ImageLayoutKind GetDataFormat() const
     {
         return m_dataFormat;
@@ -75,6 +80,7 @@ private:
     ImageConfigHelper& operator=(const ImageConfigHelper&) = delete;
 
     std::string m_mapPath;
+	std::string m_sortedSequencePath;
     std::vector<StreamDescriptionPtr> m_streams;
     ImageLayoutKind m_dataFormat;
     int m_cpuThreadCount;

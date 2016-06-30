@@ -1260,6 +1260,15 @@ void GPUMatrix<ElemType>::SetGaussianRandomValue(const ElemType mean, const Elem
     PrepareDevice();
     CreateCurandObject(seed, __FUNCTION__); // TODO call ResetCurandObject() instead?
 
+	if (s_curandGenerator) {
+		free(s_curandGenerator);
+	}
+	s_curandGenerator = new curandGenerator_t;
+	// Create pseudo-random number generator
+	CURAND_CALL(curandCreateGenerator(&(((curandGenerator_t*)s_curandGenerator)[0]), CURAND_RNG_PSEUDO_XORWOW));
+	CURAND_CALL(curandSetPseudoRandomGeneratorSeed(((curandGenerator_t*)s_curandGenerator)[0], 1));
+	CURAND_CALL(curandSetGeneratorOrdering(((curandGenerator_t*)s_curandGenerator)[0], CURAND_ORDERING_PSEUDO_SEEDED));
+
     // TODO: Why not use SyncGuard?
     if (sizeof(ElemType) == sizeof(float))
         CURAND_CALL(curandGenerateNormal(((curandGenerator_t*) s_curandGenerator)[0], reinterpret_cast<float*>(Data()), GetNumElements(), (float) mean, (float) sigma));

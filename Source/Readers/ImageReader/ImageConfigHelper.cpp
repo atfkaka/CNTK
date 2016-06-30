@@ -59,6 +59,8 @@ ImageConfigHelper::ImageConfigHelper(const ConfigParameters& config)
 
     m_mapPath = config(L"file");
 
+	m_sortedSequencePath = config(L"sequence", L"");
+
     m_grayscale = config(L"grayscale", c == 1);
     std::string rand = config(L"randomize", "auto");
 

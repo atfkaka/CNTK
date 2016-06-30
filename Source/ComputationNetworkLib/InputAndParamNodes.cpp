@@ -97,12 +97,13 @@ void LearnableParameter<ElemType>::InitRandom(const bool uniformInit,
     }
     else
     {
-        size_t inputSize = value.GetNumCols();
-        ElemType randInitstd = 0.2f * initValueScale / sqrt(ElemType(inputSize));
-        value.SetGaussianRandomValue(0, randInitstd, randomSeed);
+        //size_t inputSize = value.GetNumCols();
+        //ElemType randInitstd = 0.2f * initValueScale / sqrt(ElemType(inputSize));
+		ElemType randInitstd = 0.01f;
+        value.SetGaussianRandomValue(0, randInitstd, 1/*randomSeed*/);
     }
     if (initOnCPUOnly)
-        Value().TransferToDeviceIfNotThere(m_deviceId, true);
+		Value().TransferToDeviceIfNotThere(CPUDEVICE, true);
 }
 
 // initialize by reading a matrix from a text file

@@ -165,7 +165,7 @@ ImageDataDeserializer::ImageDataDeserializer(CorpusDescriptorPtr corpus, const C
     // TODO: multiview should be done on the level of randomizer/transformers - it is responsiblity of the
     // TODO: randomizer to collect how many copies each transform needs and request same sequence several times.
     bool multiViewCrop = config(L"multiViewCrop", false);
-    CreateSequenceDescriptions(corpus, config(L"file"), labelDimension, multiViewCrop);
+    CreateSequenceDescriptions(corpus, config(L"file"), labelDimension, multiViewCrop, config(L"sequence", L""));
 }
 
 // TODO: Should be removed at some point.
@@ -202,7 +202,7 @@ ImageDataDeserializer::ImageDataDeserializer(const ConfigParameters& config)
         RuntimeError("Unsupported label element type '%d'.", (int)label->m_elementType);
     }
 
-    CreateSequenceDescriptions(std::make_shared<CorpusDescriptor>(), configHelper.GetMapPath(), labelDimension, configHelper.IsMultiViewCrop());
+    CreateSequenceDescriptions(std::make_shared<CorpusDescriptor>(), configHelper.GetMapPath(), labelDimension, configHelper.IsMultiViewCrop(), configHelper.GetSortedSequencePath());
 }
 
 // Descriptions of chunks exposed by the image reader.
@@ -228,8 +228,23 @@ void ImageDataDeserializer::GetSequencesForChunk(size_t chunkId, std::vector<Seq
     result.push_back(m_imageSequences[chunkId]);
 }
 
-void ImageDataDeserializer::CreateSequenceDescriptions(CorpusDescriptorPtr corpus, std::string mapPath, size_t labelDimension, bool isMultiCrop)
+void ImageDataDeserializer::CreateSequenceDescriptions(CorpusDescriptorPtr corpus, std::string mapPath, size_t labelDimension, bool isMultiCrop, std::string sortedSequencePath)
 {
+	std::unordered_map<std::string, size_t> sortedSequence;
+	if (sortedSequencePath != "")
+	{
+		std::ifstream sortedSequenceFile(sortedSequencePath);
+		if (!sortedSequenceFile)
+		{
+			RuntimeError("Could not open %s for reading.", sortedSequencePath.c_str());
+		}
+		std::string line;
+		for (size_t lineIndex = 0; std::getline(sortedSequenceFile, line); ++lineIndex)
+		{
+			sortedSequence.insert(std::pair<std::string, size_t>(line, lineIndex));
+		}
+	}
+
     std::ifstream mapFile(mapPath);
     if (!mapFile)
     {
@@ -292,10 +307,47 @@ void ImageDataDeserializer::CreateSequenceDescriptions(CorpusDescriptorPtr corpu
             description.m_key.m_sample = 0;
 
             m_keyToSequence[description.m_key.m_sequence] = m_imageSequences.size();
+
+			if (sortedSequence.size()) {
+				size_t dividePoint = imagePath.find_last_of("\\");
+				if (dividePoint == std::string::npos) {
+					RuntimeError("Load fix image sequence error, could not get file name %s", imagePath.c_str());
+				}
+				std::string imageFileName = imagePath.substr(dividePoint + 1);
+				auto iter = sortedSequence.find(imageFileName);
+				if (iter != sortedSequence.end()) {
+					description.m_id = iter->second;
+					description.m_chunkId = iter->second;
+				}
+				else {
+					RuntimeError("Load fix iamge sequence error, could not find file %s in fix sequences", imageFileName.c_str());
+				}
+			}
             m_imageSequences.push_back(description);
+
             RegisterByteReader(description.m_id, description.m_path, knownReaders);
         }
     }
+
+	auto cmp = [](ImageSequenceDescription &a, ImageSequenceDescription &b) {
+		return a.m_id < b.m_id;
+	};
+
+	std::sort(m_imageSequences.begin(), m_imageSequences.end(), cmp);
+
+	mapFile.close();
+
+//#define EXPORT_SEQUENCE
+#ifdef EXPORT_SEQUENCE
+	std::ofstream exporter("D:\\Workspace\\Experiments\\CNTK-Input-Id-Test\\sequence.txt");
+
+	for (auto& imageSequence : m_imageSequences) {
+		std::string imageFileName = imageSequence.m_path.substr(imageSequence.m_path.find_last_of("\\") + 1);
+		exporter << imageFileName << std::endl;
+	}
+
+	exporter.close();
+#endif
 }
 
 ChunkPtr ImageDataDeserializer::GetChunk(size_t chunkId)

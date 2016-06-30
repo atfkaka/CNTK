@@ -42,7 +42,7 @@ public:
 
 private:
     // Creates a set of sequence descriptions.
-    void CreateSequenceDescriptions(CorpusDescriptorPtr corpus, std::string mapPath, size_t labelDimension, bool isMultiCrop);
+    void CreateSequenceDescriptions(CorpusDescriptorPtr corpus, std::string mapPath, size_t labelDimension, bool isMultiCrop, std::string sortedSequencePath);
 
     // Image sequence descriptions. Currently, a sequence contains a single sample only.
     struct ImageSequenceDescription : public SequenceDescription
@@ -79,7 +79,7 @@ private:
     using SeqReaderMap = std::unordered_map<size_t, std::shared_ptr<ByteReader>>;
     SeqReaderMap m_readers;
 
-    FileByteReader m_defaultReader;
+	FileByteReader m_defaultReader;
 };
 
 }}}
