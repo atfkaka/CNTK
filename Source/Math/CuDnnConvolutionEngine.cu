@@ -87,6 +87,9 @@ public:
         {
             stride[stride.size() - 1 - i] = (int)geometry.GetStride(i);
             pad[stride.size() - 1 - i] = geometry.GetLowerPad(i);
+			if (geometry.KernelShape().GetDim(0) > 1) {
+				pad[stride.size() - 1 - i] = (int)geometry.KernelShape().GetDim(0) / 2;
+			}
         }
         SmallVector<int> upscale(stride.size(), 1);
         CUDNN_CALL(cudnnSetConvolutionNdDescriptor(m_conv, (int)stride.size(), pad.data(),

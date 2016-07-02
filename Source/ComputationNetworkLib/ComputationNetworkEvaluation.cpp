@@ -21,6 +21,9 @@ using namespace std;
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
+static int currentMiniBatchIndex = 0;
+static std::string saveFilePath = "DumpData";
+
 // This source file contains methods related to evaluation (forward prop, backprop), network validation, and matrix memory allocation (memory sharing).
 
 // -----------------------------------------------------------------------
@@ -154,6 +157,17 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::ForwardProp(const FrameRange& fr) /*override*/
 {
 	if (m_forwardMethod == ForwardMethod::NONE) {
+		int currentNodeIndex = 0;
+		std::unordered_set<std::wstring> needCheckedNodes;
+		std::ifstream checkedNodesFile("need_check_nodes");
+		std::string checkedNodeName;
+		for (; std::getline(checkedNodesFile, checkedNodeName); ) {
+			std::wstring wCheckedNodeName(checkedNodeName.size(), ' ');
+			MultiByteToWideChar(CP_ACP, 0, (LPCSTR)checkedNodeName.c_str(), checkedNodeName.size(),
+				(LPWSTR)wCheckedNodeName.c_str(), wCheckedNodeName.size());
+			needCheckedNodes.insert(wCheckedNodeName);
+		}
+
 		for (auto& node : m_nestedNodes)
 		{
 #if 0
@@ -162,13 +176,27 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 #endif
 			if (node->IsOutOfDateWrtInputs())
 			{
+				if (needCheckedNodes.find(node->GetName()) != needCheckedNodes.end()) {
+					fprintf(stderr, "hit different node: %s", node->GetName().c_str());
+				}
+
 				node->BeginForwardProp();
 
 				float* inputData;
 				float* outputData;
 				for (auto& inputRaw : node->GetInputs()) {
-					std::shared_ptr<Matrix<float>> input = static_pointer_cast<Matrix<float>>(inputRaw->ValuePtr());
-					inputData = input->CopyToArray();
+						std::shared_ptr<Matrix<float>> input = static_pointer_cast<Matrix<float>>(inputRaw->ValuePtr());
+						inputData = input->CopyToArray();
+						size_t dataSize = input->GetNumCols() * input->GetNumRows();
+						std::stringstream convert;
+						convert << currentMiniBatchIndex;
+						if (inputRaw->GetName() == L"features") {
+							std::ofstream inputWriter("./CNTK/features" + convert.str(), std::ios::binary);
+							int expDataSize = (int)dataSize;
+							inputWriter.write((char *)&expDataSize, sizeof(int));
+							inputWriter.write((const char*)inputData, dataSize * sizeof(float));
+							inputWriter.close();
+						}
 				}
 
 				node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
@@ -176,11 +204,26 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 				std::shared_ptr<Matrix<float>> output = static_pointer_cast<Matrix<float>>(node->ValuePtr());
 				outputData = output->CopyToArray();
 
+				size_t dataSize = output->GetNumCols() * output->GetNumRows();
+				std::stringstream convert;
+				convert << currentNodeIndex;
+				std::string nodeName(node->GetName().length(), ' ');
+				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)node->GetName().c_str(), node->GetName().size(), (LPSTR)nodeName.c_str(), node->GetName().size(), NULL, NULL);
+				std::ofstream outputWriter("./CNTK/output." + convert.str() + "." + nodeName, std::ios::binary);
+				int expDataSize = (int)dataSize;
+				outputWriter.write((char *)&expDataSize, sizeof(int));
+				outputWriter.write((const char*)outputData, dataSize * sizeof(float));
+				outputWriter.close();
+
+				currentNodeIndex++;
+
 				node->EndForwardProp();
 
 				node->BumpEvalTimeStamp();
 			}
 		}
+
+		currentMiniBatchIndex++;
 		return;
 	}
 
