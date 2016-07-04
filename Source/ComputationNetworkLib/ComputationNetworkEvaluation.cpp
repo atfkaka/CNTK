@@ -182,38 +182,38 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 
 				node->BeginForwardProp();
 
-				float* inputData;
-				float* outputData;
-				for (auto& inputRaw : node->GetInputs()) {
-						std::shared_ptr<Matrix<float>> input = static_pointer_cast<Matrix<float>>(inputRaw->ValuePtr());
-						inputData = input->CopyToArray();
-						size_t dataSize = input->GetNumCols() * input->GetNumRows();
-						std::stringstream convert;
-						convert << currentMiniBatchIndex;
-						if (inputRaw->GetName() == L"features") {
-							std::ofstream inputWriter("./CNTK/features" + convert.str(), std::ios::binary);
-							int expDataSize = (int)dataSize;
-							inputWriter.write((char *)&expDataSize, sizeof(int));
-							inputWriter.write((const char*)inputData, dataSize * sizeof(float));
-							inputWriter.close();
-						}
-				}
+				//float* inputData;
+				//float* outputData;
+				//for (auto& inputRaw : node->GetInputs()) {
+				//		std::shared_ptr<Matrix<float>> input = static_pointer_cast<Matrix<float>>(inputRaw->ValuePtr());
+				//		inputData = input->CopyToArray();
+				//		size_t dataSize = input->GetNumCols() * input->GetNumRows();
+				//		std::stringstream convert;
+				//		convert << currentMiniBatchIndex;
+				//		if (inputRaw->GetName() == L"features") {
+				//			std::ofstream inputWriter("./CNTK/features" + convert.str(), std::ios::binary);
+				//			int expDataSize = (int)dataSize;
+				//			inputWriter.write((char *)&expDataSize, sizeof(int));
+				//			inputWriter.write((const char*)inputData, dataSize * sizeof(float));
+				//			inputWriter.close();
+				//		}
+				//}
 
 				node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
 
-				std::shared_ptr<Matrix<float>> output = static_pointer_cast<Matrix<float>>(node->ValuePtr());
-				outputData = output->CopyToArray();
+				//std::shared_ptr<Matrix<float>> output = static_pointer_cast<Matrix<float>>(node->ValuePtr());
+				//outputData = output->CopyToArray();
 
-				size_t dataSize = output->GetNumCols() * output->GetNumRows();
-				std::stringstream convert;
-				convert << currentNodeIndex;
-				std::string nodeName(node->GetName().length(), ' ');
-				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)node->GetName().c_str(), node->GetName().size(), (LPSTR)nodeName.c_str(), node->GetName().size(), NULL, NULL);
-				std::ofstream outputWriter("./CNTK/output." + convert.str() + "." + nodeName, std::ios::binary);
-				int expDataSize = (int)dataSize;
-				outputWriter.write((char *)&expDataSize, sizeof(int));
-				outputWriter.write((const char*)outputData, dataSize * sizeof(float));
-				outputWriter.close();
+				//size_t dataSize = output->GetNumCols() * output->GetNumRows();
+				//std::stringstream convert;
+				//convert << currentNodeIndex;
+				//std::string nodeName(node->GetName().length(), ' ');
+				//WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)node->GetName().c_str(), node->GetName().size(), (LPSTR)nodeName.c_str(), node->GetName().size(), NULL, NULL);
+				//std::ofstream outputWriter("./CNTK/output." + convert.str() + "." + nodeName, std::ios::binary);
+				//int expDataSize = (int)dataSize;
+				//outputWriter.write((char *)&expDataSize, sizeof(int));
+				//outputWriter.write((const char*)outputData, dataSize * sizeof(float));
+				//outputWriter.close();
 
 				currentNodeIndex++;
 
