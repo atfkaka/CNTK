@@ -157,6 +157,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::ForwardProp(const FrameRange& fr) /*override*/
 {
 	if (m_forwardMethod == ForwardMethod::NONE) {
+#ifdef _DEBUG
 		int currentNodeIndex = 0;
 		std::unordered_set<std::wstring> needCheckedNodes;
 		std::ifstream checkedNodesFile("need_check_nodes");
@@ -167,6 +168,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 				(wchar_t*)wCheckedNodeName.c_str(), wCheckedNodeName.size());
 			needCheckedNodes.insert(wCheckedNodeName);
 		}
+#endif
 
 		for (auto& node : m_nestedNodes)
 		{
@@ -177,7 +179,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 			if (node->IsOutOfDateWrtInputs())
 			{
 				node->BeginForwardProp();
-
+#ifdef _DEBUG
 				float* inputData;
 				float* outputData;
 				for (auto& inputRaw : node->GetInputs()) {
@@ -194,9 +196,10 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 							inputWriter.close();
 						}
 				}
+#endif
 
 				node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
-
+#ifdef _DEBUG
 				std::shared_ptr<Matrix<float>> output = static_pointer_cast<Matrix<float>>(node->ValuePtr());
 				outputData = output->CopyToArray();
 
@@ -213,7 +216,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 				outputWriter.close();
 
 				currentNodeIndex++;
-
+#endif
 				node->EndForwardProp();
 
 				node->BumpEvalTimeStamp();
