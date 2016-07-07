@@ -324,7 +324,7 @@ __global__ void _elementWiseExpOnCuda(
     const CUDA_LONG N)
 {
     CALCULATE_ELEMENTWISE_INDEX_OR_EXIT(id, N);
-    res[id] = exp_(a[id]);
+    res[id] = exp(a[id]);
 };
 
 template <class ElemType>

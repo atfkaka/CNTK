@@ -566,6 +566,8 @@ protected:
 
     shared_ptr<IMASGD<ElemType>> m_pMASGDHelper;
 
+	std::unordered_map<std::wstring, std::wstring> nodeRelativeMap;
+
 private:
     void InitializeAndCheckBlockMomentumSGDParameters();
     void MarkDropoutNodesEvalTimeStampAsOutdated(const ComputationNetworkPtr& net, const ComputationNodeBasePtr& criterionNode);

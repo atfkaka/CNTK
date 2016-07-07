@@ -591,6 +591,8 @@ public:
     virtual double Get00Element() const = 0;
     virtual MatrixBasePtr ValuePtr() const = 0; // for use in readers that pass the agnostic object around
 
+	virtual MatrixBasePtr GradientPtr() const { return nullptr; }
+
     // TODO: two sets of functions, choose one
     const std::wstring& NodeName() const { return m_nodeName; }
     std::wstring GetName() const { return m_nodeName; }

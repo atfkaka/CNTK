@@ -154,76 +154,53 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
         }
     }
 }
+
+
+
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::ForwardProp(const FrameRange& fr) /*override*/
 {
 	if (m_forwardMethod == ForwardMethod::NONE) {
 #ifdef _DEBUG
-		int currentNodeIndex = 0;
-		std::unordered_set<std::wstring> needCheckedNodes;
-		std::ifstream checkedNodesFile("need_check_nodes");
-		std::string checkedNodeName;
-		for (; std::getline(checkedNodesFile, checkedNodeName); ) {
-			std::wstring wCheckedNodeName(checkedNodeName.size(), ' ');
-			MultiByteToWideChar(CP_ACP, 0, (const char*)checkedNodeName.c_str(), checkedNodeName.size(),
-				(wchar_t*)wCheckedNodeName.c_str(), wCheckedNodeName.size());
-			needCheckedNodes.insert(wCheckedNodeName);
-		}
+		int internalIndex = 0;
+		int externalIndex = 0;
+#define EXPORTNODERELA
+#ifdef EXPORTNODERELA
+		std::ofstream nodeLink("NodeLink", std::ios::app);
 #endif
-
-		for (auto& node : m_nestedNodes)
-		{
-#if 0
-			if (dynamic_pointer_cast<LearnableParameter<float>>(node))
-				dynamic_pointer_cast<ComputationNode<float>>(node)->DebugLogMinibatch();
 #endif
-			if (node->IsOutOfDateWrtInputs())
+			for (auto& node : m_nestedNodes)
 			{
-				node->BeginForwardProp();
+#if 0
+				if (dynamic_pointer_cast<LearnableParameter<float>>(node))
+					dynamic_pointer_cast<ComputationNode<float>>(node)->DebugLogMinibatch();
+#endif
+				if (node->IsOutOfDateWrtInputs())
+				{
+					node->BeginForwardProp();
 #ifdef _DEBUG
-				float* inputData;
-				float* outputData;
-				for (auto& inputRaw : node->GetInputs()) {
-						std::shared_ptr<Matrix<float>> input = static_pointer_cast<Matrix<float>>(inputRaw->ValuePtr());
-						inputData = input->CopyToArray();
-						size_t dataSize = input->GetNumCols() * input->GetNumRows();
-						std::stringstream convert;
-						convert << currentMiniBatchIndex;
-						if (inputRaw->GetName() == L"features") {
-							std::ofstream inputWriter("./CNTK/features" + convert.str(), std::ios::binary);
-							int expDataSize = (int)dataSize;
-							inputWriter.write((char *)&expDataSize, sizeof(int));
-							inputWriter.write((const char*)inputData, dataSize * sizeof(float));
-							inputWriter.close();
-						}
+					DebugSingleForwardProp(node, fr, externalIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
+
+#ifdef EXPORTNODERELA
+					nodeLink << PARTraversalFlowControlNode::StringParser(node->GetName()) << std::endl;
+					nodeLink << (int)node->GetNumInputs() << std::endl;
+					for (auto &input : node->GetInputs()) {
+						nodeLink << PARTraversalFlowControlNode::StringParser(input->GetName()) << std::endl;
+					}
+#endif
+#else
+					node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
+#endif
+					node->EndForwardProp();
+
+					node->BumpEvalTimeStamp();
 				}
-#endif
-
-				node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
-#ifdef _DEBUG
-				std::shared_ptr<Matrix<float>> output = static_pointer_cast<Matrix<float>>(node->ValuePtr());
-				outputData = output->CopyToArray();
-
-				size_t dataSize = output->GetNumCols() * output->GetNumRows();
-				std::stringstream convert;
-				convert << currentNodeIndex;
-				std::string nodeName(node->GetName().length(), ' ');
-				WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)node->GetName().c_str(), node->GetName().size(), (char*)nodeName.c_str(),
-					node->GetName().size(), NULL, NULL);
-				std::ofstream outputWriter("./CNTK/output." + convert.str() + "." + nodeName, std::ios::binary);
-				int expDataSize = (int)dataSize;
-				outputWriter.write((char *)&expDataSize, sizeof(int));
-				outputWriter.write((const char*)outputData, dataSize * sizeof(float));
-				outputWriter.close();
-
-				currentNodeIndex++;
-#endif
-				node->EndForwardProp();
-
-				node->BumpEvalTimeStamp();
 			}
-		}
-
-		currentMiniBatchIndex++;
+#ifdef _DEBUG
+#ifdef EXPORTNODERELA
+			nodeLink << "End" << std::endl;
+			nodeLink.close();
+#endif
+#endif
 		return;
 	}
 
@@ -368,27 +345,40 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::Backprop(const FrameRange& fr, bool childrenInThisLoop, bool childrenInOuterLoop) /*override*/
 {
-    childrenInThisLoop, childrenInOuterLoop; // TODO: think through what these mean when coming from PAR mode
-    // process nodes in pre-determined order
+	childrenInThisLoop, childrenInOuterLoop; // TODO: think through what these mean when coming from PAR mode
+	// process nodes in pre-determined order
+#ifdef _DEBUG
+	int internalIndex = 0;
+	int externalIndex = 0;
+#endif
+		for (auto pnode = m_nestedNodes.rbegin(); pnode != m_nestedNodes.rend(); pnode++) // iterate backwards over evaluation order
+		{
+			auto& node = *pnode;
 
-
-    for (auto pnode = m_nestedNodes.rbegin(); pnode != m_nestedNodes.rend(); pnode++) // iterate backwards over evaluation order
-    {
-        auto& node = *pnode;
-
-		if (m_externalFlowControlNode != nullptr && (int)m_externalFlowControlNode->GetRecordPeriodSize()) {
-			pair<wstring, wstring> recordPeriod = m_externalFlowControlNode->GetLastRecordPeriod();
-			if (node->GetName() == recordPeriod.second) {
-				m_externalFlowControlNode->SetForwardMethod(ForwardMethod::FORWARD_ALLRECORD);
-				m_externalFlowControlNode->ForwardProp(fr);
-				m_externalFlowControlNode->RemoveRecordPeriod();
+			if (m_externalFlowControlNode != nullptr && (int)m_externalFlowControlNode->GetRecordPeriodSize()) {
+				pair<wstring, wstring> recordPeriod = m_externalFlowControlNode->GetLastRecordPeriod();
+				if (node->GetName() == recordPeriod.second) {
+					m_externalFlowControlNode->SetForwardMethod(ForwardMethod::FORWARD_ALLRECORD);
+					m_externalFlowControlNode->ForwardProp(fr);
+					m_externalFlowControlNode->RemoveRecordPeriod();
+				}
 			}
-		}
 
-        node->BeginBackprop();
-        node->Backprop(fr.WithLayout(node->GetMBLayout()), true /*childrenInThisLoop*/, true /*childrenInOuterLoop*/);
-        node->EndBackprop();
-    }
+			node->BeginBackprop();
+#ifdef _DEBUG
+			DebugSingleBackprop(node, fr, externalIndex, std::unordered_set<std::wstring>(), L"", internalIndex);
+			for (auto& input : node->GetInputs()) {
+				if (input->IsValueSharable()) {
+					internalIndex++;
+				}
+		}
+#else
+			node->Backprop(fr.WithLayout(node->GetMBLayout()), true /*childrenInThisLoop*/, true /*childrenInOuterLoop*/);
+#endif
+			node->EndBackprop();
+#ifdef _DEBUG
+#endif
+}
 }
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::RequestMatricesBeforeForwardProp(MatrixPool& matrixPool) /*override*/
 {
@@ -405,6 +395,92 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::ReleaseMatricesAfterBackprop(MatrixPool& matrixPool) /*override*/
 {
 }
+
+#ifdef _DEBUG
+
+void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(ComputationNodeBasePtr node, const FrameRange& fr, int index,
+	std::unordered_set<std::wstring> /*loadDataLayers*/, std::wstring/* source*/, int internalIndex)
+{
+	if (node->GetName() == L"conv1.c.c.c") {
+		DebugDataDump(node->GetInputs()[1], true, index, 32767);
+	}
+	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
+	DebugDataDump(node, true, index, internalIndex);
+}
+
+void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(ComputationNodeBasePtr node, const FrameRange & fr, int index, 
+	std::unordered_set<std::wstring>, std::wstring/* source*/, int internalIndex)
+{
+	node->Backprop(fr.WithLayout(node->GetMBLayout()), true, true);
+
+	for (auto& input : node->GetInputs()) {
+		if (input->IsValueSharable()) {
+			DebugDataDump(input, false, index, internalIndex++, node);
+		}
+	}
+}
+
+void ComputationNetwork::PARTraversalFlowControlNode::DebugDataDump(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, ComputationNodeBasePtr instead)
+{
+	std::string filePath;
+	if (instead != nullptr) {
+		filePath = StringParser(CombineFilePath(instead, forwardOrNot, index, internalIndex));
+	} 
+	else {
+		filePath = StringParser(CombineFilePath(node, forwardOrNot, index, internalIndex));
+	}
+
+	std::ofstream exportData(filePath, std::ios::binary);
+	shared_ptr<Matrix<float>> exportMatrix = static_pointer_cast<Matrix<float>>(forwardOrNot ? node->ValuePtr() : node->GradientPtr());
+	int exportSize = (int)exportMatrix->GetNumCols() * (int)exportMatrix->GetNumRows();
+	float* exportStream = exportMatrix->CopyToArray();
+	exportData.write((char*)&exportSize, sizeof(int));
+	exportData.write((char*)exportStream, sizeof(float) * exportSize);
+	exportData.close();
+}
+
+std::wstring ComputationNetwork::PARTraversalFlowControlNode::CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex)
+{
+	std::string dirMaker("md .\\FetchTests\\CNTK\\");
+	std::string fileMaker("./FetchTests/CNTK/");
+
+	std::stringstream filePath;
+	filePath << index;
+	dirMaker += filePath.str();
+	system(dirMaker.c_str());
+
+	dirMaker += (forwardOrNot ? "\\forward" : "\\backward");
+	filePath << (forwardOrNot ? "/forward" : "/backward");
+	system(dirMaker.c_str());
+
+	dirMaker += (forwardOrNot ? "\\forward-" : "\\backward-");
+	filePath << (forwardOrNot ? "/forward-" : "/backward-");
+	std::string nodeName = StringParser(node->GetName());
+	filePath << internalIndex;
+	filePath << "-";
+	filePath << nodeName;
+
+	std::wstring wfilePath = WStringParser(fileMaker + filePath.str());
+	return wfilePath;
+}
+
+std::wstring ComputationNetwork::PARTraversalFlowControlNode::WStringParser(std::string str)
+{
+	std::wstring wstr = std::wstring(str.size(), ' ');
+	MultiByteToWideChar(CP_ACP, 0, (const char*)str.c_str(), str.size(),
+		(wchar_t*)wstr.c_str(), wstr.size());
+	return wstr;
+}
+
+std::string ComputationNetwork::PARTraversalFlowControlNode::StringParser(std::wstring wstr)
+{
+	std::string str = std::string(wstr.size(), ' ');
+	WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)wstr.c_str(), wstr.size(), (char*)str.c_str(),
+		str.size(), NULL, NULL);
+	return str;
+}
+
+#endif
 
 // -----------------------------------------------------------------------
 // SEQTraversalFlowControlNode methods -- implements SEQ traversal (loop unrolling)

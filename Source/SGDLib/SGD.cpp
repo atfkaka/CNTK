@@ -1055,6 +1055,24 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
                 fprintf(stderr, "SGD: using true #samples %d instead of MB size %d\n", (int)numSamplesInMinibatch, (int)aggregateNumSamples);
 #endif
             auto smoothedGradientIter = smoothedGradients.begin();
+
+			std::ifstream nodeRelativeFile("NodeLink");
+			std::string srcNode;
+			while (true) {
+				nodeRelativeFile >> srcNode;
+				if (srcNode == "End") break;
+				int num;
+				nodeRelativeFile >> num;
+				for (int i = 0; i < num; i++) {
+					std::string dstNode;
+					nodeRelativeFile >> dstNode;
+					nodeRelativeMap.insert(std::pair<std::wstring, std::wstring>(
+						ComputationNetwork::PARTraversalFlowControlNode::WStringParser(dstNode),
+						ComputationNetwork::PARTraversalFlowControlNode::WStringParser(srcNode))
+					);
+				}
+			}
+
             for (auto nodeIter = learnableNodes.begin(); nodeIter != learnableNodes.end(); nodeIter++, smoothedGradientIter++)
             {
                 ComputationNodeBasePtr node = *nodeIter;
@@ -1894,7 +1912,7 @@ template <class ElemType>
     if (L2RegWeight > 0)
     {
         // multiply by actualMBSize so that it's invariant to minibatch size since learning rate is per sample
-        Matrix<ElemType>::ScaleAndAdd((ElemType)(L2RegWeight * actualMBSize), functionValues, gradientValues);
+        Matrix<ElemType>::ScaleAndAdd((ElemType)(L2RegWeight), functionValues, gradientValues);
     }
 
     if (adpType == GradientsUpdateType::None)
@@ -1959,12 +1977,53 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
     if (!node->IsParameterUpdateRequired())
         LogicError("UpdateWeights() called for a learnable ComputationNode which has m_learningRateMultiplier == 0!");
 
-    double nodeDependentLearningRatePerSample = learnRatePerSample * node->GetLearningRateMultiplier();
+	double nodeDependentLearningRatePerSample = 1;//learnRatePerSample * node->GetLearningRateMultiplier();
+
+	auto parentNode = nodeRelativeMap.find(node->NodeName());
+	if (parentNode == nodeRelativeMap.end()) {
+		std::cout << "un-register node" << std::endl;
+	}
+	std::string exportFileName = "./FetchTests/CNTK/0/update/";
+	exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->second);
+	exportFileName += "-";
+	exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->first);
+	std::ofstream exportWeights(exportFileName);
+	exportWeights << (float)nodeDependentLearningRatePerSample << " " << (float)L2RegWeight << std::endl;
+	shared_ptr<Matrix<float>> nodeValue = static_pointer_cast<Matrix<float>>(node->ValuePtr());
+	float* nodeValueData = nodeValue->CopyToArray();
+	int nodeValueSize = (int)nodeValue->GetNumCols() * (int)nodeValue->GetNumRows();
+	exportWeights << "weight" << std::endl;
+	for (int i = 0; i < nodeValueSize; i++) {
+		exportWeights << nodeValueData[i] << " ";
+	}
+	exportWeights << std::endl;
+	exportWeights << "gradient" << std::endl;
+	shared_ptr<Matrix<float>> nodeGradient = static_pointer_cast<Matrix<float>>(node->GradientPtr());
+	nodeValueData = nodeGradient->CopyToArray();
+	for (int i = 0; i < nodeValueSize; i++) {
+		exportWeights << nodeValueData[i] << " ";
+	}
+	exportWeights << std::endl;
+
     UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),
                    smoothedGradient, nodeDependentLearningRatePerSample, momentumPerSample,
                    actualMBSize, L2RegWeight, L1RegWeight,
                    needAveMultiplier, m_useNesterovMomentum);
     node->BumpEvalTimeStamp();
+
+	exportWeights << "gradient_updated" << std::endl;
+	nodeValueData = nodeValue->CopyToArray();
+	for (int i = 0; i < nodeValueSize; i++) {
+		exportWeights << nodeValueData[i] << " ";
+	}
+	exportWeights << std::endl;
+	exportWeights << "history" << std::endl;
+	nodeValueData = (float*)smoothedGradient.CopyToArray();
+	for (int i = 0; i < nodeValueSize; i++) {
+		exportWeights << nodeValueData[i] << " ";
+	}
+	exportWeights << std::endl;
+	exportWeights.close();
 }
 
 template <class ElemType>
