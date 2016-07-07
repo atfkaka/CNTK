@@ -963,6 +963,7 @@ protected:
     // The outermost network level is also represented by this node for execution.
     // -----------------------------------------------------------------------
 
+	public:
     class PARTraversalFlowControlNode : public FlowControlNode
     {
         typedef FlowControlNode Base;
@@ -996,6 +997,19 @@ protected:
         virtual void AllocateGradientMatricesForInputs(MatrixPool& matrixPool);
         virtual void RequestMatricesBeforeBackprop(MatrixPool& matrixPool);
         virtual void ReleaseMatricesAfterBackprop(MatrixPool& matrixPool);
+
+#ifdef _DEBUG
+		virtual void DebugSingleForwardProp(ComputationNodeBasePtr node, const FrameRange& fr, int index, std::unordered_set<std::wstring>, 
+			std::wstring source, int internalIndex);
+		virtual void DebugSingleBackprop(ComputationNodeBasePtr node, const FrameRange& fr, int index, std::unordered_set<std::wstring>,
+			std::wstring source, int internalIndex);
+
+		virtual void DebugDataDump(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, ComputationNodeBasePtr instead = nullptr);
+		virtual std::wstring CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex);
+	public:
+		static std::wstring WStringParser(std::string str);
+		static std::string StringParser(std::wstring wstr);
+#endif
 
     public:
         // this special constructor constructs the top-level network node

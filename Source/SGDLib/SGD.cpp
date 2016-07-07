@@ -1,6 +1,7 @@
 // SGD.cpp -- implements SGD with all bells and whistles, parallelization, randomization, etc.
 
 #define _CRT_SECURE_NO_WARNINGS // "secure" CRT not available on all platforms  --add this at the top of all CPP files that give "function or variable may be unsafe" warnings
+#define NEEDDUMPWEIGHTS
 
 #include "Basics.h"
 #include "SGD.h"
@@ -1084,10 +1085,10 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
                         LogicError("%ls %ls operation has NaNs in smoothedGradient.", node->NodeName().c_str(), node->OperationName().c_str());
 #endif
                     // BUGBUG (Issue #95): Access to net MBLayout can no longer be done if we have multiple input layouts
-                    UpdateWeights(node, smoothedGradient, learnRatePerSample,
-                                  GetMomentumPerSample(epochNumber /*BUGBUG workaround:*/, net->GetMBLayoutPtrOfNetwork()->GetNumParallelSequences()), numSamplesInMinibatch,
-                                  m_L2RegWeight, m_L1RegWeight,
-                                  m_needAveMultiplier, m_useNesterovMomentum);
+                    UpdateWeights(node, smoothedGradient, m_learningRatesParam[epochNumber]/*learnRatePerSample*/,
+                        GetMomentumPerSample(epochNumber /*BUGBUG workaround:*/, net->GetMBLayoutPtrOfNetwork()->GetNumParallelSequences()), numSamplesInMinibatch,
+                        m_L2RegWeight, m_L1RegWeight,
+                        m_needAveMultiplier, m_useNesterovMomentum);
 #ifdef _DEBUG
                     if (dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value().HasNan("TrainOneEpoch/UpdateWeights(): "))
                         LogicError("%ls %ls operation has NaNs in functionValues after parameter update.", node->NodeName().c_str(), node->OperationName().c_str());
@@ -1977,33 +1978,33 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
     if (!node->IsParameterUpdateRequired())
         LogicError("UpdateWeights() called for a learnable ComputationNode which has m_learningRateMultiplier == 0!");
 
-	double nodeDependentLearningRatePerSample = 1;//learnRatePerSample * node->GetLearningRateMultiplier();
+	double nodeDependentLearningRatePerSample = learnRatePerSample * node->GetLearningRateMultiplier();
 
+#ifdef NEEDDUMPWEIGHTS
 	auto parentNode = nodeRelativeMap.find(node->NodeName());
-	if (parentNode == nodeRelativeMap.end()) {
-		std::cout << "un-register node" << std::endl;
-	}
-	std::string exportFileName = "./FetchTests/CNTK/0/update/";
+	std::string exportFileName = "./FetchTests/CNTK/update/0/";
 	exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->second);
 	exportFileName += "-";
 	exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->first);
-	std::ofstream exportWeights(exportFileName);
-	exportWeights << (float)nodeDependentLearningRatePerSample << " " << (float)L2RegWeight << std::endl;
+
+	std::ofstream exportWeights(exportFileName, std::ios::binary);
+	float exportLearningRate = (float)nodeDependentLearningRatePerSample;
+	float exportL2RegWeight = (float)L2RegWeight;
+	exportWeights.write((char*)&exportLearningRate, sizeof(float));
+	exportWeights.write((char*)&exportL2RegWeight, sizeof(float));
+
+	// Export node weights
 	shared_ptr<Matrix<float>> nodeValue = static_pointer_cast<Matrix<float>>(node->ValuePtr());
 	float* nodeValueData = nodeValue->CopyToArray();
 	int nodeValueSize = (int)nodeValue->GetNumCols() * (int)nodeValue->GetNumRows();
-	exportWeights << "weight" << std::endl;
-	for (int i = 0; i < nodeValueSize; i++) {
-		exportWeights << nodeValueData[i] << " ";
-	}
-	exportWeights << std::endl;
-	exportWeights << "gradient" << std::endl;
+	exportWeights.write((char*)&nodeValueSize, sizeof(int));
+	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+
+	// Export node gradient
 	shared_ptr<Matrix<float>> nodeGradient = static_pointer_cast<Matrix<float>>(node->GradientPtr());
 	nodeValueData = nodeGradient->CopyToArray();
-	for (int i = 0; i < nodeValueSize; i++) {
-		exportWeights << nodeValueData[i] << " ";
-	}
-	exportWeights << std::endl;
+	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+#endif
 
     UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),
                    smoothedGradient, nodeDependentLearningRatePerSample, momentumPerSample,
@@ -2011,19 +2012,16 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
                    needAveMultiplier, m_useNesterovMomentum);
     node->BumpEvalTimeStamp();
 
-	exportWeights << "gradient_updated" << std::endl;
+#ifdef NEEDDUMPWEIGHTS
+	// Export updated weights
 	nodeValueData = nodeValue->CopyToArray();
-	for (int i = 0; i < nodeValueSize; i++) {
-		exportWeights << nodeValueData[i] << " ";
-	}
-	exportWeights << std::endl;
-	exportWeights << "history" << std::endl;
+	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+
+	// Export history weights
 	nodeValueData = (float*)smoothedGradient.CopyToArray();
-	for (int i = 0; i < nodeValueSize; i++) {
-		exportWeights << nodeValueData[i] << " ";
-	}
-	exportWeights << std::endl;
+	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
 	exportWeights.close();
+#endif
 }
 
 template <class ElemType>
