@@ -163,7 +163,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 #ifdef _DEBUG
 		int internalIndex = 0;
 		int externalIndex = 0;
-#define EXPORTNODERELA
+//#define EXPORTNODERELA
 #ifdef EXPORTNODERELA
 		std::ofstream nodeLink("NodeLink", std::ios::app);
 #endif
@@ -348,8 +348,15 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 	childrenInThisLoop, childrenInOuterLoop; // TODO: think through what these mean when coming from PAR mode
 	// process nodes in pre-determined order
 #ifdef _DEBUG
+	std::stringstream ss;
+	ss << (currentMiniBatchIndex + 1);
+	std::stringstream sd;
+	sd << (currentMiniBatchIndex);
+
+	system(std::string("md .\\FetchTests\\CNTK\\forward" + ss.str()).c_str());
+	system(std::string("md .\\FetchTests\\CNTK\\backward" + sd.str()).c_str());
+
 	int internalIndex = 0;
-	int externalIndex = 0;
 #endif
 		for (auto pnode = m_nestedNodes.rbegin(); pnode != m_nestedNodes.rend(); pnode++) // iterate backwards over evaluation order
 		{
@@ -366,7 +373,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 
 			node->BeginBackprop();
 #ifdef _DEBUG
-			DebugSingleBackprop(node, fr, externalIndex, std::unordered_set<std::wstring>(), L"", internalIndex);
+			DebugSingleBackprop(node, fr, currentMiniBatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex);
 			for (auto& input : node->GetInputs()) {
 				if (input->IsValueSharable()) {
 					internalIndex++;
@@ -379,6 +386,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 #ifdef _DEBUG
 #endif
 }
+		currentMiniBatchIndex++;
 }
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::RequestMatricesBeforeForwardProp(MatrixPool& matrixPool) /*override*/
 {
@@ -405,7 +413,9 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 		DebugDataDump(node->GetInputs()[1], true, index, 32767);
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
-	DebugDataDump(node, true, index, internalIndex);
+	if (currentMiniBatchIndex % 100 == 0) {
+		DebugDataDump(node, true, index, internalIndex);
+	}
 }
 
 void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(ComputationNodeBasePtr node, const FrameRange & fr, int index, 
@@ -413,9 +423,11 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(Comput
 {
 	node->Backprop(fr.WithLayout(node->GetMBLayout()), true, true);
 
-	for (auto& input : node->GetInputs()) {
-		if (input->IsValueSharable()) {
-			DebugDataDump(input, false, index, internalIndex++, node);
+	if (currentMiniBatchIndex % 100 == 0) {
+		for (auto& input : node->GetInputs()) {
+			if (input->IsValueSharable()) {
+				DebugDataDump(input, false, index, internalIndex++, node);
+			}
 		}
 	}
 }
@@ -441,19 +453,19 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugDataDump(ComputationN
 
 std::wstring ComputationNetwork::PARTraversalFlowControlNode::CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex)
 {
-	std::string dirMaker("md .\\FetchTests\\CNTK\\");
+	//std::string dirMaker("md .\\FetchTests\\CNTK\\");
 	std::string fileMaker("./FetchTests/CNTK/");
 
 	std::stringstream filePath;
+	filePath << (forwardOrNot ? "forward/" : "backward/");
 	filePath << index;
-	dirMaker += filePath.str();
-	system(dirMaker.c_str());
+	//dirMaker += filePath.str();
+	//system(dirMaker.c_str());
 
-	dirMaker += (forwardOrNot ? "\\forward" : "\\backward");
-	filePath << (forwardOrNot ? "/forward" : "/backward");
-	system(dirMaker.c_str());
+	//dirMaker += (forwardOrNot ? "\\forward" : "\\backward");
+	//system(dirMaker.c_str());
 
-	dirMaker += (forwardOrNot ? "\\forward-" : "\\backward-");
+	//dirMaker += (forwardOrNot ? "\\forward-" : "\\backward-");
 	filePath << (forwardOrNot ? "/forward-" : "/backward-");
 	std::string nodeName = StringParser(node->GetName());
 	filePath << internalIndex;

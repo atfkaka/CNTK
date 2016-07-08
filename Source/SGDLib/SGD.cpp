@@ -39,6 +39,8 @@ template SGD<double>::SGD(const ScriptableObjects::IConfigRecord&);
 // Train() -- perform a multi-epoch training end-to-end with checkpointing
 // -----------------------------------------------------------------------
 
+static int currentMiniBatch = 0;
+
 template <class ElemType>
 void SGD<ElemType>::Train(function<ComputationNetworkPtr(DEVICEID_TYPE)> createNetworkFn, DEVICEID_TYPE deviceId,
                           IDataReader* trainSetDataReader,
@@ -1913,13 +1915,14 @@ template <class ElemType>
     if (L2RegWeight > 0)
     {
         // multiply by actualMBSize so that it's invariant to minibatch size since learning rate is per sample
-        Matrix<ElemType>::ScaleAndAdd((ElemType)(L2RegWeight), functionValues, gradientValues);
+        Matrix<ElemType>::ScaleAndAdd((ElemType)learnRatePerSample * (ElemType)(L2RegWeight), functionValues, (ElemType)momentum, smoothedGradient);
     }
 
     if (adpType == GradientsUpdateType::None)
     {
+		ElemType disableMomentum = 1.f;
         smoothedGradient.NormalGrad(gradientValues, functionValues,
-                                    (ElemType) learnRatePerSample, (ElemType) momentum, useNesterovMomentum);
+                                    (ElemType)(learnRatePerSample), (ElemType)disableMomentum, useNesterovMomentum);
     }
     else if (adpType == GradientsUpdateType::AdaGrad ||
              (adpType == GradientsUpdateType::RmsProp && gradientValues.GetMatrixType() == MatrixType::SPARSE) ||
@@ -1979,49 +1982,66 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
         LogicError("UpdateWeights() called for a learnable ComputationNode which has m_learningRateMultiplier == 0!");
 
 	double nodeDependentLearningRatePerSample = learnRatePerSample * node->GetLearningRateMultiplier();
+	double factor = 1.0;
+	if (node->GetName().back() == L'b' || node->GetName().back() == L'c') {
+		if (node->GetName() != L"OutputNodes.b") {
+			factor = 0;
+		}
+	}
 
-#ifdef NEEDDUMPWEIGHTS
-	auto parentNode = nodeRelativeMap.find(node->NodeName());
-	std::string exportFileName = "./FetchTests/CNTK/update/0/";
-	exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->second);
-	exportFileName += "-";
-	exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->first);
+	if (currentMiniBatch % 10 == 0) {
+		std::stringstream ss;
+		ss << currentMiniBatch;
 
-	std::ofstream exportWeights(exportFileName, std::ios::binary);
-	float exportLearningRate = (float)nodeDependentLearningRatePerSample;
-	float exportL2RegWeight = (float)L2RegWeight;
-	exportWeights.write((char*)&exportLearningRate, sizeof(float));
-	exportWeights.write((char*)&exportL2RegWeight, sizeof(float));
+		system(std::string("md .\\FetchTests\\CNTK\\update\\" + ss.str()).c_str());
 
-	// Export node weights
-	shared_ptr<Matrix<float>> nodeValue = static_pointer_cast<Matrix<float>>(node->ValuePtr());
-	float* nodeValueData = nodeValue->CopyToArray();
-	int nodeValueSize = (int)nodeValue->GetNumCols() * (int)nodeValue->GetNumRows();
-	exportWeights.write((char*)&nodeValueSize, sizeof(int));
-	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+		auto parentNode = nodeRelativeMap.find(node->NodeName());
+		std::string exportFileName = "./FetchTests/CNTK/update/" + ss.str() + "/";
+		exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->second);
+		exportFileName += "-";
+		exportFileName += ComputationNetwork::PARTraversalFlowControlNode::StringParser(parentNode->first);
 
-	// Export node gradient
-	shared_ptr<Matrix<float>> nodeGradient = static_pointer_cast<Matrix<float>>(node->GradientPtr());
-	nodeValueData = nodeGradient->CopyToArray();
-	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
-#endif
+		std::ofstream exportWeights(exportFileName, std::ios::binary);
+		float exportLearningRate = (float)nodeDependentLearningRatePerSample;
+		float exportL2RegWeight = (float)L2RegWeight;
+		exportWeights.write((char*)&exportLearningRate, sizeof(float));
+		exportWeights.write((char*)&exportL2RegWeight, sizeof(float));
 
-    UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),
-                   smoothedGradient, nodeDependentLearningRatePerSample, momentumPerSample,
-                   actualMBSize, L2RegWeight, L1RegWeight,
-                   needAveMultiplier, m_useNesterovMomentum);
-    node->BumpEvalTimeStamp();
+		// Export node weights
+		shared_ptr<Matrix<float>> nodeValue = static_pointer_cast<Matrix<float>>(node->ValuePtr());
+		float* nodeValueData = nodeValue->CopyToArray();
+		int nodeValueSize = (int)nodeValue->GetNumCols() * (int)nodeValue->GetNumRows();
+		exportWeights.write((char*)&nodeValueSize, sizeof(int));
+		exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
 
-#ifdef NEEDDUMPWEIGHTS
-	// Export updated weights
-	nodeValueData = nodeValue->CopyToArray();
-	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+		// Export node gradient
+		shared_ptr<Matrix<float>> nodeGradient = static_pointer_cast<Matrix<float>>(node->GradientPtr());
+		nodeValueData = nodeGradient->CopyToArray();
+		exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+		// hack
 
-	// Export history weights
-	nodeValueData = (float*)smoothedGradient.CopyToArray();
-	exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
-	exportWeights.close();
-#endif
+		UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),
+			smoothedGradient, nodeDependentLearningRatePerSample, momentumPerSample,
+			actualMBSize, L2RegWeight * factor, L1RegWeight,
+			needAveMultiplier, m_useNesterovMomentum);
+		node->BumpEvalTimeStamp();
+
+			// Export updated weights
+			nodeValueData = nodeValue->CopyToArray();
+			exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+
+			// Export history weights
+			nodeValueData = (float*)smoothedGradient.CopyToArray();
+			exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+			exportWeights.close();
+	}
+	else {
+		UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),
+			smoothedGradient, nodeDependentLearningRatePerSample, momentumPerSample,
+			actualMBSize, L2RegWeight * factor, L1RegWeight,
+			needAveMultiplier, m_useNesterovMomentum);
+		node->BumpEvalTimeStamp();
+	}
 }
 
 template <class ElemType>

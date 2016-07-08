@@ -1440,11 +1440,11 @@ void Matrix<ElemType>::NormalGrad(Matrix<ElemType>& gradients,
     {
         DISPATCH_MATRIX_ON_FLAG(&gradients, nullptr,
             { 
-                ScaleAndAdd(learnRatePerSample, gradients, momentum, *this);
+                ScaleAndAdd(learnRatePerSample, gradients, *this);
                 functionValues -= *this;
             },
             { 
-                ScaleAndAdd(learnRatePerSample, gradients, momentum, *this);
+                ScaleAndAdd(learnRatePerSample, gradients, *this);
                 functionValues -= *this;
             },
             { 
@@ -1513,7 +1513,7 @@ void Matrix<ElemType>::FSAdagrad(size_t mbSize, Matrix<ElemType>& gradients, Mat
     // TODO: The values of 'adagradT' and 'targetadagradavdenom' are currently hardcoded constants taken from DBN (empirically determined).
     // These should be made configurable if needed
     const size_t adagradT = 2 * 3600 * 100;
-    const ElemType targetadagradavdenom = 0.0025; // 1/400 magic constant
+    const ElemType targetadagradavdenom = sizeof(ElemType) == sizeof(float) ? 0.0025f : 0.0025; // 1/400 magic constant
     const ElemType adagradkeepweight = static_cast<ElemType>(exp(-1.0 * mbSize / adagradT));
 
     static ElemType aggadagradsqrframes = 0;
