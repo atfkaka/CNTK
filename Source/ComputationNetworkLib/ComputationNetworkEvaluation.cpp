@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <map>
 
+#include "TrainingNodes.h"
+
 using namespace std;
 
 namespace Microsoft { namespace MSR { namespace CNTK {
@@ -422,7 +424,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(Comput
 {
 	node->Backprop(fr.WithLayout(node->GetMBLayout()), true, true);
 
-	if (currentMiniBatchIndex / 5000000 != 0) {
+	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex == 0) {
 		for (auto& input : node->GetInputs()) {
 			if (input->IsValueSharable()) {
 				DebugDataDump(input, false, index, internalIndex++, node);

@@ -1991,7 +1991,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 		}
 	}
 
-	if (currentMiniBatch % 10 == 0) {
+	if (currentMiniBatch % 4000 == 0) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
 
