@@ -162,7 +162,6 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 	if (m_forwardMethod == ForwardMethod::NONE) {
 #ifdef _DEBUG
 		int internalIndex = 0;
-		int externalIndex = 0;
 //#define EXPORTNODERELA
 #ifdef EXPORTNODERELA
 		std::ofstream nodeLink("NodeLink", std::ios::app);
@@ -178,7 +177,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 				{
 					node->BeginForwardProp();
 #ifdef _DEBUG
-					DebugSingleForwardProp(node, fr, externalIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
+					DebugSingleForwardProp(node, fr, currentMiniBatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
 
 #ifdef EXPORTNODERELA
 					nodeLink << PARTraversalFlowControlNode::StringParser(node->GetName()) << std::endl;
@@ -353,8 +352,8 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 	std::stringstream sd;
 	sd << (currentMiniBatchIndex);
 
-	system(std::string("md .\\FetchTests\\CNTK\\forward" + ss.str()).c_str());
-	system(std::string("md .\\FetchTests\\CNTK\\backward" + sd.str()).c_str());
+	system(std::string("md .\\FetchTests\\CNTK\\forward\\" + ss.str()).c_str());
+	system(std::string("md .\\FetchTests\\CNTK\\backward\\" + sd.str()).c_str());
 
 	int internalIndex = 0;
 #endif
@@ -413,7 +412,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 		DebugDataDump(node->GetInputs()[1], true, index, 32767);
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
-	if (currentMiniBatchIndex % 100 == 0) {
+	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex == 0) {
 		DebugDataDump(node, true, index, internalIndex);
 	}
 }
@@ -423,7 +422,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(Comput
 {
 	node->Backprop(fr.WithLayout(node->GetMBLayout()), true, true);
 
-	if (currentMiniBatchIndex % 100 == 0) {
+	if (currentMiniBatchIndex / 5000000 != 0) {
 		for (auto& input : node->GetInputs()) {
 			if (input->IsValueSharable()) {
 				DebugDataDump(input, false, index, internalIndex++, node);

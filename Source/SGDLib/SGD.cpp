@@ -1097,6 +1097,8 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 #endif
                 }
             }
+
+			currentMiniBatch++;
         }
 
         // aggregation by model averaging or block momentum 
