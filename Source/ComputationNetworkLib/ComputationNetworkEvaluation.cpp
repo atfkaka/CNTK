@@ -44,6 +44,8 @@ void ComputationNetwork::ForwardProp(const ComputationNodeBasePtr rootNode)
 {
     VerifyIsCompiled("ForwardProp");
 
+	GetNestedNetwork(rootNode)->m_actualMiniBatch = m_actualMiniBatchSize;
+
     // traverse all nodes in the pre-determined evaluation order
 	if (m_enableSublinearMemory) {
 		shared_ptr<FlowControlNode> flowControlNode = dynamic_pointer_cast<FlowControlNode>(GetNestedNetwork(rootNode));
@@ -178,6 +180,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 				if (node->IsOutOfDateWrtInputs())
 				{
 					node->BeginForwardProp();
+					node->m_actualMiniBatch = m_actualMiniBatch;
 #ifdef _DEBUG
 					DebugSingleForwardProp(node, fr, currentMiniBatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
 
@@ -414,7 +417,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 		DebugDataDump(node->GetInputs()[1], true, index, 32767);
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
-	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex == 0) {
+	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 10) {
 		DebugDataDump(node, true, index, internalIndex);
 	}
 }
@@ -424,7 +427,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(Comput
 {
 	node->Backprop(fr.WithLayout(node->GetMBLayout()), true, true);
 
-	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex == 0) {
+	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 10) {
 		for (auto& input : node->GetInputs()) {
 			if (input->IsValueSharable()) {
 				DebugDataDump(input, false, index, internalIndex++, node);

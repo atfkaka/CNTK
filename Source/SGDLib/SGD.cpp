@@ -944,6 +944,8 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 					net->SetMemoryCompressMethod(m_enableSublinearMemory);
 				}
 
+				net->m_actualMiniBatchSize = m_mbSize[0];
+
                 // ===========================================================
                 // forward prop for evaluate eval nodes
                 // ===========================================================
@@ -1917,8 +1919,10 @@ template <class ElemType>
     if (L2RegWeight > 0)
     {
         // multiply by actualMBSize so that it's invariant to minibatch size since learning rate is per sample
-        Matrix<ElemType>::ScaleAndAdd((ElemType)learnRatePerSample * (ElemType)(L2RegWeight), functionValues, (ElemType)momentum, smoothedGradient);
-    }
+
+        //Matrix<ElemType>::ScaleAndAdd((ElemType)learnRatePerSample * (ElemType)(L2RegWeight), functionValues, (ElemType)momentum, smoothedGradient);
+		Matrix<ElemType>::ScaleAndAdd(0.0001f * (ElemType)learnRatePerSample, functionValues, (ElemType)momentum, smoothedGradient);
+	}
 
     if (adpType == GradientsUpdateType::None)
     {
@@ -1991,7 +1995,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 		}
 	}
 
-	if (currentMiniBatch % 4000 == 0) {
+	if (currentMiniBatch % 1 == 0) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
 

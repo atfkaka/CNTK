@@ -78,6 +78,8 @@ void ComputationNetwork::ClearNetwork()
     m_pMBLayoutOfNetwork->Init(1, 0);
 
 	m_enableSublinearMemory = false;
+
+	m_actualMiniBatchSize = 256;
 }
 
 // -----------------------------------------------------------------------

@@ -1102,6 +1102,8 @@ private:
 	shared_ptr<FlowControlNode> m_cacheNetwork;
 
 	bool m_enableSublinearMemory;
+public:
+	int m_actualMiniBatchSize;
 };
 typedef ComputationNetwork::ComputationNetworkPtr ComputationNetworkPtr;
 
