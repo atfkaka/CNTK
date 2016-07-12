@@ -1923,6 +1923,10 @@ template <class ElemType>
         //Matrix<ElemType>::ScaleAndAdd((ElemType)learnRatePerSample * (ElemType)(L2RegWeight), functionValues, (ElemType)momentum, smoothedGradient);
 		Matrix<ElemType>::ScaleAndAdd(0.0001f * (ElemType)learnRatePerSample, functionValues, (ElemType)momentum, smoothedGradient);
 	}
+	else
+	{
+		Matrix<ElemType>::ScaleAndAdd(0.f, functionValues, (ElemType)momentum, smoothedGradient);
+	}
 
     if (adpType == GradientsUpdateType::None)
     {
@@ -1995,7 +1999,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 		}
 	}
 
-	if (currentMiniBatch % 1 == 0) {
+	if (currentMiniBatch % 100 == 0) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
 
@@ -2019,12 +2023,18 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 		int nodeValueSize = (int)nodeValue->GetNumCols() * (int)nodeValue->GetNumRows();
 		exportWeights.write((char*)&nodeValueSize, sizeof(int));
 		exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+		delete[] nodeValueData;
 
 		// Export node gradient
 		shared_ptr<Matrix<float>> nodeGradient = static_pointer_cast<Matrix<float>>(node->GradientPtr());
 		nodeValueData = nodeGradient->CopyToArray();
 		exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
-		// hack
+		delete[] nodeValueData;
+
+		// Export node history
+		nodeValueData = (float*)smoothedGradient.CopyToArray();
+		exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+		delete[] nodeValueData;
 
 		UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),
 			smoothedGradient, nodeDependentLearningRatePerSample, momentumPerSample,
@@ -2035,11 +2045,13 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 			// Export updated weights
 			nodeValueData = nodeValue->CopyToArray();
 			exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
+			delete[] nodeValueData;
 
 			// Export history weights
 			nodeValueData = (float*)smoothedGradient.CopyToArray();
 			exportWeights.write((char*)nodeValueData, sizeof(float) * nodeValueSize);
 			exportWeights.close();
+			delete[] nodeValueData;
 	}
 	else {
 		UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),

@@ -415,6 +415,15 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 {
 	if (node->GetName() == L"conv1.c.c.c") {
 		DebugDataDump(node->GetInputs()[1], true, index, 32767);
+
+		//shared_ptr<Matrix<float>> input_weight = static_pointer_cast<Matrix<float>>(node->GetInputs()[0]->ValuePtr());
+		//shared_ptr<Matrix<float>> input_data = static_pointer_cast<Matrix<float>>(node->GetInputs()[1]->ValuePtr());
+
+		//float* input_weight_ptr = nullptr;
+		//float* input_data_ptr = nullptr;
+
+		//input_weight_ptr = input_weight->CopyToArray();
+		//input_data_ptr = input_data->CopyToArray();
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
 	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 10) {
@@ -453,6 +462,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugDataDump(ComputationN
 	exportData.write((char*)&exportSize, sizeof(int));
 	exportData.write((char*)exportStream, sizeof(float) * exportSize);
 	exportData.close();
+	delete[] exportStream;
 }
 
 std::wstring ComputationNetwork::PARTraversalFlowControlNode::CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex)
