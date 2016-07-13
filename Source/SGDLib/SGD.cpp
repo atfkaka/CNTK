@@ -1065,7 +1065,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 			std::string srcNode;
 			while (true) {
 				nodeRelativeFile >> srcNode;
-				if (srcNode == "End") break;
+				if (srcNode == "End" || srcNode == "") break;
 				int num;
 				nodeRelativeFile >> num;
 				for (int i = 0; i < num; i++) {
@@ -1999,7 +1999,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 		}
 	}
 
-	if (currentMiniBatch % 100 == 0) {
+	if (currentMiniBatch % 100 == 0 || currentMiniBatch < 10) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
 
