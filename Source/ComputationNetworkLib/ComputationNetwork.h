@@ -998,7 +998,7 @@ protected:
         virtual void RequestMatricesBeforeBackprop(MatrixPool& matrixPool);
         virtual void ReleaseMatricesAfterBackprop(MatrixPool& matrixPool);
 
-#ifdef _DEBUG
+#ifdef _CROSS_DEBUG
 		virtual void DebugSingleForwardProp(ComputationNodeBasePtr node, const FrameRange& fr, int index, std::unordered_set<std::wstring>, 
 			std::wstring source, int internalIndex);
 		virtual void DebugSingleBackprop(ComputationNodeBasePtr node, const FrameRange& fr, int index, std::unordered_set<std::wstring>,
@@ -1042,6 +1042,26 @@ public:
 	void SetMemoryCompressMethod(bool enableSublinearMemory)
 	{
 		m_enableSublinearMemory = enableSublinearMemory;
+	}
+
+	//
+	int GetActualMiniBatchSize()
+	{
+		return m_actualMiniBatchSize;
+	}
+	void SetActualMiniBatchSize(int actualMiniBatchSize)
+	{
+		m_actualMiniBatchSize = actualMiniBatchSize;
+	}
+
+	//
+	int GetCurrentWorkerId()
+	{
+		return m_currentWorkerId;
+	}
+	void SetCurrentWorkerId(int currentWorkerId)
+	{
+		m_currentWorkerId = currentWorkerId;
 	}
 
 private:
@@ -1102,8 +1122,8 @@ private:
 	shared_ptr<FlowControlNode> m_cacheNetwork;
 
 	bool m_enableSublinearMemory;
-public:
 	int m_actualMiniBatchSize;
+	int m_currentWorkerId;
 };
 typedef ComputationNetwork::ComputationNetworkPtr ComputationNetworkPtr;
 

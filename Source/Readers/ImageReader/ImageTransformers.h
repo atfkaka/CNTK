@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <random>
 #include <opencv2/opencv.hpp>
+#include <opencv\cv.h>
 
 #include "Transformer.h"
 #include "ConcStack.h"

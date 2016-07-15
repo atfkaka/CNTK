@@ -19,6 +19,9 @@
 
 #include "TrainingNodes.h"
 
+#include <boost\crc.hpp>
+#include <io.h>
+
 using namespace std;
 
 namespace Microsoft { namespace MSR { namespace CNTK {
@@ -45,6 +48,7 @@ void ComputationNetwork::ForwardProp(const ComputationNodeBasePtr rootNode)
     VerifyIsCompiled("ForwardProp");
 
 	GetNestedNetwork(rootNode)->m_actualMiniBatch = m_actualMiniBatchSize;
+	GetNestedNetwork(rootNode)->m_currentWorkerId = m_currentWorkerId;
 
     // traverse all nodes in the pre-determined evaluation order
 	if (m_enableSublinearMemory) {
@@ -164,7 +168,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::ForwardProp(const FrameRange& fr) /*override*/
 {
 	if (m_forwardMethod == ForwardMethod::NONE) {
-#ifdef _DEBUG
+#ifdef _CROSS_DEBUG
 		int internalIndex = 0;
 //#define EXPORTNODERELA
 #ifdef EXPORTNODERELA
@@ -181,7 +185,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 				{
 					node->BeginForwardProp();
 					node->m_actualMiniBatch = m_actualMiniBatch;
-#ifdef _DEBUG
+#ifdef _CROSS_DEBUG
 					DebugSingleForwardProp(node, fr, currentMiniBatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
 
 #ifdef EXPORTNODERELA
@@ -199,7 +203,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 					node->BumpEvalTimeStamp();
 				}
 			}
-#ifdef _DEBUG
+#ifdef _CROSS_DEBUG
 #ifdef EXPORTNODERELA
 			nodeLink << "End" << std::endl;
 			nodeLink.close();
@@ -351,7 +355,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 {
 	childrenInThisLoop, childrenInOuterLoop; // TODO: think through what these mean when coming from PAR mode
 	// process nodes in pre-determined order
-#ifdef _DEBUG
+#ifdef _CROSS_DEBUG
 	std::stringstream ss;
 	ss << (currentMiniBatchIndex + 1);
 	std::stringstream sd;
@@ -376,7 +380,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 			}
 
 			node->BeginBackprop();
-#ifdef _DEBUG
+#ifdef _CROSS_DEBUG
 			DebugSingleBackprop(node, fr, currentMiniBatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex);
 			for (auto& input : node->GetInputs()) {
 				if (input->IsValueSharable()) {
@@ -408,22 +412,43 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 {
 }
 
-#ifdef _DEBUG
+#ifdef _CROSS_DEBUG
 
 void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(ComputationNodeBasePtr node, const FrameRange& fr, int index,
 	std::unordered_set<std::wstring> /*loadDataLayers*/, std::wstring/* source*/, int internalIndex)
 {
 	if (node->GetName() == L"conv1.c.c.c") {
-		DebugDataDump(node->GetInputs()[1], true, index, 32767);
+		//Since the uniform data source, we don't need record images any more
+		//DebugDataDump(node->GetInputs()[1], true, index, 32767);
 
-		//shared_ptr<Matrix<float>> input_weight = static_pointer_cast<Matrix<float>>(node->GetInputs()[0]->ValuePtr());
-		//shared_ptr<Matrix<float>> input_data = static_pointer_cast<Matrix<float>>(node->GetInputs()[1]->ValuePtr());
+		// Build crc file path
+		std::string crcFilePath = ".\\KeyRecord\\cntk_imagesequence_checksum.rank";
+		std::stringstream crcFilePathRank;
+		crcFilePathRank << node->m_currentWorkerId;
+		crcFilePath += crcFilePathRank.str();
 
-		//float* input_weight_ptr = nullptr;
-		//float* input_data_ptr = nullptr;
+		std::ofstream crcFile;
+		if (index) {
+			crcFile = std::ofstream(crcFilePath, std::ios::binary | std::ios::app);
+		}
+		else {
+			crcFile = std::ofstream(crcFilePath, std::ios::binary);
+		}
+		
+		// Get data block and size
+		shared_ptr<Matrix<float>> inputValue = static_pointer_cast<Matrix<float>>(node->GetInputs()[1]->ValuePtr());
+		float* inputData = inputValue->CopyToArray();
+		size_t inputSize = inputValue->GetNumCols() * inputValue->GetNumRows() * sizeof(float);
+		unsigned char* rawInputData = (unsigned char*)inputData;
 
-		//input_weight_ptr = input_weight->CopyToArray();
-		//input_data_ptr = input_data->CopyToArray();
+		boost::crc_32_type crcChecker;
+		crcChecker.process_block(rawInputData, rawInputData + inputSize);
+
+		unsigned int checksum = crcChecker.checksum();
+		crcFile.write((const char*)&checksum, sizeof(unsigned int));
+
+		crcFile.close();
+		delete[] inputData;
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
 	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 10) {

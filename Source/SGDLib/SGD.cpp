@@ -944,7 +944,11 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 					net->SetMemoryCompressMethod(m_enableSublinearMemory);
 				}
 
-				net->m_actualMiniBatchSize = m_mbSize[0];
+				net->SetActualMiniBatchSize(m_mbSize[0]);
+
+				if (useDistributedMBReading) {
+					net->SetCurrentWorkerId((int)m_mpi->CurrentNodeRank());
+				}
 
                 // ===========================================================
                 // forward prop for evaluate eval nodes
@@ -1999,6 +2003,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 		}
 	}
 
+#ifdef _CROSS_DEBUG
 	if (currentMiniBatch % 100 == 0 || currentMiniBatch < 10) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
@@ -2054,12 +2059,17 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 			delete[] nodeValueData;
 	}
 	else {
+#endif
+
 		UpdateWeightsS(this, dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Value(), dynamic_pointer_cast<ComputationNode<ElemType>>(node)->Gradient(),
 			smoothedGradient, nodeDependentLearningRatePerSample, momentumPerSample,
 			actualMBSize, L2RegWeight * factor, L1RegWeight,
 			needAveMultiplier, m_useNesterovMomentum);
 		node->BumpEvalTimeStamp();
+
+#ifdef _CROSS_DEBUG
 	}
+#endif
 }
 
 template <class ElemType>

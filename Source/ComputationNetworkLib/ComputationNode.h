@@ -886,6 +886,8 @@ protected:
 
 public:
 	int m_actualMiniBatch;
+
+	int m_currentWorkerId;
 };
 typedef ComputationNodeBase::ComputationNodeBasePtr ComputationNodeBasePtr;
 

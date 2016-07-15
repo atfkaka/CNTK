@@ -80,6 +80,8 @@ void ComputationNetwork::ClearNetwork()
 	m_enableSublinearMemory = false;
 
 	m_actualMiniBatchSize = 256;
+
+	m_currentWorkerId = 0;
 }
 
 // -----------------------------------------------------------------------
