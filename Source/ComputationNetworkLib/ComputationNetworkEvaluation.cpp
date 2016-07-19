@@ -421,6 +421,12 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 		//Since the uniform data source, we don't need record images any more
 		//DebugDataDump(node->GetInputs()[1], true, index, 32767);
 
+		// check if crc file existance
+		std::string crcFolderPath = ".\\KeyRecord";
+		if (_access(crcFolderPath.c_str(), 0)){
+			system(std::string("md " + crcFolderPath).c_str());
+		}
+
 		// Build crc file path
 		std::string crcFilePath = ".\\KeyRecord\\cntk_imagesequence_checksum.rank";
 		std::stringstream crcFilePathRank;
@@ -451,7 +457,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 		delete[] inputData;
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
-	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 10) {
+	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 0) {
 		DebugDataDump(node, true, index, internalIndex);
 	}
 }
@@ -461,7 +467,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(Comput
 {
 	node->Backprop(fr.WithLayout(node->GetMBLayout()), true, true);
 
-	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 10) {
+	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 0) {
 		for (auto& input : node->GetInputs()) {
 			if (input->IsValueSharable()) {
 				DebugDataDump(input, false, index, internalIndex++, node);

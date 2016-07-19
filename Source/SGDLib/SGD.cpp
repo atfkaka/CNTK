@@ -1065,7 +1065,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 #endif
             auto smoothedGradientIter = smoothedGradients.begin();
 
-			std::ifstream nodeRelativeFile("NodeLink");
+			std::ifstream nodeRelativeFile("Support\\NodeLink");
 			std::string srcNode;
 			while (true) {
 				nodeRelativeFile >> srcNode;
@@ -1103,8 +1103,6 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 #endif
                 }
             }
-
-			currentMiniBatch++;
         }
 
         // aggregation by model averaging or block momentum 
@@ -1222,6 +1220,13 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
         // processing more utterances at the same time. Only used in Kaldi2Reader.
         // TODO: move the two-forward-pass support out of the reader.
         AttemptUtteranceDerivativeFeatures(net, trainSetDataReader, featureNodes, inputMatrices);
+
+		if (currentMiniBatch % 200 == 0 && ((m_mpi == nullptr) || m_mpi->IsMainNode())){
+			SaveCheckPointInfo(currentMiniBatch, currentMiniBatch * m_mbSize[0], learnRatePerSample, smoothedGradients, 1.0, tunedMBSize);
+			net->Save(GetModelNameForEpoch(currentMiniBatch));
+		}
+
+		currentMiniBatch++;
 
         profiler.NextSample();
     }
@@ -2004,7 +2009,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 	}
 
 #ifdef _CROSS_DEBUG
-	if (currentMiniBatch % 100 == 0 || currentMiniBatch < 10) {
+	if (currentMiniBatch % 200 == 0/* || currentMiniBatch < 10*/) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
 
