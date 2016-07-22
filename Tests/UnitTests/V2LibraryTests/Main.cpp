@@ -8,10 +8,10 @@ void RecurrentFunctionTests();
 
 int main()
 {
-    NDArrayViewTests();
-    TensorTests();
+    // NDArrayViewTests();
+    // TensorTests();
     FeedForwardTests();
-    RecurrentFunctionTests();
+    // RecurrentFunctionTests();
 
     fprintf(stderr, "\nCNTKv2Library tests: Passed\n");
     fflush(stderr);
