@@ -1064,6 +1064,16 @@ public:
 		m_currentWorkerId = currentWorkerId;
 	}
 
+	//
+	int GetCurrentMinibatchIndex()
+	{
+		return m_currentMiniBatchIndex;
+	}
+	void SetCurrentMinibatchIndex(int currentMinibatchIndex)
+	{
+		m_currentMiniBatchIndex = currentMinibatchIndex;
+	}
+
 private:
     DEVICEID_TYPE m_deviceId; // TODO: is this shared by all nodes?
     unsigned long m_randomSeedOffset;
@@ -1124,6 +1134,7 @@ private:
 	bool m_enableSublinearMemory;
 	int m_actualMiniBatchSize;
 	int m_currentWorkerId;
+	int m_currentMiniBatchIndex;
 };
 typedef ComputationNetwork::ComputationNetworkPtr ComputationNetworkPtr;
 

@@ -22,6 +22,8 @@
 #include <map>
 #include <set>
 
+#include "io.h"
+
 namespace Microsoft { namespace MSR { namespace CNTK {
 
 using namespace std;
@@ -57,6 +59,20 @@ void SGD<ElemType>::Train(function<ComputationNetworkPtr(DEVICEID_TYPE)> createN
 
     wstring modelFileName = GetModelNameForEpoch(int(startEpoch) - 1);
     bool loadNetworkFromCheckpoint = startEpoch >= 0;
+
+	std::string miniCkpFile("RestartPoint.txt");
+	if (_access(miniCkpFile.c_str(), 0) == 0) {
+		std::ifstream ckpInfo(miniCkpFile);
+
+		int ckpMinibatch;
+		ckpInfo >> ckpMinibatch;
+
+		modelFileName = msra::strfun::wstrprintf(L"Models/CNTK/ResNet_50.%d", (int)ckpMinibatch + 1);
+
+		loadNetworkFromCheckpoint = true;
+		ckpInfo.close();
+	}
+
     fprintf(stderr, "\n");
     if (loadNetworkFromCheckpoint)
         LOGPRINTF(stderr, "Starting from checkpoint. Loading network from '%ls'.\n", modelFileName.c_str());
@@ -147,173 +163,196 @@ static double MomentumPerMB(double momentumPerSample, size_t minibatchSize);
 
 template <class ElemType>
 void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
-                                      bool networkLoadedFromCheckpoint,
-                                      ComputationNetworkPtr refNet,
-                                      ComputationNodeBasePtr refNode,
-                                      IDataReader* trainSetDataReader,
-                                      IDataReader* validationSetDataReader)
+	bool networkLoadedFromCheckpoint,
+	ComputationNetworkPtr refNet,
+	ComputationNodeBasePtr refNode,
+	IDataReader* trainSetDataReader,
+	IDataReader* validationSetDataReader)
 {
-    let& criterionNodes = GetTrainCriterionNodes(net);
+	let& criterionNodes = GetTrainCriterionNodes(net);
 
-    fprintf(stderr, "\n");
-    LOGPRINTF(stderr, "Training criterion node(s):\n");
-    for (const auto& node : criterionNodes)
-    {
-        LOGPRINTF(stderr, "\t%ls = %ls\n", node->NodeName().c_str(), node->OperationName().c_str());
-    }
-    if (criterionNodes.empty())
-    {
-        LOGPRINTF(stderr, "\t(none)\n");
-        InvalidArgument("TrainOrAdaptModel: No criterion node was specified.");
-    }
+	fprintf(stderr, "\n");
+	LOGPRINTF(stderr, "Training criterion node(s):\n");
+	for (const auto& node : criterionNodes)
+	{
+		LOGPRINTF(stderr, "\t%ls = %ls\n", node->NodeName().c_str(), node->OperationName().c_str());
+	}
+	if (criterionNodes.empty())
+	{
+		LOGPRINTF(stderr, "\t(none)\n");
+		InvalidArgument("TrainOrAdaptModel: No criterion node was specified.");
+	}
 
-    // determine evaluationNodes from GetEvalCriterionNodes(), ensuring each criterion is only logged once
-    std::vector<ComputationNodeBasePtr> evaluationNodes;
-    {
-        auto originalEvaluationNodes = GetEvalCriterionNodes(net);
-        set<ComputationNodeBasePtr> criteriaLogged; // set to make sure we don't double-log criteria
-        for (const auto& node : criterionNodes)
-            criteriaLogged.insert(node);
+	// determine evaluationNodes from GetEvalCriterionNodes(), ensuring each criterion is only logged once
+	std::vector<ComputationNodeBasePtr> evaluationNodes;
+	{
+		auto originalEvaluationNodes = GetEvalCriterionNodes(net);
+		set<ComputationNodeBasePtr> criteriaLogged; // set to make sure we don't double-log criteria
+		for (const auto& node : criterionNodes)
+			criteriaLogged.insert(node);
 
-        for (const auto& node : originalEvaluationNodes)
-            if (criteriaLogged.insert(node).second)
-                evaluationNodes.push_back(node);
+		for (const auto& node : originalEvaluationNodes)
+			if (criteriaLogged.insert(node).second)
+				evaluationNodes.push_back(node);
 
-        if (!evaluationNodes.empty())
-        {
-            fprintf(stderr, "\n");
-            LOGPRINTF(stderr, "Evaluation criterion node(s):\n");
-            fprintf(stderr, "\n");
-            for (const auto& node : evaluationNodes)
-            {
-                LOGPRINTF(stderr, "\t%ls = %ls\n", node->NodeName().c_str(), node->OperationName().c_str());
-            }
-        }
-    }
+		if (!evaluationNodes.empty())
+		{
+			fprintf(stderr, "\n");
+			LOGPRINTF(stderr, "Evaluation criterion node(s):\n");
+			fprintf(stderr, "\n");
+			for (const auto& node : evaluationNodes)
+			{
+				LOGPRINTF(stderr, "\t%ls = %ls\n", node->NodeName().c_str(), node->OperationName().c_str());
+			}
+		}
+	}
 
-    std::vector<ComputationNodeBasePtr> additionalNodesToEvaluate;
-    auto& outputNodes = net->OutputNodes();
-    additionalNodesToEvaluate.insert(additionalNodesToEvaluate.end(), outputNodes.cbegin(), outputNodes.cend());
+	std::vector<ComputationNodeBasePtr> additionalNodesToEvaluate;
+	auto& outputNodes = net->OutputNodes();
+	additionalNodesToEvaluate.insert(additionalNodesToEvaluate.end(), outputNodes.cbegin(), outputNodes.cend());
 
-    auto preComputeNodesList = net->GetNodesRequiringPreComputation();
-    additionalNodesToEvaluate.insert(additionalNodesToEvaluate.end(), preComputeNodesList.cbegin(), preComputeNodesList.cend());
+	auto preComputeNodesList = net->GetNodesRequiringPreComputation();
+	additionalNodesToEvaluate.insert(additionalNodesToEvaluate.end(), preComputeNodesList.cbegin(), preComputeNodesList.cend());
 
-    // allocate memory for forward and backward computation
-    net->AllocateAllMatrices(evaluationNodes, additionalNodesToEvaluate, criterionNodes[0]);
+	// allocate memory for forward and backward computation
+	net->AllocateAllMatrices(evaluationNodes, additionalNodesToEvaluate, criterionNodes[0]);
 
-    // get feature and label nodes into an array of matrices that will be passed to GetMinibatch()
-    // TODO: instead, remember the nodes directly, to be able to handle both float and double nodes; current version will crash for mixed networks
-    StreamMinibatchInputs* inputMatrices = new StreamMinibatchInputs();
-    // TODO: ^^ change to shared_ptr or unique_ptr
-    let& featureNodes = net->FeatureNodes();
-    let& labelNodes = net->LabelNodes();
-    // BUGBUG: ^^ should not get all feature/label nodes, but only the ones referenced in a criterion
-    for (size_t pass = 0; pass < 2; pass++)
-    {
-        auto& nodes = (pass == 0) ? featureNodes : labelNodes;
-        for (const auto & node : nodes)
-            inputMatrices->AddInput(node->NodeName(), node->ValuePtr(), node->GetMBLayout(), node->GetSampleLayout());
-    }
+	// get feature and label nodes into an array of matrices that will be passed to GetMinibatch()
+	// TODO: instead, remember the nodes directly, to be able to handle both float and double nodes; current version will crash for mixed networks
+	StreamMinibatchInputs* inputMatrices = new StreamMinibatchInputs();
+	// TODO: ^^ change to shared_ptr or unique_ptr
+	let& featureNodes = net->FeatureNodes();
+	let& labelNodes = net->LabelNodes();
+	// BUGBUG: ^^ should not get all feature/label nodes, but only the ones referenced in a criterion
+	for (size_t pass = 0; pass < 2; pass++)
+	{
+		auto& nodes = (pass == 0) ? featureNodes : labelNodes;
+		for (const auto & node : nodes)
+			inputMatrices->AddInput(node->NodeName(), node->ValuePtr(), node->GetMBLayout(), node->GetSampleLayout());
+	}
 
-    // get hmm file for sequence training
-    bool isSequenceTrainingCriterion = (criterionNodes[0]->OperationName() == L"SequenceWithSoftmax");
-    if (isSequenceTrainingCriterion)
-    {
-        // SequenceWithSoftmaxNode<ElemType>* node = static_cast<SequenceWithSoftmaxNode<ElemType>*>(criterionNodes[0]);
-        auto node = dynamic_pointer_cast<SequenceWithSoftmaxNode<ElemType>>(criterionNodes[0]);
-        auto hmm = node->gethmm();
-        trainSetDataReader->GetHmmData(hmm);
-    }
+	// get hmm file for sequence training
+	bool isSequenceTrainingCriterion = (criterionNodes[0]->OperationName() == L"SequenceWithSoftmax");
+	if (isSequenceTrainingCriterion)
+	{
+		// SequenceWithSoftmaxNode<ElemType>* node = static_cast<SequenceWithSoftmaxNode<ElemType>*>(criterionNodes[0]);
+		auto node = dynamic_pointer_cast<SequenceWithSoftmaxNode<ElemType>>(criterionNodes[0]);
+		auto hmm = node->gethmm();
+		trainSetDataReader->GetHmmData(hmm);
+	}
 
-    // used for KLD regularized adaptation. For all other adaptation techniques
-    // use MEL to edit the model and using normal training algorithm
-    // TODO: Should this be done in SGD::Adapt()?
-    // TODO: Redo this leveraging that we now have shared_ptrs. It is probably even OK if both networks share feature nodes.
-    // TODO: Then we can also share the MBLayout; which currently is copied by value.
-    std::vector<ComputationNodeBasePtr> refFeatureNodes; // we keep the original network's features here
-    if (m_needAdaptRegularization && m_adaptationRegType == AdaptationRegType::KL && refNode != nullptr)
-    {
-        refNet->InvalidateCompiledNetwork(); // prepare to re-compile
-        // replace input nodes in ref network by input nodes of the main network
-        refFeatureNodes.resize(featureNodes.size());
-        for (size_t i = 0; i < featureNodes.size(); i++)
-        {
-            // we need to keep this info to undo this later
-            // TODO: After the change to shared_ptrs, this may no longer be necessary.
-            refFeatureNodes[i] = refNet->GetNodeFromName(featureNodes[i]->NodeName()); // remember so that we can restore them later
-            refNet->ChangeNode(featureNodes[i]->NodeName(), featureNodes[i]);
-        }
-        //const_cast<MBLayoutPtr&>(refNet->GetMBLayoutPtrOfNetwork()) = net->GetMBLayoutPtrOfNetwork(); // WORKAROUND
-        refNet->CompileNetwork();
+	// used for KLD regularized adaptation. For all other adaptation techniques
+	// use MEL to edit the model and using normal training algorithm
+	// TODO: Should this be done in SGD::Adapt()?
+	// TODO: Redo this leveraging that we now have shared_ptrs. It is probably even OK if both networks share feature nodes.
+	// TODO: Then we can also share the MBLayout; which currently is copied by value.
+	std::vector<ComputationNodeBasePtr> refFeatureNodes; // we keep the original network's features here
+	if (m_needAdaptRegularization && m_adaptationRegType == AdaptationRegType::KL && refNode != nullptr)
+	{
+		refNet->InvalidateCompiledNetwork(); // prepare to re-compile
+		// replace input nodes in ref network by input nodes of the main network
+		refFeatureNodes.resize(featureNodes.size());
+		for (size_t i = 0; i < featureNodes.size(); i++)
+		{
+			// we need to keep this info to undo this later
+			// TODO: After the change to shared_ptrs, this may no longer be necessary.
+			refFeatureNodes[i] = refNet->GetNodeFromName(featureNodes[i]->NodeName()); // remember so that we can restore them later
+			refNet->ChangeNode(featureNodes[i]->NodeName(), featureNodes[i]);
+		}
+		//const_cast<MBLayoutPtr&>(refNet->GetMBLayoutPtrOfNetwork()) = net->GetMBLayoutPtrOfNetwork(); // WORKAROUND
+		refNet->CompileNetwork();
 
-        // allocate memory for forward computation
-        refNet->AllocateAllMatrices({refNode}, {}, nullptr);
-    }
+		// allocate memory for forward computation
+		refNet->AllocateAllMatrices({ refNode }, {}, nullptr);
+	}
 
-    // initializing weights and gradient holder
-    // only one criterion so far TODO: support multiple ones?
-    auto& learnableNodes = net->LearnableParameterNodes(criterionNodes[0]);
-    std::list<Matrix<ElemType>> smoothedGradients;
+	// initializing weights and gradient holder
+	// only one criterion so far TODO: support multiple ones?
+	auto& learnableNodes = net->LearnableParameterNodes(criterionNodes[0]);
+	std::list<Matrix<ElemType>> smoothedGradients;
 
-    for (auto nodeIter = learnableNodes.begin(); nodeIter != learnableNodes.end(); nodeIter++)
-    {
-        ComputationNodePtr node = dynamic_pointer_cast<ComputationNode<ElemType>>(*nodeIter);
-        smoothedGradients.push_back(Matrix<ElemType>(node->Value().GetNumRows(),
-                                                     node->Value().GetNumCols(),
-                                                     net->GetDeviceId()));
-    }
+	for (auto nodeIter = learnableNodes.begin(); nodeIter != learnableNodes.end(); nodeIter++)
+	{
+		ComputationNodePtr node = dynamic_pointer_cast<ComputationNode<ElemType>>(*nodeIter);
+		smoothedGradients.push_back(Matrix<ElemType>(node->Value().GetNumRows(),
+			node->Value().GetNumCols(),
+			net->GetDeviceId()));
+	}
 
-    double avgCriterion, lrControlCriterion;
-    lrControlCriterion = avgCriterion = numeric_limits<double>::infinity();
-    size_t epochsNotCountedInAvgCriterion = startEpoch % m_learnRateAdjustInterval;
+	double avgCriterion, lrControlCriterion;
+	lrControlCriterion = avgCriterion = numeric_limits<double>::infinity();
+	size_t epochsNotCountedInAvgCriterion = startEpoch % m_learnRateAdjustInterval;
 
-    std::vector<wstring> evalNodeNames;
-    for (size_t i = 0; i < evaluationNodes.size(); i++)
-        evalNodeNames.push_back(evaluationNodes[i]->NodeName());
+	std::vector<wstring> evalNodeNames;
+	for (size_t i = 0; i < evaluationNodes.size(); i++)
+		evalNodeNames.push_back(evaluationNodes[i]->NodeName());
 
-    double learnRatePerSample = 0.5f / m_mbSize[startEpoch];
+	double learnRatePerSample = 0.5f / m_mbSize[startEpoch];
 
-    double learningRateAdjustmentFactor = 1.0f;
-    vector<double> prevLearnRates;
-    prevLearnRates.resize(m_numPrevLearnRates);
-    for (int i = 0; i < m_numPrevLearnRates; i++)
-    {
-        prevLearnRates[i] = -1.0;
-    }
+	double learningRateAdjustmentFactor = 1.0f;
+	vector<double> prevLearnRates;
+	prevLearnRates.resize(m_numPrevLearnRates);
+	for (int i = 0; i < m_numPrevLearnRates; i++)
+	{
+		prevLearnRates[i] = -1.0;
+	}
 
-    if (GetParallelizationMethod() == ParallelizationMethod::dataParallelSGD)
-    {
-        InitDistGradAgg(evaluationNodes.size(), m_traceLevel);
-    }
-    else if (GetParallelizationMethod() == ParallelizationMethod::modelAveragingSGD || 
-             GetParallelizationMethod() == ParallelizationMethod::blockMomentumSGD)
-    {
-        InitModelAggregationHandler(m_syncStatsTrace, net->GetDeviceId());
-    }
-    
-    // precompute mean and invStdDev nodes and save initial model
-    // When no precompute, only save if we did not load the model from a 
-    // checkpoint but instead built it from a network description
-    if (PreCompute(net, trainSetDataReader, featureNodes, labelNodes, inputMatrices) || !networkLoadedFromCheckpoint)
-    {
-        // Synchronize all ranks before writing the model to ensure that
-        // everyone is done loading the model
-        if (m_mpi != nullptr)
-        {
-            m_mpi->WaitAll();
-        }
+	if (GetParallelizationMethod() == ParallelizationMethod::dataParallelSGD)
+	{
+		InitDistGradAgg(evaluationNodes.size(), m_traceLevel);
+	}
+	else if (GetParallelizationMethod() == ParallelizationMethod::modelAveragingSGD ||
+		GetParallelizationMethod() == ParallelizationMethod::blockMomentumSGD)
+	{
+		InitModelAggregationHandler(m_syncStatsTrace, net->GetDeviceId());
+	}
 
-        // In case of parallel training only the main node should we saving the model to prevent
-        // the parallel training nodes from colliding to write the same file
-        if ((m_mpi == nullptr) || m_mpi->IsMainNode())
-            net->Save(GetModelNameForEpoch(int(startEpoch) - 1));
-    }
+	// precompute mean and invStdDev nodes and save initial model
+	// When no precompute, only save if we did not load the model from a 
+	// checkpoint but instead built it from a network description
+	if (PreCompute(net, trainSetDataReader, featureNodes, labelNodes, inputMatrices) || !networkLoadedFromCheckpoint)
+	{
+		// Synchronize all ranks before writing the model to ensure that
+		// everyone is done loading the model
+		if (m_mpi != nullptr)
+		{
+			m_mpi->WaitAll();
+		}
 
-    size_t totalTrainingSamplesSeen = 0; // aggregated over all epochs, for logging purposes only
+		// In case of parallel training only the main node should we saving the model to prevent
+		// the parallel training nodes from colliding to write the same file
+		if ((m_mpi == nullptr) || m_mpi->IsMainNode())
+			net->Save(GetModelNameForEpoch(int(startEpoch) - 1));
+	}
 
-    bool learnRateInitialized = false;
-    double prevCriterion = numeric_limits<double>::infinity();
-    if (startEpoch > 0)
+	size_t totalTrainingSamplesSeen = 0; // aggregated over all epochs, for logging purposes only
+
+	bool learnRateInitialized = false;
+	double prevCriterion = numeric_limits<double>::infinity();
+
+	std::string ckpMinibatchFile("RestartPoint.txt");
+
+	if (_access(ckpMinibatchFile.c_str(), 0) == 0) {
+		std::ifstream ckpMinibatchInfo(ckpMinibatchFile);
+
+		int startMinibatch;
+		ckpMinibatchInfo >> startMinibatch;
+
+		std::wstring modelFileName = msra::strfun::wstrprintf(L"Models/CNTK/ResNet_50.%d.ckp", (int)startMinibatch + 1);
+
+		learnRateInitialized = TryLoadCheckPointInfo(startMinibatch,
+													/*out*/ totalTrainingSamplesSeen,
+													/*out*/ learnRatePerSample,
+													smoothedGradients,
+													/*out*/ prevCriterion,
+													/*out*/ m_prevChosenMinibatchSize,
+													modelFileName);
+		if(learnRateInitialized)
+			prevLearnRates[startMinibatch % m_numPrevLearnRates] = learnRatePerSample;
+
+		ckpMinibatchInfo.close();
+	}
+    else if (startEpoch > 0)
     {
         learnRateInitialized = TryLoadCheckPointInfo(startEpoch - 1,
                                                      /*out*/ totalTrainingSamplesSeen,
@@ -870,6 +909,13 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
     EpochCriterion         epochCriterionLastLogged  = epochCriterion;
     vector<EpochCriterion> epochEvalErrorsLastLogged = epochEvalErrors;
 
+	std::string ckpMinibatchFile("RestartPoint.txt");
+	if (_access(ckpMinibatchFile.c_str(), 0) == 0) {
+		std::ifstream ckpMibibatchInfo("RestartPoint.txt");
+		ckpMibibatchInfo >> currentMiniBatch;
+		currentMiniBatch++;
+	}
+
     bool noMoreSamplesToProcess = false;
     for (;;)
     {
@@ -945,6 +991,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 				}
 
 				net->SetActualMiniBatchSize(m_mbSize[0]);
+				net->SetCurrentMinibatchIndex(currentMiniBatch);
 
 				if (useDistributedMBReading) {
 					net->SetCurrentWorkerId((int)m_mpi->CurrentNodeRank());
@@ -2013,7 +2060,9 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 		std::stringstream ss;
 		ss << currentMiniBatch;
 
-		system(std::string("md .\\FetchTests\\CNTK\\update\\" + ss.str()).c_str());
+		if (_access(std::string(".\\FetchTests\\CNTK\\update\\" + ss.str()).c_str(), 0) != 0) {
+			system(std::string("md .\\FetchTests\\CNTK\\update\\" + ss.str()).c_str());
+		}
 
 		auto parentNode = nodeRelativeMap.find(node->NodeName());
 		std::string exportFileName = "./FetchTests/CNTK/update/" + ss.str() + "/";
@@ -2157,12 +2206,16 @@ bool SGD<ElemType>::TryLoadCheckPointInfo(const size_t epochNumber,
                                           /*out*/ double& learnRatePerSample,
                                           std::list<Matrix<ElemType>>& smoothedGradients,
                                           /*out*/ double& prevCriterion,
-                                          /*out*/ size_t& minibatchSize)
+                                          /*out*/ size_t& minibatchSize,
+										  const wstring targetFileName)
 {
     // gracefully handle if a checkpoint file is missing
     // This means a user wanted to continue training from an older model, but that model had no checkpoint info anymore.
     // This is valid, we just don't get the features that require previous models, such as LR or MBSize control.
-    let checkPointFileName = GetCheckPointFileNameForEpoch(int(epochNumber));
+    std::wstring checkPointFileName = GetCheckPointFileNameForEpoch(int(epochNumber));
+	if (targetFileName != L"") {
+		checkPointFileName = targetFileName;
+	}
     if (!fexists(checkPointFileName.c_str()))
     {
         // initialize as if nothing
@@ -2175,7 +2228,7 @@ bool SGD<ElemType>::TryLoadCheckPointInfo(const size_t epochNumber,
         return false;
     }
 
-    LoadCheckPointInfo(epochNumber, totalSamplesSeen, learnRatePerSample, smoothedGradients, prevCriterion, minibatchSize);
+    LoadCheckPointInfo(epochNumber, totalSamplesSeen, learnRatePerSample, smoothedGradients, prevCriterion, minibatchSize, targetFileName);
     return true;
 }
 
@@ -2185,9 +2238,13 @@ void SGD<ElemType>::LoadCheckPointInfo(const size_t epochNumber,
                                        /*out*/ double& learnRatePerSample,
                                        std::list<Matrix<ElemType>>& smoothedGradients,
                                        /*out*/ double& prevCriterion,
-                                       /*out*/ size_t& minibatchSize)
+                                       /*out*/ size_t& minibatchSize,
+									   const wstring targetFileName)
 {
-    let checkPointFileName = GetCheckPointFileNameForEpoch(int(epochNumber));
+	std::wstring checkPointFileName = GetCheckPointFileNameForEpoch(int(epochNumber));
+	if (targetFileName != L"") {
+		checkPointFileName = targetFileName;
+	}
     File fstream(checkPointFileName,
                  FileOptions::fileOptionsBinary | FileOptions::fileOptionsRead);
 

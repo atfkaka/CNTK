@@ -515,13 +515,15 @@ protected:
                                /*out*/ double& learnRatePerSample,
                                std::list<Matrix<ElemType>>& smoothedGradients,
                                /*out*/ double& prevCriterion,
-                               /*out*/ size_t& minibatchSize);
+                               /*out*/ size_t& minibatchSize,
+							   const wstring targetFileName = L"");
     void LoadCheckPointInfo(const size_t epochNumber,
                             /*out*/ size_t& totalSamplesSeen,
                             /*out*/ double& learnRatePerSample,
                             std::list<Matrix<ElemType>>& smoothedGradients,
                             /*out*/ double& prevCriterion,
-                            /*out*/ size_t& minibatchSize);
+                            /*out*/ size_t& minibatchSize,
+							const wstring targetFileName = L"");
 
     wstring GetCheckPointFileNameForEpoch(const int epoch);
     wstring GetModelNameForEpoch(const int epoch, bool bLastModel = false);

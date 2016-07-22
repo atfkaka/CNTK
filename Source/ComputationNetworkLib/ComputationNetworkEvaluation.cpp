@@ -26,9 +26,6 @@ using namespace std;
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
-static int currentMiniBatchIndex = 0;
-static std::string saveFilePath = "DumpData";
-
 // This source file contains methods related to evaluation (forward prop, backprop), network validation, and matrix memory allocation (memory sharing).
 
 // -----------------------------------------------------------------------
@@ -49,6 +46,7 @@ void ComputationNetwork::ForwardProp(const ComputationNodeBasePtr rootNode)
 
 	GetNestedNetwork(rootNode)->m_actualMiniBatch = m_actualMiniBatchSize;
 	GetNestedNetwork(rootNode)->m_currentWorkerId = m_currentWorkerId;
+	GetNestedNetwork(rootNode)->m_currentMinibatchIndex = m_currentMiniBatchIndex;
 
     // traverse all nodes in the pre-determined evaluation order
 	if (m_enableSublinearMemory) {
@@ -109,6 +107,7 @@ void ComputationNetwork::Backprop(const ComputationNodeBasePtr rootNode) // trai
 		return;
 	}
 
+	GetNestedNetwork(rootNode)->m_currentMinibatchIndex = m_currentMiniBatchIndex;
 	GetNestedNetwork(rootNode)->Backprop(FrameRange(nullptr), true, true);
 }
 
@@ -186,7 +185,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 					node->BeginForwardProp();
 					node->m_actualMiniBatch = m_actualMiniBatch;
 #ifdef _CROSS_DEBUG
-					DebugSingleForwardProp(node, fr, currentMiniBatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
+					DebugSingleForwardProp(node, fr, m_currentMinibatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
 
 #ifdef EXPORTNODERELA
 					nodeLink << PARTraversalFlowControlNode::StringParser(node->GetName()) << std::endl;
@@ -356,13 +355,6 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 	childrenInThisLoop, childrenInOuterLoop; // TODO: think through what these mean when coming from PAR mode
 	// process nodes in pre-determined order
 #ifdef _CROSS_DEBUG
-	std::stringstream ss;
-	ss << (currentMiniBatchIndex + 1);
-	std::stringstream sd;
-	sd << (currentMiniBatchIndex);
-
-	system(std::string("md .\\FetchTests\\CNTK\\forward\\" + ss.str()).c_str());
-	system(std::string("md .\\FetchTests\\CNTK\\backward\\" + sd.str()).c_str());
 
 	int internalIndex = 0;
 #endif
@@ -381,7 +373,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 
 			node->BeginBackprop();
 #ifdef _CROSS_DEBUG
-			DebugSingleBackprop(node, fr, currentMiniBatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex);
+			DebugSingleBackprop(node, fr, m_currentMinibatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex);
 			for (auto& input : node->GetInputs()) {
 				if (input->IsValueSharable()) {
 					internalIndex++;
@@ -394,7 +386,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 #ifdef _DEBUG
 #endif
 }
-		currentMiniBatchIndex++;
+		m_currentMinibatchIndex++;
 }
 /*virtual*/ void ComputationNetwork::PARTraversalFlowControlNode::RequestMatricesBeforeForwardProp(MatrixPool& matrixPool) /*override*/
 {
@@ -457,7 +449,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 		delete[] inputData;
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
-	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 0) {
+	if (m_currentMinibatchIndex <= 0) {
 		DebugDataDump(node, true, index, internalIndex);
 	}
 }
@@ -467,7 +459,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(Comput
 {
 	node->Backprop(fr.WithLayout(node->GetMBLayout()), true, true);
 
-	if (currentMiniBatchIndex / 5000000 != 0 || currentMiniBatchIndex <= 0) {
+	if (m_currentMinibatchIndex <= 0) {
 		for (auto& input : node->GetInputs()) {
 			if (input->IsValueSharable()) {
 				DebugDataDump(input, false, index, internalIndex++, node);
@@ -498,19 +490,19 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugDataDump(ComputationN
 
 std::wstring ComputationNetwork::PARTraversalFlowControlNode::CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex)
 {
-	//std::string dirMaker("md .\\FetchTests\\CNTK\\");
+	std::stringstream dirMaker;
+	dirMaker << ".\\FetchTests\\CNTK\\";
+	dirMaker << (forwardOrNot ? "forward\\" : "backward\\");
+	dirMaker << index;
+	if (_access(dirMaker.str().c_str(), 0) != 0) {
+		system(std::string("md " + dirMaker.str()).c_str());
+	}
+
 	std::string fileMaker("./FetchTests/CNTK/");
 
 	std::stringstream filePath;
 	filePath << (forwardOrNot ? "forward/" : "backward/");
 	filePath << index;
-	//dirMaker += filePath.str();
-	//system(dirMaker.c_str());
-
-	//dirMaker += (forwardOrNot ? "\\forward" : "\\backward");
-	//system(dirMaker.c_str());
-
-	//dirMaker += (forwardOrNot ? "\\forward-" : "\\backward-");
 	filePath << (forwardOrNot ? "/forward-" : "/backward-");
 	std::string nodeName = StringParser(node->GetName());
 	filePath << internalIndex;

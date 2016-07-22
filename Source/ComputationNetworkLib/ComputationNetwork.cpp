@@ -82,6 +82,8 @@ void ComputationNetwork::ClearNetwork()
 	m_actualMiniBatchSize = 256;
 
 	m_currentWorkerId = 0;
+
+	m_currentMiniBatchIndex = 0;
 }
 
 // -----------------------------------------------------------------------

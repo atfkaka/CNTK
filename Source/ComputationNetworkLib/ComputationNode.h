@@ -888,6 +888,8 @@ public:
 	int m_actualMiniBatch;
 
 	int m_currentWorkerId;
+
+	int m_currentMinibatchIndex;
 };
 typedef ComputationNodeBase::ComputationNodeBasePtr ComputationNodeBasePtr;
 

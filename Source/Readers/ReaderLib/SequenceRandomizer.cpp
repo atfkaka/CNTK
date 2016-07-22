@@ -101,7 +101,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         }
 		
 		// Indeed, we do not have the multi-chunks problem, by default, we set them to 1  
-		size_t needFillCount = theoryCount - sampleCount;
+		int needFillCount = (int)theoryCount - (int)sampleCount;
 		if (needFillCount > 0) {
 			auto sequenceWindow = std::deque<std::vector<RandomizedSequenceDescription>>(m_sequenceWindow.begin(), m_sequenceWindow.end());
 			auto chunkWindow = std::deque<RandomizedChunk>(m_chunkWindow.begin(), m_chunkWindow.end());
@@ -109,7 +109,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
 			Reset(seed);
 
-			for (size_t lackSample = 0; lackSample < needFillCount; lackSample++) {
+			for (size_t lackSample = 0; lackSample < (size_t)needFillCount; lackSample++) {
 				RandomizedSequenceDescription* sequence = &m_sequenceWindow[lackSample][0];
 				result.push_back(*sequence);
 				MoveChunkCursor();

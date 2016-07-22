@@ -14,6 +14,9 @@
 #include <random>
 #include <set>
 
+#include <io.h>
+#include <fstream>
+
 namespace Microsoft { namespace MSR { namespace CNTK {
 
 BlockRandomizer::BlockRandomizer(
@@ -65,6 +68,17 @@ void BlockRandomizer::StartEpoch(const EpochConfiguration& config)
 
     // Calculates starts of the epoch, prepares a new sweep if needed.
     m_epochStartPosition = m_epochSize * config.m_epochIndex;
+
+	if (_access("RestartPoint.txt", 0) == 0) {
+		std::ifstream ckpSampleFile("RestartPoint.txt");
+		int scanSamples;
+		ckpSampleFile >> scanSamples;
+		ckpSampleFile >> scanSamples;
+
+		m_epochStartPosition += (size_t)scanSamples;
+		ckpSampleFile.close();
+	}
+
     PrepareNewSweepIfNeeded(m_epochStartPosition);
 
     // Sets sequence cursor to the sequence that corresponds to the epoch start position.
@@ -72,6 +86,8 @@ void BlockRandomizer::StartEpoch(const EpochConfiguration& config)
     size_t offsetInSweep = m_epochStartPosition % m_sweepTotalNumberOfSamples;
     size_t newOffset = m_sequenceRandomizer->Seek(offsetInSweep, m_sweep);
     m_globalSamplePosition = m_sweep * m_sweepTotalNumberOfSamples + newOffset;
+
+	m_epochStartPosition = m_epochSize * config.m_epochIndex;
 }
 
 // Prepares a new sweep if needed.
