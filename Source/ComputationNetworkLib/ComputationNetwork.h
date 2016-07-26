@@ -1004,8 +1004,8 @@ protected:
 		virtual void DebugSingleBackprop(ComputationNodeBasePtr node, const FrameRange& fr, int index, std::unordered_set<std::wstring>,
 			std::wstring source, int internalIndex);
 
-		virtual void DebugDataDump(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, ComputationNodeBasePtr instead = nullptr);
-		virtual std::wstring CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex);
+		virtual void DebugDataDump(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, ComputationNodeBasePtr instead = nullptr, int rankIndex = 0);
+		virtual std::wstring CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, int rankIndex = 0);
 	public:
 		static std::wstring WStringParser(std::string str);
 		static std::string StringParser(std::wstring wstr);

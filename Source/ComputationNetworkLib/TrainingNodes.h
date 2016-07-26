@@ -178,10 +178,29 @@ public:
     virtual void /*ComputationNodeNonLooping::*/ ForwardPropNonLooping() override // -sum(left_i * log(softmax_i(right)))
     {
         FrameRange fr(Input(0)->GetMBLayout());
+
+		// debug on softmax
+		//std::stringstream filePath;
+		//filePath << "./NodesTest/identity_softmax_CNTK.rank";
+		//filePath << m_currentWorkerId;
+
+		//std::ofstream softmaxData(filePath.str(), std::ios::binary);
+		//ElemType* inputData = Input(1)->ValueFor(fr).CopyToArray();
+		//int size = (int)Input(1)->ValueFor(fr).GetNumCols() * (int)Input(1)->ValueFor(fr).GetNumRows();
+		//softmaxData.write((const char*)&size, sizeof(int));
+		//softmaxData.write((const char*)inputData, sizeof(ElemType) * size);
+		//delete[] inputData;
+		//softmaxData.close();
+
         // first compute the softmax (column-wise)
         // Note that we need both log and non-log for gradient computation.
+
         m_logSoftmaxOfRight->AssignLogSoftmaxOf(Input(1)->ValueFor(fr), true);
         // BUGBUG: No need to compute m_softmaxOfRight in ForwardProp, should be moved to BackpropTo().
+
+		//ElemType* outputData = m_logSoftmaxOfRight->CopyToArray();
+		//softmaxData.write((const char*)outputData, sizeof(ElemType) * size);
+		//delete[] outputData;
 
         m_softmaxOfRight->SetValue(*m_logSoftmaxOfRight);
         m_softmaxOfRight->InplaceExp();

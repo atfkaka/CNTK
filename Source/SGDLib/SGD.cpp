@@ -996,6 +996,9 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 				if (useDistributedMBReading) {
 					net->SetCurrentWorkerId((int)m_mpi->CurrentNodeRank());
 				}
+				else {
+					net->SetCurrentWorkerId(0);
+				}
 
                 // ===========================================================
                 // forward prop for evaluate eval nodes

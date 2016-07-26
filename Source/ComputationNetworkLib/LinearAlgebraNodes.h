@@ -296,7 +296,20 @@ public:
         auto input0 = OneSampleTensorFor(0,  /*gradient=*/false, fr.AllowBroadcast());
         auto input1 = OneSampleTensorFor(1,  /*gradient=*/false, fr.AllowBroadcast());
         auto output = OneSampleTensorFor(-1, /*gradient=*/false, fr);
+
         output.AssignMatrixProductOf(false/*transC*/, input0, m_transpose/*transA*/, input1, false/*transB*/);
+
+		std::stringstream filePath;
+		filePath << "./NodesTest/identity_fc_CNTK.rank";
+		filePath << m_currentWorkerId;
+
+		std::ofstream fcData(filePath.str(), std::ios::binary);
+		ElemType* inputData = Value().CopyToArray();
+		int size = (int)Value().GetNumCols() * (int)Value().GetNumRows();
+		fcData.write((const char*)&size, sizeof(int));
+		fcData.write((const char*)inputData, sizeof(ElemType) * size);
+		delete[] inputData;
+		fcData.close();
     }
 
     virtual void /*ComputationNode::*/ BackpropTo(const size_t inputIndex, const FrameRange& fr) override

@@ -184,6 +184,7 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
 				{
 					node->BeginForwardProp();
 					node->m_actualMiniBatch = m_actualMiniBatch;
+					node->m_currentWorkerId = m_currentWorkerId;
 #ifdef _CROSS_DEBUG
 					DebugSingleForwardProp(node, fr, m_currentMinibatchIndex, std::unordered_set<std::wstring>(), L"", internalIndex++);
 
@@ -450,7 +451,7 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleForwardProp(Com
 	}
 	node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
 	if (m_currentMinibatchIndex <= 0) {
-		DebugDataDump(node, true, index, internalIndex);
+		DebugDataDump(node, true, index, internalIndex, nullptr, node->m_currentWorkerId);
 	}
 }
 
@@ -462,20 +463,20 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugSingleBackprop(Comput
 	if (m_currentMinibatchIndex <= 0) {
 		for (auto& input : node->GetInputs()) {
 			if (input->IsValueSharable()) {
-				DebugDataDump(input, false, index, internalIndex++, node);
+				DebugDataDump(input, false, index, internalIndex++, node, node->m_currentWorkerId);
 			}
 		}
 	}
 }
 
-void ComputationNetwork::PARTraversalFlowControlNode::DebugDataDump(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, ComputationNodeBasePtr instead)
+void ComputationNetwork::PARTraversalFlowControlNode::DebugDataDump(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, ComputationNodeBasePtr instead, int rankIndex)
 {
 	std::string filePath;
 	if (instead != nullptr) {
-		filePath = StringParser(CombineFilePath(instead, forwardOrNot, index, internalIndex));
+		filePath = StringParser(CombineFilePath(instead, forwardOrNot, index, internalIndex, rankIndex));
 	} 
 	else {
-		filePath = StringParser(CombineFilePath(node, forwardOrNot, index, internalIndex));
+		filePath = StringParser(CombineFilePath(node, forwardOrNot, index, internalIndex, rankIndex));
 	}
 
 	std::ofstream exportData(filePath, std::ios::binary);
@@ -488,12 +489,14 @@ void ComputationNetwork::PARTraversalFlowControlNode::DebugDataDump(ComputationN
 	delete[] exportStream;
 }
 
-std::wstring ComputationNetwork::PARTraversalFlowControlNode::CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex)
+std::wstring ComputationNetwork::PARTraversalFlowControlNode::CombineFilePath(ComputationNodeBasePtr node, bool forwardOrNot, int index, int internalIndex, int rankIndex)
 {
 	std::stringstream dirMaker;
 	dirMaker << ".\\FetchTests\\CNTK\\";
 	dirMaker << (forwardOrNot ? "forward\\" : "backward\\");
 	dirMaker << index;
+	dirMaker << "\\";
+	dirMaker << rankIndex;
 	if (_access(dirMaker.str().c_str(), 0) != 0) {
 		system(std::string("md " + dirMaker.str()).c_str());
 	}
@@ -503,6 +506,8 @@ std::wstring ComputationNetwork::PARTraversalFlowControlNode::CombineFilePath(Co
 	std::stringstream filePath;
 	filePath << (forwardOrNot ? "forward/" : "backward/");
 	filePath << index;
+	filePath << "/";
+	filePath << rankIndex;
 	filePath << (forwardOrNot ? "/forward-" : "/backward-");
 	std::string nodeName = StringParser(node->GetName());
 	filePath << internalIndex;
