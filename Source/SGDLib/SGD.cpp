@@ -2059,7 +2059,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 	}
 
 #ifdef _CROSS_DEBUG
-	if (currentMiniBatch % 200 == 0/* || currentMiniBatch < 10*/) {
+	if (currentMiniBatch % 200 == 0 || currentMiniBatch > 10000) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
 

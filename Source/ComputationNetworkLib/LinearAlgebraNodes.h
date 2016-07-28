@@ -299,17 +299,17 @@ public:
 
         output.AssignMatrixProductOf(false/*transC*/, input0, m_transpose/*transA*/, input1, false/*transB*/);
 
-		std::stringstream filePath;
-		filePath << "./NodesTest/identity_fc_CNTK.rank";
-		filePath << m_currentWorkerId;
+		//std::stringstream filePath;
+		//filePath << "./NodesTest/identity_fc_CNTK.rank";
+		//filePath << m_currentWorkerId;
 
-		std::ofstream fcData(filePath.str(), std::ios::binary);
-		ElemType* inputData = Value().CopyToArray();
-		int size = (int)Value().GetNumCols() * (int)Value().GetNumRows();
-		fcData.write((const char*)&size, sizeof(int));
-		fcData.write((const char*)inputData, sizeof(ElemType) * size);
-		delete[] inputData;
-		fcData.close();
+		//std::ofstream fcData(filePath.str(), std::ios::binary);
+		//ElemType* inputData = Value().CopyToArray();
+		//int size = (int)Value().GetNumCols() * (int)Value().GetNumRows();
+		//fcData.write((const char*)&size, sizeof(int));
+		//fcData.write((const char*)inputData, sizeof(ElemType) * size);
+		//delete[] inputData;
+		//fcData.close();
     }
 
     virtual void /*ComputationNode::*/ BackpropTo(const size_t inputIndex, const FrameRange& fr) override
@@ -342,6 +342,19 @@ public:
             auto input1         = OneSampleTensorFor(1,  /*gradient=*/false, fr.AllowBroadcast());
             auto outputGradient = OneSampleTensorFor(-1, /*gradient=*/true,  fr);
             input0Gradient.AddMatrixProductOf(m_transpose/*transC*/, outputGradient, false/*transA*/, input1, true/*transB*/);
+
+			//std::stringstream filePath;
+			//filePath << "./NodesTest/identity_fc_CNTK.rank";
+			//filePath << m_currentWorkerId;
+
+			//std::ofstream fcData(filePath.str(), std::ios::binary);
+			//shared_ptr<Matrix<ElemType>> inputPtr = static_pointer_cast<Matrix<ElemType>>(Input(0)->GradientPtr());
+			//ElemType* inputData = inputPtr->CopyToArray();
+			//int size = (int)inputPtr->GetNumCols() * (int)inputPtr->GetNumRows();
+			//fcData.write((const char*)&size, sizeof(int));
+			//fcData.write((const char*)inputData, sizeof(ElemType) * size);
+			//delete[] inputData;
+			//fcData.close();
         }
         else if (inputIndex == 1) // right derivative
         {
