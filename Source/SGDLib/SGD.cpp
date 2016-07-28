@@ -22,7 +22,9 @@
 #include <map>
 #include <set>
 
+#ifdef _CROSS_DEBUG
 #include "io.h"
+#endif
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -41,7 +43,9 @@ template SGD<double>::SGD(const ScriptableObjects::IConfigRecord&);
 // Train() -- perform a multi-epoch training end-to-end with checkpointing
 // -----------------------------------------------------------------------
 
+#ifdef _CROSS_DEBUG
 static int currentMiniBatch = 0;
+#endif
 
 template <class ElemType>
 void SGD<ElemType>::Train(function<ComputationNetworkPtr(DEVICEID_TYPE)> createNetworkFn, DEVICEID_TYPE deviceId,
@@ -61,6 +65,8 @@ void SGD<ElemType>::Train(function<ComputationNetworkPtr(DEVICEID_TYPE)> createN
     bool loadNetworkFromCheckpoint = startEpoch >= 0;
 
 	std::string miniCkpFile("RestartPoint.txt");
+
+#ifdef _CROSS_DEBUG
 	if (_access(miniCkpFile.c_str(), 0) == 0) {
 		std::ifstream ckpInfo(miniCkpFile);
 
@@ -72,6 +78,7 @@ void SGD<ElemType>::Train(function<ComputationNetworkPtr(DEVICEID_TYPE)> createN
 		loadNetworkFromCheckpoint = true;
 		ckpInfo.close();
 	}
+#endif
 
     fprintf(stderr, "\n");
     if (loadNetworkFromCheckpoint)
@@ -332,6 +339,7 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
 
 	std::string ckpMinibatchFile("RestartPoint.txt");
 
+#ifdef _CROSS_DEBUG
 	if (_access(ckpMinibatchFile.c_str(), 0) == 0) {
 		std::ifstream ckpMinibatchInfo(ckpMinibatchFile);
 
@@ -353,6 +361,8 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
 		ckpMinibatchInfo.close();
 	}
     else if (startEpoch > 0)
+#else
+	if(startEpoch > 0)
     {
         learnRateInitialized = TryLoadCheckPointInfo(startEpoch - 1,
                                                      /*out*/ totalTrainingSamplesSeen,
@@ -362,6 +372,7 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
                                                      /*out*/ m_prevChosenMinibatchSize);
         if (learnRateInitialized)
             prevLearnRates[startEpoch % m_numPrevLearnRates] = learnRatePerSample;
+#endif
     }
 
     if (m_autoLearnRateSearchType == LearningRateSearchAlgorithm::AdjustAfterEpoch &&
@@ -909,12 +920,14 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
     EpochCriterion         epochCriterionLastLogged  = epochCriterion;
     vector<EpochCriterion> epochEvalErrorsLastLogged = epochEvalErrors;
 
+#ifdef _CROSS_DEBUG
 	std::string ckpMinibatchFile("RestartPoint.txt");
 	if (_access(ckpMinibatchFile.c_str(), 0) == 0) {
 		std::ifstream ckpMibibatchInfo("RestartPoint.txt");
 		ckpMibibatchInfo >> currentMiniBatch;
 		currentMiniBatch++;
 	}
+#endif
 
     bool noMoreSamplesToProcess = false;
     for (;;)
@@ -991,6 +1004,8 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 				}
 
 				net->SetActualMiniBatchSize(m_mbSize[0]);
+
+#ifdef _CROSS_DEBUG
 				net->SetCurrentMinibatchIndex(currentMiniBatch);
 
 				if (useDistributedMBReading) {
@@ -999,6 +1014,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 				else {
 					net->SetCurrentWorkerId(0);
 				}
+#endif
 
                 // ===========================================================
                 // forward prop for evaluate eval nodes
@@ -1273,12 +1289,14 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
         // TODO: move the two-forward-pass support out of the reader.
         AttemptUtteranceDerivativeFeatures(net, trainSetDataReader, featureNodes, inputMatrices);
 
+#ifdef _CROSS_DEBUG
 		if (currentMiniBatch % 200 == 0 && ((m_mpi == nullptr) || m_mpi->IsMainNode())){
 			SaveCheckPointInfo(currentMiniBatch, currentMiniBatch * m_mbSize[0], learnRatePerSample, smoothedGradients, 1.0, tunedMBSize);
 			net->Save(GetModelNameForEpoch(currentMiniBatch));
 		}
 
 		currentMiniBatch++;
+#endif
 
         profiler.NextSample();
     }

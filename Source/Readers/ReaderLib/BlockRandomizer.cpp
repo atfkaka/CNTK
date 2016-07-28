@@ -14,7 +14,9 @@
 #include <random>
 #include <set>
 
+#ifdef _CROSS_DEBUG
 #include <io.h>
+#endif
 #include <fstream>
 
 namespace Microsoft { namespace MSR { namespace CNTK {
@@ -69,6 +71,7 @@ void BlockRandomizer::StartEpoch(const EpochConfiguration& config)
     // Calculates starts of the epoch, prepares a new sweep if needed.
     m_epochStartPosition = m_epochSize * config.m_epochIndex;
 
+#ifdef _CROSS_DEBUG
 	if (_access("RestartPoint.txt", 0) == 0) {
 		std::ifstream ckpSampleFile("RestartPoint.txt");
 		int scanSamples;
@@ -78,6 +81,7 @@ void BlockRandomizer::StartEpoch(const EpochConfiguration& config)
 		m_epochStartPosition += (size_t)scanSamples;
 		ckpSampleFile.close();
 	}
+#endif
 
     PrepareNewSweepIfNeeded(m_epochStartPosition);
 

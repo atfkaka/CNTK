@@ -19,8 +19,10 @@
 
 #include "TrainingNodes.h"
 
+#ifdef _CROSS_DEBUG
 #include <boost\crc.hpp>
 #include <io.h>
+#endif
 
 using namespace std;
 
