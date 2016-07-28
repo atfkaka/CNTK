@@ -1,6 +1,7 @@
 #include "CNTKLibrary.h"
 #include <functional>
 #include <thread>
+#include <mutex>
 #include <iostream>
 #include "Common.h"
 
@@ -41,14 +42,14 @@ void TestFeedForwardNetworkCreation(const DeviceDescriptor& device)
     const size_t numHiddenLayers = 6;
     const size_t hiddenLayersDim = 2048;
 
-    Variable inputVar({ inputDim }, DataType::Float, L"Features");
+    Variable inputVar({inputDim}, DataType::Float, L"Features");
     auto classifierOutputFunction = FullyConnectedFeedForwardClassifierNet(inputVar, numOutputClasses, hiddenLayersDim, numHiddenLayers, device, std::bind(Sigmoid, _1, L""));
 
-    Variable labelsVar({ numOutputClasses }, DataType::Float, L"Labels");
+    Variable labelsVar({numOutputClasses}, DataType::Float, L"Labels");
     auto trainingLossFunction = CNTK::CrossEntropyWithSoftmax(classifierOutputFunction, labelsVar, L"LossFunction");
     auto predictionFunction = CNTK::ClassificationError(classifierOutputFunction, labelsVar, L"ClassificationError");
 
-    auto ffNet = CNTK::Combine({ trainingLossFunction, predictionFunction, classifierOutputFunction }, L"ClassifierModel");
+    auto ffNet = CNTK::Combine({trainingLossFunction, predictionFunction, classifierOutputFunction}, L"ClassifierModel");
 
     fprintf(stderr, "Parameters Count: %d, Arguments Count: %d, Output Count:%d\n", ffNet->Parameters().size(), ffNet->Arguments().size(), ffNet->Outputs().size());
 
@@ -73,19 +74,19 @@ void TestFeedForwardNetworkCreation(const DeviceDescriptor& device)
         for (size_t i = 0; i < inputData.size(); ++i)
             inputData[i] = ((float)rand()) / RAND_MAX;
 
-        NDShape inputShape = { inputDim, 1, numSamples };
+        NDShape inputShape = {inputDim, 1, numSamples};
         ValuePtr inputValue = MakeSharedObject<Value>(MakeSharedObject<NDArrayView>(inputShape, inputData.data(), inputData.size(), DeviceDescriptor::CPUDevice(), true));
 
         std::vector<float> labelData(numOutputClasses * numSamples, 0);
         for (size_t i = 0; i < numSamples; ++i)
             labelData[(i*numOutputClasses) + (rand() % numOutputClasses)] = 1;
 
-        NDShape labelShape = { numOutputClasses, 1, numSamples };
+        NDShape labelShape = {numOutputClasses, 1, numSamples};
         ValuePtr labelValue = MakeSharedObject<Value>(MakeSharedObject<NDArrayView>(labelShape, labelData.data(), labelData.size(), DeviceDescriptor::CPUDevice(), true));
 
         ValuePtr outputValue, predictionErrorValue;
-        std::unordered_map<Variable, ValuePtr> outputs = { { classifierOutputFunction->Output(), outputValue }, { predictionFunction->Output(), predictionErrorValue } };
-        auto backpropState = ffNet->Forward({ { inputVar, inputValue }, { labelsVar, labelValue } }, outputs, device, { trainingLossFunction->Output() });
+        std::unordered_map<Variable, ValuePtr> outputs = {{classifierOutputFunction->Output(), outputValue}, {predictionFunction->Output(), predictionErrorValue}};
+        auto backpropState = ffNet->Forward({{inputVar, inputValue}, {labelsVar, labelValue}}, outputs, device, {trainingLossFunction->Output()});
 
         // Perform backprop
 #if 0
@@ -96,12 +97,12 @@ void TestFeedForwardNetworkCreation(const DeviceDescriptor& device)
         auto allParams = ffNet->Parameters();
         for (auto iter = allParams.begin(); iter != allParams.end(); ++iter)
             paramGradients[*iter] = nullptr;
-        
-        ffNet->Backward(backpropState, { { trainingLossFunction->Output(), rootGradientValue } }, paramGradients);
+
+        ffNet->Backward(backpropState, {{trainingLossFunction->Output(), rootGradientValue}}, paramGradients);
 #endif 
     }
-}
 
+}
 
 FunctionPtr FullyConnectedDNNLayerWithSharedParameters(Variable input,
                                                        const Parameter& timesParam,
@@ -139,7 +140,13 @@ FunctionPtr FullyConnectedFeedForwardClassifierNetWithSharedParameters(Variable 
     return classifierRoot;
 }
 
-void Evaluation(size_t inputDim,
+const size_t threadCount = 3;
+// std::atomic<int> runningThreads;
+int runningThreads;
+std::atomic<bool> ready(false);
+std::mutex counter_mutex;
+
+void EvaluationWithSharedParameters(size_t inputDim,
                 size_t numOutputClasses,
                 size_t numHiddenLayers,
                 const Parameter& inputTimesParam,
@@ -150,6 +157,12 @@ void Evaluation(size_t inputDim,
                 const DeviceDescriptor& computeDevice)
 {
     using namespace std::placeholders;
+
+    // wait for ready signal
+    while (!ready)
+    {
+        std::this_thread::yield();
+    }
 
     Variable inputVar({inputDim}, DataType::Float, L"Features");
     auto classifierOutputFunction = FullyConnectedFeedForwardClassifierNetWithSharedParameters(inputVar,
@@ -168,9 +181,6 @@ void Evaluation(size_t inputDim,
     auto ffNet = CNTK::Combine({trainingLossFunction, predictionFunction, classifierOutputFunction}, L"ClassifierModel");
 
     // Now test the structure
-    
-    fprintf(stderr, "Parameters Count: %d, Arguments Count: %d, Output Count:%d\n", ffNet->Parameters().size(), ffNet->Arguments().size(), ffNet->Outputs().size());
-
     if (ffNet->Parameters().size() != ((numHiddenLayers * 2) + 1))
         throw std::runtime_error("TestFeedForwardNetworkCreation: Function does not have expected Parameter count");
 
@@ -207,12 +217,35 @@ void Evaluation(size_t inputDim,
 
         ffNet->Forward(arguments, outputs, computeDevice);        
     }
+
+    counter_mutex.lock();
+    runningThreads++;
+    fprintf(stderr, "Complete evaluation. RunningThreads=%d...\n", runningThreads);
+    fflush(stderr);
+    counter_mutex.unlock();
+    // keep the thread active until all are done.
+    while ( true )
+    {
+        counter_mutex.lock();
+        if (runningThreads < threadCount)
+        {
+            /*fprintf(stderr, "runningThreads=%d\n", runningThreads);
+            fflush(stderr);*/
+            counter_mutex.unlock();
+            std::this_thread::yield();
+        }
+        else
+        {
+            fprintf(stderr, "all threads completed\n", runningThreads);
+            fflush(stderr);
+            counter_mutex.unlock();
+            break;
+        }
+    }
 }
 
 void TestFeedForwardMultiThread(const DeviceDescriptor& device)
 {
-    const size_t threadCount = 3;
-
     const size_t inputDim = 937;
     const size_t numOutputClasses = 9304;
     const size_t numHiddenLayers = 6;
@@ -238,16 +271,22 @@ void TestFeedForwardMultiThread(const DeviceDescriptor& device)
     auto outputTimesParam = Parameter(NDArrayView::RandomUniform<float>({numOutputClasses, hiddenLayersDim}, -0.5, 0.5, 1, device));
 
     // Run evaluation in parallel    
-    std::thread threadList[threadCount];    
+    std::thread threadList[threadCount];   
+    runningThreads = 0;
     for (size_t t = 0; t < threadCount; ++t)
     {
-        threadList[t] = std::thread(Evaluation, inputDim, numOutputClasses, numHiddenLayers, inputTimesParam, inputPlusParam, hiddenLayerTimesParam, hiddenLayerPlusParam, outputTimesParam, device);
+        threadList[t] = std::thread(EvaluationWithSharedParameters, inputDim, numOutputClasses, numHiddenLayers, inputTimesParam, inputPlusParam, hiddenLayerTimesParam, hiddenLayerPlusParam, outputTimesParam, device);
+       /* fprintf(stderr, "Thread %d created.\n", t);
+        fflush(stderr);*/
         // Evaluation(inputDim, numOutputClasses, numHiddenLayers, inputTimesParam, inputPlusParam, hiddenLayerTimesParam, hiddenLayerPlusParam, outputTimesParam, device);
-    } 
+    }
+    ready = true;
 
-    for (size_t t = 0; t < threadCount; ++t)
+    for (size_t tt = 0; tt < threadCount; ++tt)
     {
-        threadList[t].join();
+        threadList[tt].join();
+        fprintf(stderr, "thread %d joined.\n", tt);
+        fflush(stderr);
     }    
 }
 
