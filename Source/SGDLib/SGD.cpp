@@ -1115,6 +1115,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 #endif
             auto smoothedGradientIter = smoothedGradients.begin();
 
+#ifdef _CROSS_DEBUG
 			std::ifstream nodeRelativeFile("Support\\NodeLink");
 			std::string srcNode;
 			while (true) {
@@ -1131,6 +1132,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 					);
 				}
 			}
+#endif
 
             for (auto nodeIter = learnableNodes.begin(); nodeIter != learnableNodes.end(); nodeIter++, smoothedGradientIter++)
             {
