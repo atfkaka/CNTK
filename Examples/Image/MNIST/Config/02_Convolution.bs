@@ -1,0 +1,89 @@
+#### Parameters ####
+
+# Number of pixels
+imageW = 28
+imageH = 28
+
+# Number of distinct labels
+labelDim = 10
+
+# Setup input dimension
+features = ImageInput (imageW, imageH, 1)
+
+# Compute per pixel mean
+featMean = Mean(features)
+
+# Substract this mean to input
+featScaled = features - featMean
+
+# Setup classification labels
+labels = Input(labelDim)
+
+# Convolution Filter Parameters (All the Convolution Layers use the same shape)
+kW      = 5  
+kH      = 5
+strideH = 1
+strideV = 1
+
+# Pooling Parameters (All the Pooling Layers use the same shape)
+poolW = 2
+poolH = 2
+poolHStride = 2
+poolVStride = 2
+
+# Hidden Layer Dimensions
+h1Dim = 128
+
+
+#### Neural Network Topology Description ####
+
+# Convolution filters are used to extract features from the input, by adjusting convolution kernel weights
+# First convolution (5 * 5) Convolution Kernel, with 16 filters
+# There is only one channel as images are binary (black/white)
+# Output of this layer will be: [imageW * imageH * cMap1]
+cMap1 = 16
+conv1 = ConvNDReLULayer (featScaled, kW, kH, 1, cMap1, strideH, strideV, 1)
+
+# First Pooling. 
+# Pooling is used as subsampling method to reduce shape of the input and number of parameter for the next layer
+# It takes a [poolW * poolH] matrix and output the pixel with the highest value. 
+# It iterates over the input with a offset increment of poolHStride / poolVStride
+# Output of this layer will be: [(imageW / 2) * (imageH /2) * cMap1] (= By default: [14 * 14 * 16])
+pool1 = MaxNDPooling(conv1, poolW, poolH, poolHStride, poolVStride)
+
+# Second convolution, (5 * 5) Convolution Kernel, with 32 filters
+# The previous convolution layer stacked 16 filters for each [kW * kH] map
+# Output of this layer will be: [imageW/2 * imageH/2 * cMap2] (= By default: [14 * 14 * 32])
+cMap2 = 32
+conv2 = ConvNDReLULayer(pool1, kW, kH, cMap1, cMap2, strideH, strideV, 1)
+
+# Second Pooling
+# Output of this layer will be: [(imageW / 4) * (imageH / 4) * cMap2] (= By default: [7 * 7 * 32])
+pool2 = MaxNDPooling(conv2, poolW, poolH, poolHStride, poolVStride)
+
+# Hidden Layer
+h1 = DNNReLULayer((7:7:cMap2), h1Dim, pool2, 0.01)
+
+# Linear Output Layer (without non linearity function)
+ol = DNNLayer(h1Dim, labelDim, h1, 0.001)
+
+
+#### Usefull additional nodes ####
+
+# Softmax convert the ol output ([-Inf, +Inf]) to [0, 1] which can be interpreted as probabilities
+p = Softmax(ol)
+
+#### Mandatory nodes ####
+
+# Objective function to optimize by Gradient Descent
+ce = CrossEntropyWithSoftmax(labels, ol)
+
+# Error indicator
+errs = ErrorPrediction(labels, ol)
+
+# Special Nodes
+featureNodes    = (features)
+labelNodes      = (labels)
+criterionNodes  = (ce)
+evaluationNodes = (errs)
+outputNodes     = (ol:p)
