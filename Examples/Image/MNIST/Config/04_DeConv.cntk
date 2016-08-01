@@ -37,14 +37,21 @@ initOnCPUOnly=true
 train = [
     action = "train"
 
-    NDLNetworkBuilder = [
-        networkDescription = "$ConfigDir$/04_DeConv.ndl"
+    # BrainScript version as described in Tutorial II.
+    BrainScriptNetworkBuilder = [
+        # macros to include
+        include "Shared.bs"
+
+        # include the definition file
+        include "04_DeConv.bs"
     ]
+
     
     SGD = [
         epochSize = 60000
         minibatchSize = 32
-        learningRatesPerMB = 0.001
+        learningRatesPerMB = 0.1
+        clippingThresholdPerSample=1000000
         momentumPerMB = 0.9
         maxEpochs = 10
     ]
@@ -73,10 +80,6 @@ train = [
 test = [
     action = test
     minibatchSize = 16
-    
-    NDLNetworkBuilder = [
-        networkDescription = "$ConfigDir$/04_DeConv.ndl"
-    ]
     
     reader = [
         readerType = "CNTKTextFormatReader"
