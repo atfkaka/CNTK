@@ -136,8 +136,8 @@ Sequences BlockRandomizer::GetNextSequences(size_t sampleCount)
 
     if (m_verbosity >= Debug)
         fprintf(stderr, "BlockRandomizer::GetNextSequences(): getting %" PRIu64 " out of %" PRIu64 " sequences for %" PRIu64 " requested samples in sweep %" PRIu64 "\n",
-            sequences.size(),
             decimated.size(),
+            sequences.size(),
             sampleCount,
             m_sweep);
 
