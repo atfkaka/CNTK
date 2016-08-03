@@ -21,6 +21,10 @@
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
+#ifdef _CROSS_DEBUG
+	static bool isLoaded = false;
+#endif
+
 BlockRandomizer::BlockRandomizer(
     int verbosity,
     size_t randomizationRangeInSamples,
@@ -72,7 +76,7 @@ void BlockRandomizer::StartEpoch(const EpochConfiguration& config)
     m_epochStartPosition = m_epochSize * config.m_epochIndex;
 
 #ifdef _CROSS_DEBUG
-	if (_access("RestartPoint.txt", 0) == 0) {
+	if (_access("RestartPoint.txt", 0) == 0 && !isLoaded) {
 		std::ifstream ckpSampleFile("RestartPoint.txt");
 		int scanSamples;
 		ckpSampleFile >> scanSamples;
@@ -80,6 +84,7 @@ void BlockRandomizer::StartEpoch(const EpochConfiguration& config)
 
 		m_epochStartPosition += (size_t)scanSamples;
 		ckpSampleFile.close();
+		isLoaded = true;
 	}
 #endif
 

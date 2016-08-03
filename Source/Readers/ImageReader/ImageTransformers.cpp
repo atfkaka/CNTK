@@ -145,7 +145,7 @@ void CropTransformer::Apply(size_t id, cv::Mat &mat)
         }
         else
         {
-            ratio = UniRealT(m_cropRatioMin, m_cropRatioMax)(*rng);
+			ratio = 0.6;//UniRealT(m_cropRatioMin, m_cropRatioMax)(*rng);
             assert(m_cropRatioMin <= ratio && ratio < m_cropRatioMax);
         }
         break;
@@ -234,8 +234,8 @@ cv::Rect CropTransformer::GetCropRect(CropType type, int viewIndex, int crow, in
         break;
     case CropType::Random:
         assert(viewIndex == 0);
-        xOff = UniIntT(0, ccol - cropSizeX)(rng);
-        yOff = UniIntT(0, crow - cropSizeY)(rng);
+        xOff = (ccol - cropSizeX) / 2;//UniIntT(0, ccol - cropSizeX)(rng);
+        yOff = (crow - cropSizeY) / 2;//UniIntT(0, crow - cropSizeY)(rng);
         break;
     case CropType::MultiView10:
     {

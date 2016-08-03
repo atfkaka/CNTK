@@ -45,6 +45,7 @@ template SGD<double>::SGD(const ScriptableObjects::IConfigRecord&);
 
 #ifdef _CROSS_DEBUG
 static int currentMiniBatch = 0;
+static bool isLoaded = false;
 #endif
 
 template <class ElemType>
@@ -363,6 +364,7 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
     else if (startEpoch > 0)
 #else
 	if(startEpoch > 0)
+#endif
     {
         learnRateInitialized = TryLoadCheckPointInfo(startEpoch - 1,
                                                      /*out*/ totalTrainingSamplesSeen,
@@ -372,7 +374,6 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
                                                      /*out*/ m_prevChosenMinibatchSize);
         if (learnRateInitialized)
             prevLearnRates[startEpoch % m_numPrevLearnRates] = learnRatePerSample;
-#endif
     }
 
     if (m_autoLearnRateSearchType == LearningRateSearchAlgorithm::AdjustAfterEpoch &&
@@ -922,10 +923,11 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 
 #ifdef _CROSS_DEBUG
 	std::string ckpMinibatchFile("RestartPoint.txt");
-	if (_access(ckpMinibatchFile.c_str(), 0) == 0) {
+	if (_access(ckpMinibatchFile.c_str(), 0) == 0 && !isLoaded) {
 		std::ifstream ckpMibibatchInfo("RestartPoint.txt");
 		ckpMibibatchInfo >> currentMiniBatch;
 		currentMiniBatch++;
+		isLoaded = true;
 	}
 #endif
 
@@ -945,6 +947,8 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 
         if (!wasDataRead)
             actualMBSize = 0; // (undefined if !wasDataRead)
+
+		if (!actualMBSize) break;
 
         nSamplesSinceLastModelSync += actualMBSize;
 
@@ -2079,7 +2083,7 @@ void SGD<ElemType>::UpdateWeights(const ComputationNodeBasePtr& node,
 	}
 
 #ifdef _CROSS_DEBUG
-	if (currentMiniBatch % 200 == 0 || currentMiniBatch > 10000) {
+	if (currentMiniBatch % 1000 == 0/* || currentMiniBatch > 10000*/) {
 		std::stringstream ss;
 		ss << currentMiniBatch;
 
