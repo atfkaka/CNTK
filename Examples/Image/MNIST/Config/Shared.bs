@@ -4,27 +4,16 @@
 
 # linear layer (no non-linearity)
 DNNLayer (inDim, outDim, x, wScale) = [
-<<<<<<< 27769358a01381b680f7a14100c5dada450349ef
     W = BS.Parameters.Parameter (outDim, inDim, init="uniform", initValueScale=wScale, initOnCPUOnly=true)
-=======
-    W = BS.Parameters.Parameter (outDim, inDim, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
->>>>>>> Ported MNIST examples to BrainScript language.
     b = BS.Parameters.BiasParam(outDim)
     z = W * x + b
 ].z
 
 # sigmoid layer
-<<<<<<< 27769358a01381b680f7a14100c5dada450349ef
 DNNSigmoidLayer (inDim, outDim, x, wScale) = Sigmoid (DNNLayer (inDim, outDim, x, wScale))
 
 # relu layer
 DNNReLULayer(inDim, outDim, x, wScale) = RectifiedLinear(DNNLayer(inDim, outDim, x, wScale))
-=======
-DNNSigmoidLayer (inDim, outDim, x, parmScale) = Sigmoid (DNNLayer (inDim, outDim, x, parmScale))
-
-# relu layer
-DNNReLULayer(inDim, outDim, x, parmScale) = RectifiedLinear(DNNLayer(inDim, outDim, x, parmScale))
->>>>>>> Ported MNIST examples to BrainScript language.
 
 #### Convolutions ####
 
