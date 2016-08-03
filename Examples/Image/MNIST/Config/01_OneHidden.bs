@@ -20,8 +20,6 @@ labels = Input (labelDim)
 hiddenDim = 200
 
 # DNNSigmoidLayer and DNNLayer
-h1 = DNNSigmoidLayer (featDim,  hiddenDim, featScaled, 1)
-
 z  = DNNLayer        (hiddenDim, labelDim, h1, 1)
 
 ce   = CrossEntropyWithSoftmax (labels, z)
