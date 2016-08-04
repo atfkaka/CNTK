@@ -1,48 +1,61 @@
-=== Running /home/philly/jenkins/workspace/CNTK-Test-Linux-W1/build/gpu/release/bin/cntk configFile=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/globals.cntk+rnnlu.ndl.cntk currentDirectory=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU RunDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu DataDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU ConfigDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU OutputDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu DeviceId=-1 timestamping=true
+CPU info:
+    CPU Model Name: Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
+    Hardware threads: 24
+    Total Memory: 264172964 kB
+-------------------------------------------------------------------
+=== Running /home/philly/jenkins/workspace/CNTK-Test-Linux-W1/build/gpu/release/bin/cntk configFile=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/globals.cntk+rnnlu.ndl.cntk currentDirectory=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU RunDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu DataDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU ConfigDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU OutputDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu DeviceId=-1 timestamping=true
 -------------------------------------------------------------------
 Build info: 
 
-		Built time: May  3 2016 17:56:15
-		Last modified date: Tue May  3 11:36:22 2016
+		Built time: Aug  4 2016 13:05:36
+		Last modified date: Thu Aug  4 12:33:33 2016
 		Build type: release
 		Build target: GPU
 		With 1bit-SGD: no
-		Math lib: acml
+		Math lib: mkl
 		CUDA_PATH: /usr/local/cuda-7.5
 		CUB_PATH: /usr/local/cub-1.4.1
 		CUDNN_PATH: /usr/local/cudnn-4.0
 		Build Branch: HEAD
-		Build SHA1: 571b092d60e131fd529081a5ed52af2dc815dc82
-		Built by philly on 18750d26eb32
+		Build SHA1: 0f61695dfc335f2406284d335678f57c215e6e9c
+		Built by philly on 643085f7f8c2
 		Build Path: /home/philly/jenkins/workspace/CNTK-Build-Linux
 -------------------------------------------------------------------
 Changed current directory to /home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
-05/03/2016 18:19:37: -------------------------------------------------------------------
-05/03/2016 18:19:37: Build info: 
+08/04/2016 13:56:49: -------------------------------------------------------------------
+08/04/2016 13:56:49: Build info: 
 
-05/03/2016 18:19:37: 		Built time: May  3 2016 17:56:15
-05/03/2016 18:19:37: 		Last modified date: Tue May  3 11:36:22 2016
-05/03/2016 18:19:37: 		Build type: release
-05/03/2016 18:19:37: 		Build target: GPU
-05/03/2016 18:19:37: 		With 1bit-SGD: no
-05/03/2016 18:19:37: 		Math lib: acml
-05/03/2016 18:19:37: 		CUDA_PATH: /usr/local/cuda-7.5
-05/03/2016 18:19:37: 		CUB_PATH: /usr/local/cub-1.4.1
-05/03/2016 18:19:37: 		CUDNN_PATH: /usr/local/cudnn-4.0
-05/03/2016 18:19:37: 		Build Branch: HEAD
-05/03/2016 18:19:37: 		Build SHA1: 571b092d60e131fd529081a5ed52af2dc815dc82
-05/03/2016 18:19:37: 		Built by philly on 18750d26eb32
-05/03/2016 18:19:37: 		Build Path: /home/philly/jenkins/workspace/CNTK-Build-Linux
-05/03/2016 18:19:37: -------------------------------------------------------------------
+08/04/2016 13:56:49: 		Built time: Aug  4 2016 13:05:36
+08/04/2016 13:56:49: 		Last modified date: Thu Aug  4 12:33:33 2016
+08/04/2016 13:56:49: 		Build type: release
+08/04/2016 13:56:49: 		Build target: GPU
+08/04/2016 13:56:49: 		With 1bit-SGD: no
+08/04/2016 13:56:49: 		Math lib: mkl
+08/04/2016 13:56:49: 		CUDA_PATH: /usr/local/cuda-7.5
+08/04/2016 13:56:49: 		CUB_PATH: /usr/local/cub-1.4.1
+08/04/2016 13:56:49: 		CUDNN_PATH: /usr/local/cudnn-4.0
+08/04/2016 13:56:49: 		Build Branch: HEAD
+08/04/2016 13:56:49: 		Build SHA1: 0f61695dfc335f2406284d335678f57c215e6e9c
+08/04/2016 13:56:49: 		Built by philly on 643085f7f8c2
+08/04/2016 13:56:49: 		Build Path: /home/philly/jenkins/workspace/CNTK-Build-Linux
+08/04/2016 13:56:49: -------------------------------------------------------------------
+08/04/2016 13:56:50: -------------------------------------------------------------------
+08/04/2016 13:56:50: GPU info:
 
-05/03/2016 18:19:37: Running on localhost at 2016/05/03 18:19:37
-05/03/2016 18:19:37: Command line: 
-/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/build/gpu/release/bin/cntk  configFile=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/globals.cntk+rnnlu.ndl.cntk  currentDirectory=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU  RunDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu  DataDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU  ConfigDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU  OutputDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu  DeviceId=-1  timestamping=true
+08/04/2016 13:56:50: 		Device[0]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3071 MB
+08/04/2016 13:56:50: 		Device[1]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3071 MB
+08/04/2016 13:56:50: 		Device[2]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3071 MB
+08/04/2016 13:56:50: 		Device[3]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3071 MB
+08/04/2016 13:56:50: -------------------------------------------------------------------
+
+08/04/2016 13:56:50: Running on localhost at 2016/08/04 13:56:50
+08/04/2016 13:56:50: Command line: 
+/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/build/gpu/release/bin/cntk  configFile=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/globals.cntk+rnnlu.ndl.cntk  currentDirectory=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU  RunDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu  DataDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU  ConfigDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU  OutputDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu  DeviceId=-1  timestamping=true
 
 
 
-05/03/2016 18:19:37: >>>>>>>>>>>>>>>>>>>> RAW CONFIG (VARIABLES NOT RESOLVED) >>>>>>>>>>>>>>>>>>>>
-05/03/2016 18:19:37: NdlDir=$ConfigDir$
+08/04/2016 13:56:50: >>>>>>>>>>>>>>>>>>>> RAW CONFIG (VARIABLES NOT RESOLVED) >>>>>>>>>>>>>>>>>>>>
+08/04/2016 13:56:50: NdlDir=$ConfigDir$
 ExpDir=$RunDir$
 OutDir=$OutputDir$
 precision="double"
@@ -279,19 +292,19 @@ LSTMTest=[
   ]
 ]
 currentDirectory=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
-RunDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+RunDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 DataDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
 ConfigDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
-OutputDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+OutputDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 DeviceId=-1
 timestamping=true
 
-05/03/2016 18:19:37: <<<<<<<<<<<<<<<<<<<< RAW CONFIG (VARIABLES NOT RESOLVED)  <<<<<<<<<<<<<<<<<<<<
+08/04/2016 13:56:50: <<<<<<<<<<<<<<<<<<<< RAW CONFIG (VARIABLES NOT RESOLVED)  <<<<<<<<<<<<<<<<<<<<
 
-05/03/2016 18:19:37: >>>>>>>>>>>>>>>>>>>> RAW CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
-05/03/2016 18:19:37: NdlDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
-ExpDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
-OutDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+08/04/2016 13:56:50: >>>>>>>>>>>>>>>>>>>> RAW CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
+08/04/2016 13:56:50: NdlDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
+ExpDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
+OutDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 precision="double"
 deviceId = -1
 command=LSTM:LSTMTest
@@ -301,7 +314,7 @@ LSTM=[
   makeMode=true
   minibatchSize=10
   epochSize=4430000
-  modelPath=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn
+  modelPath=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn
   NDLNetworkBuilder=[
       networkDescription=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/lstm.ndl
   ]
@@ -331,7 +344,7 @@ LSTM=[
     wordContext=0:1:2
     randomize=None
     nbruttsineachrecurrentiter=10
-    wfile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sequenceSentence.bin
+    wfile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sequenceSentence.bin
     wsize=256
     wrecords=1000
     windowSize=10000
@@ -351,7 +364,7 @@ LSTM=[
       dim=1
       usewordmap=true
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.txt
       labelType=Category
       beginSequence="BOS"
       endSequence="EOS"
@@ -375,7 +388,7 @@ LSTM=[
       beginSequence="O"
       endSequence="O"
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
-    labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.out.txt
+    labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.out.txt
       sectionType=labels
       mapping=[
         sectionType=labelMapping
@@ -389,7 +402,7 @@ LSTM=[
     readerType=LUSequenceReader
     randomize=None
     wordContext=0:1:2
-    wfile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sequenceSentence.valid.bin
+    wfile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sequenceSentence.valid.bin
     wsize=256
     wrecords=1000
     windowSize=10000
@@ -408,7 +421,7 @@ LSTM=[
     labelIn=[
       dim=1
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.in.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.in.txt
       labelType=Category
       beginSequence="BOS"
       endSequence="EOS"
@@ -433,7 +446,7 @@ LSTM=[
       endSequence="O"
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.out.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.out.txt
       elementSize=4
       sectionType=labels
       mapping=[
@@ -453,7 +466,7 @@ LSTMTest=[
   minibatchSize=100
   epochSize=4430000
   defaultHiddenActivity=0.1
-  modelPath=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn
+  modelPath=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn
   outputNodeNames=outputs
   reader=[
     readerType=LUSequenceReader
@@ -462,7 +475,7 @@ LSTMTest=[
     unk="<unk>"
     wordmap=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/inputmap.txt
     file=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/atis.test.apos.pred.pos.head.IOB.simple
-    wfile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sequenceSentence.bin
+    wfile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sequenceSentence.bin
     wsize=256
     wrecords=1000
     windowSize=10000
@@ -478,7 +491,7 @@ LSTMTest=[
     labelIn=[
       dim=1
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.txt
       labelType=Category
       beginSequence="BOS"
       endSequence="EOS"
@@ -503,7 +516,7 @@ LSTMTest=[
       endSequence="EOS"
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
       labelDim=127
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.out.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.out.txt
       elementSize=4
       sectionType=labels
       mapping=[
@@ -520,34 +533,34 @@ LSTMTest=[
   writer=[
     writerType=LUSequenceWriter
     outputs=[
-      file=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/output.rec.txt
+      file=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/output.rec.txt
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
     ]
   ]
 ]
 currentDirectory=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
-RunDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+RunDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 DataDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
 ConfigDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
-OutputDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+OutputDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 DeviceId=-1
 timestamping=true
 
-05/03/2016 18:19:37: <<<<<<<<<<<<<<<<<<<< RAW CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
+08/04/2016 13:56:50: <<<<<<<<<<<<<<<<<<<< RAW CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
 
-05/03/2016 18:19:37: >>>>>>>>>>>>>>>>>>>> PROCESSED CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
+08/04/2016 13:56:50: >>>>>>>>>>>>>>>>>>>> PROCESSED CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
 configparameters: rnnlu.ndl.cntk:command=LSTM:LSTMTest
 configparameters: rnnlu.ndl.cntk:ConfigDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
 configparameters: rnnlu.ndl.cntk:currentDirectory=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
 configparameters: rnnlu.ndl.cntk:DataDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
 configparameters: rnnlu.ndl.cntk:deviceId=-1
-configparameters: rnnlu.ndl.cntk:ExpDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+configparameters: rnnlu.ndl.cntk:ExpDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 configparameters: rnnlu.ndl.cntk:LSTM=[
   action=train
   makeMode=true
   minibatchSize=10
   epochSize=4430000
-  modelPath=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn
+  modelPath=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn
   NDLNetworkBuilder=[
       networkDescription=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/lstm.ndl
   ]
@@ -577,7 +590,7 @@ configparameters: rnnlu.ndl.cntk:LSTM=[
     wordContext=0:1:2
     randomize=None
     nbruttsineachrecurrentiter=10
-    wfile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sequenceSentence.bin
+    wfile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sequenceSentence.bin
     wsize=256
     wrecords=1000
     windowSize=10000
@@ -597,7 +610,7 @@ configparameters: rnnlu.ndl.cntk:LSTM=[
       dim=1
       usewordmap=true
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.txt
       labelType=Category
       beginSequence="BOS"
       endSequence="EOS"
@@ -621,7 +634,7 @@ configparameters: rnnlu.ndl.cntk:LSTM=[
       beginSequence="O"
       endSequence="O"
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
-    labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.out.txt
+    labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.out.txt
       sectionType=labels
       mapping=[
         sectionType=labelMapping
@@ -635,7 +648,7 @@ configparameters: rnnlu.ndl.cntk:LSTM=[
     readerType=LUSequenceReader
     randomize=None
     wordContext=0:1:2
-    wfile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sequenceSentence.valid.bin
+    wfile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sequenceSentence.valid.bin
     wsize=256
     wrecords=1000
     windowSize=10000
@@ -654,7 +667,7 @@ configparameters: rnnlu.ndl.cntk:LSTM=[
     labelIn=[
       dim=1
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.in.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.in.txt
       labelType=Category
       beginSequence="BOS"
       endSequence="EOS"
@@ -679,7 +692,7 @@ configparameters: rnnlu.ndl.cntk:LSTM=[
       endSequence="O"
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.out.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.out.txt
       elementSize=4
       sectionType=labels
       mapping=[
@@ -700,7 +713,7 @@ configparameters: rnnlu.ndl.cntk:LSTMTest=[
   minibatchSize=100
   epochSize=4430000
   defaultHiddenActivity=0.1
-  modelPath=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn
+  modelPath=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn
   outputNodeNames=outputs
   reader=[
     readerType=LUSequenceReader
@@ -709,7 +722,7 @@ configparameters: rnnlu.ndl.cntk:LSTMTest=[
     unk="<unk>"
     wordmap=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/inputmap.txt
     file=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/atis.test.apos.pred.pos.head.IOB.simple
-    wfile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sequenceSentence.bin
+    wfile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sequenceSentence.bin
     wsize=256
     wrecords=1000
     windowSize=10000
@@ -725,7 +738,7 @@ configparameters: rnnlu.ndl.cntk:LSTMTest=[
     labelIn=[
       dim=1
       labelDim=10000
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.txt
       labelType=Category
       beginSequence="BOS"
       endSequence="EOS"
@@ -750,7 +763,7 @@ configparameters: rnnlu.ndl.cntk:LSTMTest=[
       endSequence="EOS"
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
       labelDim=127
-      labelMappingFile=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/sentenceLabels.out.txt
+      labelMappingFile=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/sentenceLabels.out.txt
       elementSize=4
       sectionType=labels
       mapping=[
@@ -767,38 +780,38 @@ configparameters: rnnlu.ndl.cntk:LSTMTest=[
   writer=[
     writerType=LUSequenceWriter
     outputs=[
-      file=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/output.rec.txt
+      file=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/output.rec.txt
       token=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/output.txt
     ]
   ]
 ]
 
 configparameters: rnnlu.ndl.cntk:NdlDir=/home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU
-configparameters: rnnlu.ndl.cntk:OutDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
-configparameters: rnnlu.ndl.cntk:OutputDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+configparameters: rnnlu.ndl.cntk:OutDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
+configparameters: rnnlu.ndl.cntk:OutputDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 configparameters: rnnlu.ndl.cntk:precision=double
-configparameters: rnnlu.ndl.cntk:RunDir=/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu
+configparameters: rnnlu.ndl.cntk:RunDir=/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu
 configparameters: rnnlu.ndl.cntk:timestamping=true
 configparameters: rnnlu.ndl.cntk:traceLevel=1
-05/03/2016 18:19:37: <<<<<<<<<<<<<<<<<<<< PROCESSED CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
-05/03/2016 18:19:37: Commands: LSTM LSTMTest
-05/03/2016 18:19:37: Precision = "double"
-05/03/2016 18:19:37: CNTKModelPath: /tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn
-05/03/2016 18:19:37: CNTKCommandTrainInfo: LSTM : 3
-05/03/2016 18:19:37: CNTKCommandTrainInfo: CNTKNoMoreCommands_Total : 3
+08/04/2016 13:56:50: <<<<<<<<<<<<<<<<<<<< PROCESSED CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
+08/04/2016 13:56:50: Commands: LSTM LSTMTest
+08/04/2016 13:56:50: Precision = "double"
+08/04/2016 13:56:50: CNTKModelPath: /tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn
+08/04/2016 13:56:50: CNTKCommandTrainInfo: LSTM : 3
+08/04/2016 13:56:50: CNTKCommandTrainInfo: CNTKNoMoreCommands_Total : 3
 
-05/03/2016 18:19:37: ##############################################################################
-05/03/2016 18:19:37: #                                                                            #
-05/03/2016 18:19:37: # Action "train"                                                             #
-05/03/2016 18:19:37: #                                                                            #
-05/03/2016 18:19:37: ##############################################################################
+08/04/2016 13:56:50: ##############################################################################
+08/04/2016 13:56:50: #                                                                            #
+08/04/2016 13:56:50: # Action "train"                                                             #
+08/04/2016 13:56:50: #                                                                            #
+08/04/2016 13:56:50: ##############################################################################
 
-05/03/2016 18:19:37: CNTKCommandTrainBegin: LSTM
+08/04/2016 13:56:50: CNTKCommandTrainBegin: LSTM
 NDLBuilder Using CPU
 BatchLUSequenceReader: Input file is /home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/atis.train.apos.pred.pos.head.IOB.simple
 BatchLUSequenceReader: Input file is /home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/atis.dev.IOB.simple
 
-05/03/2016 18:19:37: Creating virgin network.
+08/04/2016 13:56:50: Creating virgin network.
 
 Post-processing network...
 
@@ -908,14 +921,14 @@ Validating network, final pass.
 
 Post-processing network complete.
 
-05/03/2016 18:19:37: Created model with 62 nodes on CPU.
+08/04/2016 13:56:50: Created model with 62 nodes on CPU.
 
-05/03/2016 18:19:37: Training criterion node(s):
-05/03/2016 18:19:37: 	ce = CrossEntropyWithSoftmax
+08/04/2016 13:56:50: Training criterion node(s):
+08/04/2016 13:56:50: 	ce = CrossEntropyWithSoftmax
 
-05/03/2016 18:19:37: Evaluation criterion node(s):
+08/04/2016 13:56:50: Evaluation criterion node(s):
 
-05/03/2016 18:19:37: 	err = CrossEntropyWithSoftmax
+08/04/2016 13:56:50: 	err = CrossEntropyWithSoftmax
 
 
 Allocating matrices for forward and/or backward propagation.
@@ -923,181 +936,180 @@ Allocating matrices for forward and/or backward propagation.
 Memory Sharing Structure:
 
 (nil): {[err Gradient[1]] [features Gradient[2832 x *]] [labels Gradient[127 x *]] [outputs Gradient[127 x 1 x *]] }
-0x135d978: {[features Value[2832 x *]] }
-0x1464548: {[Wlookup Value[50 x 944]] }
-0x1464c38: {[LSTMoutput.Wxo Value[300 x 150]] }
-0x1465078: {[LSTMoutput.Wxi Value[300 x 150]] }
-0x1465518: {[LSTMoutput.Wxf Value[300 x 150]] }
-0x14659b8: {[LSTMoutput.Wxc Value[300 x 150]] }
-0x1465c38: {[LSTMoutput.bo Value[300 x 1]] }
-0x1467e08: {[ce Value[1]] }
-0x146ab18: {[labels Value[127 x *]] }
-0x14a0e48: {[LSTMoutput.bc Value[300 x 1]] }
-0x14a1cc8: {[LSTMoutput.bi Value[300 x 1]] }
-0x14a2b48: {[LSTMoutput.bf Value[300 x 1]] }
-0x14a39c8: {[LSTMoutput.Whi Value[300 x 300]] }
-0x14a3ed8: {[LSTMoutput.Wci Value[300 x 1]] }
-0x14a4d58: {[LSTMoutput.Whf Value[300 x 300]] }
-0x14a5268: {[LSTMoutput.Wcf Value[300 x 1]] }
-0x14a60e8: {[LSTMoutput.Who Value[300 x 300]] }
-0x14a65f8: {[LSTMoutput.Wco Value[300 x 1]] }
-0x14a7478: {[LSTMoutput.Whc Value[300 x 300]] }
-0x14a76a8: {[LSTMoutput.delayHI Value[300 x 1 x *]] }
-0x14a8388: {[LSTMoutput.delayHF Value[300 x 1 x *]] }
-0x14a8b48: {[LSTMoutput.Wxc Gradient[300 x 150]] [LSTMoutput.delayHO Value[300 x 1 x *]] }
-0x14a9308: {[LSTMoutput.delayHC Value[300 x 1 x *]] }
-0x14a9af8: {[LSTMoutput.delayCI Value[300 x 1 x *]] }
-0x14aa348: {[LSTMoutput.delayCF Value[300 x 1 x *]] }
-0x14aabb8: {[LSTMoutput.delayCC Value[300 x 1 x *]] }
-0x14b1b78: {[W1 Value[127 x 300]] }
-0x14baba8: {[err Value[1]] }
-0x14bb168: {[LSTMoutputW1 Value[127 x 1 x *]] }
-0x14bb528: {[outputs Value[127 x 1 x *]] }
-0x14bf818: {[LSTMoutput.Wxoinput Value[300 x *]] [Wlookup Gradient[50 x 944]] }
-0x14c0198: {[featLookuped Value[150 x *]] }
-0x14c0488: {[LSTMoutput.Wxfinput Value[300 x *]] [LSTMoutput.Wxoinput Gradient[300 x *]] }
-0x14c0648: {[LSTMoutput.Wxfinput Gradient[300 x *]] [LSTMoutput.WxiInput Value[300 x *]] [LSTMoutput.bo Gradient[300 x 1]] }
-0x14c0d58: {[LSTMoutput.Wxo Gradient[300 x 150]] [LSTMoutput.unnamed135 Value[300 x 1 x *]] }
-0x14c0df8: {[LSTMoutput.Wxf Gradient[300 x 150]] [LSTMoutput.unnamed132 Value[300 x 1 x *]] }
-0x14c1498: {[LSTMoutput.Wxi Gradient[300 x 150]] [LSTMoutput.unnamed126 Value[300 x 1 x *]] }
-0x14c1658: {[LSTMoutput.WxcInput Value[300 x *]] [LSTMoutput.WxiInput Gradient[300 x *]] [LSTMoutput.bf Gradient[300 x 1]] }
-0x14c1818: {[LSTMoutput.WhodelayHO Value[300 x 1 x *]] }
-0x14c19d8: {[LSTMoutput.unnamed134 Value[300 x 1 x *]] }
-0x14c1b98: {[LSTMoutput.WhfdelayHF Value[300 x 1 x *]] }
-0x14c1d58: {[LSTMoutput.unnamed131 Value[300 x 1 x *]] }
-0x14c1f18: {[LSTMoutput.WcfdelayCF Value[300 x 1 x *]] }
-0x14c20d8: {[LSTMoutput.unnamed130 Value[300 x 1 x *]] }
-0x14c2298: {[LSTMoutput.ft Value[300 x 1 x *]] }
-0x14c2458: {[LSTMoutput.bft Value[300 x 1 x *]] }
-0x14c2618: {[LSTMoutput.WhidelayHI Value[300 x 1 x *]] }
-0x14c27d8: {[LSTMoutput.unnamed125 Value[300 x 1 x *]] }
-0x14c2998: {[LSTMoutput.WcidelayCI Value[300 x 1 x *]] }
-0x14c2b58: {[LSTMoutput.unnamed124 Value[300 x 1 x *]] }
-0x14c2d18: {[LSTMoutput.it Value[300 x 1 x *]] }
-0x14c2ed8: {[LSTMoutput.WhcdelayHC Value[300 x 1 x *]] }
-0x14c3098: {[LSTMoutput.unnamed129 Value[300 x 1 x *]] }
-0x14c3258: {[LSTMoutput.unnamed128 Value[300 x 1 x *]] }
-0x14c3418: {[LSTMoutput.unnamed127 Value[300 x 1 x *]] }
-0x14c35d8: {[LSTMoutput.bit Value[300 x 1 x *]] }
-0x14c3798: {[LSTMoutput.ct Value[300 x 1 x *]] }
-0x14c3958: {[LSTMoutput.Wcoct Value[300 x 1 x *]] }
-0x14c3b18: {[LSTMoutput.unnamed133 Value[300 x 1 x *]] }
-0x14c3cd8: {[LSTMoutput.ot Value[300 x 1 x *]] }
-0x14c3e98: {[LSTMoutput.unnamed136 Value[300 x 1 x *]] }
-0x14c4058: {[LSTMoutput.outputTest Value[300 x 1 x *]] }
-0x14c4918: {[ce Gradient[1]] }
-0x14c4ad8: {[LSTMoutput.ot Gradient[300 x 1 x *]] [LSTMoutputW1 Gradient[127 x 1 x *]] }
-0x14c4c98: {[W1 Gradient[127 x 300]] }
-0x14c4e58: {[LSTMoutput.outputTest Gradient[300 x 1 x *]] }
-0x14c5018: {[LSTMoutput.unnamed136 Gradient[300 x 1 x *]] }
-0x14c51d8: {[LSTMoutput.ct Gradient[300 x 1 x *]] }
-0x14c5398: {[LSTMoutput.unnamed133 Gradient[300 x 1 x *]] }
-0x14c5558: {[LSTMoutput.unnamed134 Gradient[300 x 1 x *]] }
-0x14c5718: {[LSTMoutput.Wcoct Gradient[300 x 1 x *]] }
-0x14c5c58: {[LSTMoutput.Wco Gradient[300 x 1]] }
-0x14c5e18: {[LSTMoutput.bft Gradient[300 x 1 x *]] }
-0x14c5fd8: {[LSTMoutput.bit Gradient[300 x 1 x *]] }
-0x14c6198: {[LSTMoutput.it Gradient[300 x 1 x *]] }
-0x14c6358: {[LSTMoutput.unnamed127 Gradient[300 x 1 x *]] }
-0x14c6518: {[LSTMoutput.unnamed128 Gradient[300 x 1 x *]] }
-0x14c66d8: {[LSTMoutput.WxcInput Gradient[300 x *]] [LSTMoutput.bi Gradient[300 x 1]] }
-0x14c6898: {[LSTMoutput.unnamed129 Gradient[300 x 1 x *]] }
-0x14c6a58: {[LSTMoutput.WhcdelayHC Gradient[300 x 1 x *]] }
-0x14c6c18: {[LSTMoutput.bc Gradient[300 x 1]] }
-0x14c6dd8: {[LSTMoutput.Whc Gradient[300 x 300]] }
-0x14c6f98: {[LSTMoutput.delayHC Gradient[300 x 1 x *]] }
-0x14c7158: {[LSTMoutput.unnamed124 Gradient[300 x 1 x *]] }
-0x14c7318: {[LSTMoutput.unnamed125 Gradient[300 x 1 x *]] }
-0x14c74d8: {[LSTMoutput.WcidelayCI Gradient[300 x 1 x *]] }
-0x14c7a18: {[LSTMoutput.Wci Gradient[300 x 1]] }
-0x14c7bd8: {[LSTMoutput.delayCI Gradient[300 x 1 x *]] }
-0x14c7d98: {[LSTMoutput.unnamed126 Gradient[300 x 1 x *]] }
-0x14c7f58: {[LSTMoutput.WhidelayHI Gradient[300 x 1 x *]] }
-0x14c8118: {[LSTMoutput.Whi Gradient[300 x 300]] }
-0x14c82d8: {[LSTMoutput.delayHI Gradient[300 x 1 x *]] }
-0x14c8498: {[LSTMoutput.ft Gradient[300 x 1 x *]] }
-0x14c8658: {[LSTMoutput.delayCC Gradient[300 x 1 x *]] }
-0x14c8818: {[LSTMoutput.unnamed130 Gradient[300 x 1 x *]] }
-0x14c89d8: {[LSTMoutput.unnamed131 Gradient[300 x 1 x *]] }
-0x14c8b98: {[LSTMoutput.WcfdelayCF Gradient[300 x 1 x *]] }
-0x14c90d8: {[LSTMoutput.Wcf Gradient[300 x 1]] }
-0x14c9298: {[LSTMoutput.delayCF Gradient[300 x 1 x *]] }
-0x14c9458: {[LSTMoutput.unnamed132 Gradient[300 x 1 x *]] }
-0x14c9618: {[LSTMoutput.WhfdelayHF Gradient[300 x 1 x *]] }
-0x14c97d8: {[LSTMoutput.Whf Gradient[300 x 300]] }
-0x14c9998: {[LSTMoutput.delayHF Gradient[300 x 1 x *]] }
-0x14c9b58: {[LSTMoutput.unnamed135 Gradient[300 x 1 x *]] }
-0x14c9d18: {[LSTMoutput.WhodelayHO Gradient[300 x 1 x *]] }
-0x14c9ed8: {[LSTMoutput.Who Gradient[300 x 300]] }
-0x14ca098: {[LSTMoutput.delayHO Gradient[300 x 1 x *]] [featLookuped Gradient[150 x *]] }
+0x7f6d39d08748: {[LSTMoutput.Wxo Value[300 x 150]] }
+0x7f6d39d08bf8: {[LSTMoutput.Wxi Value[300 x 150]] }
+0x7f6d39d090a8: {[LSTMoutput.Wxf Value[300 x 150]] }
+0x7f6d39d09558: {[LSTMoutput.Wxc Value[300 x 150]] }
+0x7f6d39d0bb18: {[outputs Value[127 x 1 x *]] }
+0x7f6d39d0bcd8: {[ce Value[1]] }
+0x7f6d39d0e788: {[Wlookup Value[50 x 944]] }
+0x7f6d39d9fd68: {[LSTMoutput.bo Value[300 x 1]] }
+0x7f6d39da0bc8: {[LSTMoutput.bc Value[300 x 1]] }
+0x7f6d39da1a28: {[LSTMoutput.bi Value[300 x 1]] }
+0x7f6d39da2888: {[LSTMoutput.bf Value[300 x 1]] }
+0x7f6d39da36e8: {[LSTMoutput.Whi Value[300 x 300]] }
+0x7f6d39da3bd8: {[LSTMoutput.Wci Value[300 x 1]] }
+0x7f6d39da47c8: {[LSTMoutput.Whf Value[300 x 300]] }
+0x7f6d39da5308: {[LSTMoutput.Wcf Value[300 x 1]] }
+0x7f6d39da6198: {[LSTMoutput.Who Value[300 x 300]] }
+0x7f6d39da66b8: {[LSTMoutput.Wco Value[300 x 1]] }
+0x7f6d39da7548: {[LSTMoutput.Whc Value[300 x 300]] }
+0x7f6d39da7cd8: {[LSTMoutput.delayHI Value[300 x 1 x *]] }
+0x7f6d39da84a8: {[LSTMoutput.delayHF Value[300 x 1 x *]] }
+0x7f6d39da8c78: {[LSTMoutput.Wxc Gradient[300 x 150]] [LSTMoutput.delayHO Value[300 x 1 x *]] }
+0x7f6d39da94a8: {[LSTMoutput.delayHC Value[300 x 1 x *]] }
+0x7f6d39da9d08: {[LSTMoutput.delayCI Value[300 x 1 x *]] }
+0x7f6d39daa568: {[LSTMoutput.delayCF Value[300 x 1 x *]] }
+0x7f6d39daadb8: {[LSTMoutput.delayCC Value[300 x 1 x *]] }
+0x7f6d39db11c8: {[W1 Value[127 x 300]] }
+0x7f6d39db8ad8: {[LSTMoutputW1 Value[127 x 1 x *]] }
+0x7f6d39dbc148: {[err Value[1]] }
+0x7f6d39dbf768: {[LSTMoutput.Wxoinput Value[300 x *]] [Wlookup Gradient[50 x 944]] }
+0x7f6d39dc00e8: {[featLookuped Value[150 x *]] }
+0x7f6d39dc03d8: {[LSTMoutput.Wxfinput Value[300 x *]] [LSTMoutput.Wxoinput Gradient[300 x *]] }
+0x7f6d39dc0598: {[LSTMoutput.Wxfinput Gradient[300 x *]] [LSTMoutput.WxiInput Value[300 x *]] [LSTMoutput.bo Gradient[300 x 1]] }
+0x7f6d39dc0ca8: {[LSTMoutput.Wxo Gradient[300 x 150]] [LSTMoutput.unnamed135 Value[300 x 1 x *]] }
+0x7f6d39dc0d48: {[LSTMoutput.Wxf Gradient[300 x 150]] [LSTMoutput.unnamed132 Value[300 x 1 x *]] }
+0x7f6d39dc13e8: {[LSTMoutput.Wxi Gradient[300 x 150]] [LSTMoutput.unnamed126 Value[300 x 1 x *]] }
+0x7f6d39dc15a8: {[LSTMoutput.WxcInput Value[300 x *]] [LSTMoutput.WxiInput Gradient[300 x *]] [LSTMoutput.bf Gradient[300 x 1]] }
+0x7f6d39dc1768: {[LSTMoutput.WhodelayHO Value[300 x 1 x *]] }
+0x7f6d39dc1928: {[LSTMoutput.unnamed134 Value[300 x 1 x *]] }
+0x7f6d39dc1ae8: {[LSTMoutput.WhfdelayHF Value[300 x 1 x *]] }
+0x7f6d39dc1ca8: {[LSTMoutput.unnamed131 Value[300 x 1 x *]] }
+0x7f6d39dc1e68: {[LSTMoutput.WcfdelayCF Value[300 x 1 x *]] }
+0x7f6d39dc2028: {[LSTMoutput.unnamed130 Value[300 x 1 x *]] }
+0x7f6d39dc21e8: {[LSTMoutput.ft Value[300 x 1 x *]] }
+0x7f6d39dc23a8: {[LSTMoutput.bft Value[300 x 1 x *]] }
+0x7f6d39dc2568: {[LSTMoutput.WhidelayHI Value[300 x 1 x *]] }
+0x7f6d39dc2728: {[LSTMoutput.unnamed125 Value[300 x 1 x *]] }
+0x7f6d39dc28e8: {[LSTMoutput.WcidelayCI Value[300 x 1 x *]] }
+0x7f6d39dc2aa8: {[LSTMoutput.unnamed124 Value[300 x 1 x *]] }
+0x7f6d39dc2c68: {[LSTMoutput.it Value[300 x 1 x *]] }
+0x7f6d39dc2e28: {[LSTMoutput.WhcdelayHC Value[300 x 1 x *]] }
+0x7f6d39dc2fe8: {[LSTMoutput.unnamed129 Value[300 x 1 x *]] }
+0x7f6d39dc31a8: {[LSTMoutput.unnamed128 Value[300 x 1 x *]] }
+0x7f6d39dc3368: {[LSTMoutput.unnamed127 Value[300 x 1 x *]] }
+0x7f6d39dc3528: {[LSTMoutput.bit Value[300 x 1 x *]] }
+0x7f6d39dc36e8: {[LSTMoutput.ct Value[300 x 1 x *]] }
+0x7f6d39dc38a8: {[LSTMoutput.Wcoct Value[300 x 1 x *]] }
+0x7f6d39dc3a68: {[LSTMoutput.unnamed133 Value[300 x 1 x *]] }
+0x7f6d39dc3c28: {[LSTMoutput.ot Value[300 x 1 x *]] }
+0x7f6d39dc3de8: {[LSTMoutput.unnamed136 Value[300 x 1 x *]] }
+0x7f6d39dc3fa8: {[LSTMoutput.outputTest Value[300 x 1 x *]] }
+0x7f6d39dc4868: {[ce Gradient[1]] }
+0x7f6d39dc4a28: {[LSTMoutput.ot Gradient[300 x 1 x *]] [LSTMoutputW1 Gradient[127 x 1 x *]] }
+0x7f6d39dc4be8: {[W1 Gradient[127 x 300]] }
+0x7f6d39dc4da8: {[LSTMoutput.outputTest Gradient[300 x 1 x *]] }
+0x7f6d39dc4f68: {[LSTMoutput.unnamed136 Gradient[300 x 1 x *]] }
+0x7f6d39dc5128: {[LSTMoutput.ct Gradient[300 x 1 x *]] }
+0x7f6d39dc52e8: {[LSTMoutput.unnamed133 Gradient[300 x 1 x *]] }
+0x7f6d39dc54a8: {[LSTMoutput.unnamed134 Gradient[300 x 1 x *]] }
+0x7f6d39dc5668: {[LSTMoutput.Wcoct Gradient[300 x 1 x *]] }
+0x7f6d39dc5ba8: {[LSTMoutput.Wco Gradient[300 x 1]] }
+0x7f6d39dc5d68: {[LSTMoutput.bft Gradient[300 x 1 x *]] }
+0x7f6d39dc5f28: {[LSTMoutput.bit Gradient[300 x 1 x *]] }
+0x7f6d39dc60e8: {[LSTMoutput.it Gradient[300 x 1 x *]] }
+0x7f6d39dc62a8: {[LSTMoutput.unnamed127 Gradient[300 x 1 x *]] }
+0x7f6d39dc6468: {[LSTMoutput.unnamed128 Gradient[300 x 1 x *]] }
+0x7f6d39dc6628: {[LSTMoutput.WxcInput Gradient[300 x *]] [LSTMoutput.bi Gradient[300 x 1]] }
+0x7f6d39dc67e8: {[LSTMoutput.unnamed129 Gradient[300 x 1 x *]] }
+0x7f6d39dc69a8: {[LSTMoutput.WhcdelayHC Gradient[300 x 1 x *]] }
+0x7f6d39dc6b68: {[LSTMoutput.bc Gradient[300 x 1]] }
+0x7f6d39dc6d28: {[LSTMoutput.Whc Gradient[300 x 300]] }
+0x7f6d39dc6ee8: {[LSTMoutput.delayHC Gradient[300 x 1 x *]] }
+0x7f6d39dc70a8: {[LSTMoutput.unnamed124 Gradient[300 x 1 x *]] }
+0x7f6d39dc7268: {[LSTMoutput.unnamed125 Gradient[300 x 1 x *]] }
+0x7f6d39dc7428: {[LSTMoutput.WcidelayCI Gradient[300 x 1 x *]] }
+0x7f6d39dc7968: {[LSTMoutput.Wci Gradient[300 x 1]] }
+0x7f6d39dc7b28: {[LSTMoutput.delayCI Gradient[300 x 1 x *]] }
+0x7f6d39dc7ce8: {[LSTMoutput.unnamed126 Gradient[300 x 1 x *]] }
+0x7f6d39dc7ea8: {[LSTMoutput.WhidelayHI Gradient[300 x 1 x *]] }
+0x7f6d39dc8068: {[LSTMoutput.Whi Gradient[300 x 300]] }
+0x7f6d39dc8228: {[LSTMoutput.delayHI Gradient[300 x 1 x *]] }
+0x7f6d39dc83e8: {[LSTMoutput.ft Gradient[300 x 1 x *]] }
+0x7f6d39dc85a8: {[LSTMoutput.delayCC Gradient[300 x 1 x *]] }
+0x7f6d39dc8768: {[LSTMoutput.unnamed130 Gradient[300 x 1 x *]] }
+0x7f6d39dc8928: {[LSTMoutput.unnamed131 Gradient[300 x 1 x *]] }
+0x7f6d39dc8ae8: {[LSTMoutput.WcfdelayCF Gradient[300 x 1 x *]] }
+0x7f6d39dc9028: {[LSTMoutput.Wcf Gradient[300 x 1]] }
+0x7f6d39dc91e8: {[LSTMoutput.delayCF Gradient[300 x 1 x *]] }
+0x7f6d39dc93a8: {[LSTMoutput.unnamed132 Gradient[300 x 1 x *]] }
+0x7f6d39dc9568: {[LSTMoutput.WhfdelayHF Gradient[300 x 1 x *]] }
+0x7f6d39dc9728: {[LSTMoutput.Whf Gradient[300 x 300]] }
+0x7f6d39dc98e8: {[LSTMoutput.delayHF Gradient[300 x 1 x *]] }
+0x7f6d39dc9aa8: {[LSTMoutput.unnamed135 Gradient[300 x 1 x *]] }
+0x7f6d39dc9c68: {[LSTMoutput.WhodelayHO Gradient[300 x 1 x *]] }
+0x7f6d39dc9e28: {[LSTMoutput.Who Gradient[300 x 300]] }
+0x7f6d39dc9fe8: {[LSTMoutput.delayHO Gradient[300 x 1 x *]] [featLookuped Gradient[150 x *]] }
+0x7f6d3af5cc58: {[labels Value[127 x *]] }
+0x7f6d3af987d8: {[features Value[2832 x *]] }
 
-05/03/2016 18:19:37: No PreCompute nodes found, skipping PreCompute step.
+08/04/2016 13:56:50: No PreCompute nodes found, skipping PreCompute step.
 
-05/03/2016 18:19:37: Starting Epoch 1: learning rate per sample = 0.100000  effective momentum = 0.900000  momentum as time constant = 94.9 samples
+08/04/2016 13:56:50: Starting Epoch 1: learning rate per sample = 0.100000  effective momentum = 0.900000  momentum as time constant = 94.9 samples
 
-05/03/2016 18:19:37: Starting minibatch loop.
+08/04/2016 13:56:50: Starting minibatch loop.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 51 lines with a total of 36+51 tokens.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 0 lines with a total of 0+0 tokens.
 EnsureDataAvailable: No more data.
-05/03/2016 18:19:38: Finished Epoch[ 1 of 3]: [Training] ce = 4.72287393 * 81; err = 4.72287393 * 81; totalSamplesSeen = 81; learningRatePerSample = 0.1; epochTime=0.254267s
+08/04/2016 13:56:51: Finished Epoch[ 1 of 3]: [Training] ce = 4.72287393 * 81; err = 4.72287393 * 81; totalSamplesSeen = 81; learningRatePerSample = 0.1; epochTime=0.195349s
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 51 lines with a total of 36+51 tokens.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 0 lines with a total of 0+0 tokens.
 EnsureDataAvailable: No more data.
-05/03/2016 18:19:38: Final Results: Minibatch[1-51]: ce = 4.37671674 * 81; perplexity = 79.57633418; err = 4.37671674 * 81; perplexity = 79.57633418
-05/03/2016 18:19:38: Finished Epoch[ 1 of 3]: [Validate] ce = 4.37671674 * 81; err = 4.37671674 * 81
-05/03/2016 18:19:38: SGD: Saving checkpoint model '/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn.1'
+08/04/2016 13:56:51: Final Results: Minibatch[1-51]: ce = 4.37671674 * 81; perplexity = 79.57633418; err = 4.37671674 * 81; perplexity = 79.57633418
+08/04/2016 13:56:51: Finished Epoch[ 1 of 3]: [Validate] ce = 4.37671674 * 81; err = 4.37671674 * 81
+08/04/2016 13:56:51: SGD: Saving checkpoint model '/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn.1'
 
-05/03/2016 18:19:38: Starting Epoch 2: learning rate per sample = 0.100000  effective momentum = 0.900000  momentum as time constant = 94.9 samples
+08/04/2016 13:56:51: Starting Epoch 2: learning rate per sample = 0.100000  effective momentum = 0.900000  momentum as time constant = 94.9 samples
 
-05/03/2016 18:19:38: Starting minibatch loop.
+08/04/2016 13:56:51: Starting minibatch loop.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 51 lines with a total of 36+51 tokens.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 0 lines with a total of 0+0 tokens.
 EnsureDataAvailable: No more data.
-05/03/2016 18:19:38: Finished Epoch[ 2 of 3]: [Training] ce = 3.96877438 * 81; err = 3.96877438 * 81; totalSamplesSeen = 162; learningRatePerSample = 0.1; epochTime=0.107653s
+08/04/2016 13:56:51: Finished Epoch[ 2 of 3]: [Training] ce = 3.96877438 * 81; err = 3.96877438 * 81; totalSamplesSeen = 162; learningRatePerSample = 0.1; epochTime=0.102876s
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 51 lines with a total of 36+51 tokens.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 0 lines with a total of 0+0 tokens.
 EnsureDataAvailable: No more data.
-05/03/2016 18:19:38: Final Results: Minibatch[1-51]: ce = 3.11042446 * 81; perplexity = 22.43056322; err = 3.11042446 * 81; perplexity = 22.43056322
-05/03/2016 18:19:38: Finished Epoch[ 2 of 3]: [Validate] ce = 3.11042446 * 81; err = 3.11042446 * 81
-05/03/2016 18:19:38: SGD: Saving checkpoint model '/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn.2'
+08/04/2016 13:56:51: Final Results: Minibatch[1-51]: ce = 3.11042446 * 81; perplexity = 22.43056322; err = 3.11042446 * 81; perplexity = 22.43056322
+08/04/2016 13:56:51: Finished Epoch[ 2 of 3]: [Validate] ce = 3.11042446 * 81; err = 3.11042446 * 81
+08/04/2016 13:56:51: SGD: Saving checkpoint model '/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn.2'
 
-05/03/2016 18:19:38: Starting Epoch 3: learning rate per sample = 0.100000  effective momentum = 0.900000  momentum as time constant = 94.9 samples
+08/04/2016 13:56:51: Starting Epoch 3: learning rate per sample = 0.100000  effective momentum = 0.900000  momentum as time constant = 94.9 samples
 
-05/03/2016 18:19:38: Starting minibatch loop.
+08/04/2016 13:56:51: Starting minibatch loop.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 51 lines with a total of 36+51 tokens.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 0 lines with a total of 0+0 tokens.
 EnsureDataAvailable: No more data.
-05/03/2016 18:19:38: Finished Epoch[ 3 of 3]: [Training] ce = 2.60660750 * 81; err = 2.60660750 * 81; totalSamplesSeen = 243; learningRatePerSample = 0.1; epochTime=0.108873s
+08/04/2016 13:56:51: Finished Epoch[ 3 of 3]: [Training] ce = 2.60660750 * 81; err = 2.60660750 * 81; totalSamplesSeen = 243; learningRatePerSample = 0.1; epochTime=0.086772s
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 51 lines with a total of 36+51 tokens.
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 0 lines with a total of 0+0 tokens.
 EnsureDataAvailable: No more data.
-05/03/2016 18:19:38: Final Results: Minibatch[1-51]: ce = 2.26070442 * 81; perplexity = 9.58984210; err = 2.26070442 * 81; perplexity = 9.58984210
-05/03/2016 18:19:38: Finished Epoch[ 3 of 3]: [Validate] ce = 2.26070442 * 81; err = 2.26070442 * 81
-05/03/2016 18:19:38: SGD: Saving checkpoint model '/tmp/cntk-test-20160503181449.303380/Text_SLU@release_cpu/cntkdebug.dnn'
-05/03/2016 18:19:38: CNTKCommandTrainEnd: LSTM
+08/04/2016 13:56:51: Final Results: Minibatch[1-51]: ce = 2.26070442 * 81; perplexity = 9.58984210; err = 2.26070442 * 81; perplexity = 9.58984210
+08/04/2016 13:56:51: Finished Epoch[ 3 of 3]: [Validate] ce = 2.26070442 * 81; err = 2.26070442 * 81
+08/04/2016 13:56:51: SGD: Saving checkpoint model '/tmp/cntk-test-20160804135211.433559/Text_SLU@release_cpu/cntkdebug.dnn'
+08/04/2016 13:56:51: CNTKCommandTrainEnd: LSTM
 
-05/03/2016 18:19:38: Action "train" complete.
+08/04/2016 13:56:51: Action "train" complete.
 
 
-05/03/2016 18:19:38: ##############################################################################
-05/03/2016 18:19:38: #                                                                            #
-05/03/2016 18:19:38: # Action "write"                                                             #
-05/03/2016 18:19:38: #                                                                            #
-05/03/2016 18:19:38: ##############################################################################
+08/04/2016 13:56:51: ##############################################################################
+08/04/2016 13:56:51: #                                                                            #
+08/04/2016 13:56:51: # Action "write"                                                             #
+08/04/2016 13:56:51: #                                                                            #
+08/04/2016 13:56:51: ##############################################################################
 
-LUSequenceReader: Reading sequence file /home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/atis.test.apos.pred.pos.head.IOB.simple
 BatchLUSequenceReader: Input file is /home/philly/jenkins/workspace/CNTK-Test-Linux-W1/Tests/EndToEndTests/Text/SLU/atis.test.apos.pred.pos.head.IOB.simple
 
 Post-processing network...
@@ -1214,66 +1226,66 @@ Allocating matrices for forward and/or backward propagation.
 Memory Sharing Structure:
 
 (nil): {[LSTMoutput.Wcf Gradient[300 x 1]] [LSTMoutput.WcfdelayCF Gradient[300 x 1 x *1]] [LSTMoutput.Wci Gradient[300 x 1]] [LSTMoutput.WcidelayCI Gradient[300 x 1 x *1]] [LSTMoutput.Wco Gradient[300 x 1]] [LSTMoutput.Wcoct Gradient[300 x 1 x *1]] [LSTMoutput.Whc Gradient[300 x 300]] [LSTMoutput.WhcdelayHC Gradient[300 x 1 x *1]] [LSTMoutput.Whf Gradient[300 x 300]] [LSTMoutput.WhfdelayHF Gradient[300 x 1 x *1]] [LSTMoutput.Whi Gradient[300 x 300]] [LSTMoutput.WhidelayHI Gradient[300 x 1 x *1]] [LSTMoutput.Who Gradient[300 x 300]] [LSTMoutput.WhodelayHO Gradient[300 x 1 x *1]] [LSTMoutput.Wxc Gradient[300 x 150]] [LSTMoutput.WxcInput Gradient[300 x *1]] [LSTMoutput.Wxf Gradient[300 x 150]] [LSTMoutput.Wxfinput Gradient[300 x *1]] [LSTMoutput.Wxi Gradient[300 x 150]] [LSTMoutput.WxiInput Gradient[300 x *1]] [LSTMoutput.Wxo Gradient[300 x 150]] [LSTMoutput.Wxoinput Gradient[300 x *1]] [LSTMoutput.bc Gradient[300 x 1]] [LSTMoutput.bf Gradient[300 x 1]] [LSTMoutput.bft Gradient[300 x 1 x *1]] [LSTMoutput.bi Gradient[300 x 1]] [LSTMoutput.bit Gradient[300 x 1 x *1]] [LSTMoutput.bo Gradient[300 x 1]] [LSTMoutput.ct Gradient[300 x 1 x *1]] [LSTMoutput.delayCC Gradient[300 x 1 x *1]] [LSTMoutput.delayCF Gradient[300 x 1 x *1]] [LSTMoutput.delayCI Gradient[300 x 1 x *1]] [LSTMoutput.delayHC Gradient[300 x 1 x *1]] [LSTMoutput.delayHF Gradient[300 x 1 x *1]] [LSTMoutput.delayHI Gradient[300 x 1 x *1]] [LSTMoutput.delayHO Gradient[300 x 1 x *1]] [LSTMoutput.ft Gradient[300 x 1 x *1]] [LSTMoutput.it Gradient[300 x 1 x *1]] [LSTMoutput.ot Gradient[300 x 1 x *1]] [LSTMoutput.outputTest Gradient[300 x 1 x *1]] [LSTMoutput.unnamed124 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed125 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed126 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed127 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed128 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed129 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed130 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed131 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed132 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed133 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed134 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed135 Gradient[300 x 1 x *1]] [LSTMoutput.unnamed136 Gradient[300 x 1 x *1]] [LSTMoutputW1 Gradient[127 x 1 x *1]] [W1 Gradient[127 x 300]] [Wlookup Gradient[50 x 944]] [ce Gradient[1]] [ce Value[1]] [err Gradient[1]] [err Value[1]] [featLookuped Gradient[150 x *1]] [features Gradient[2832 x *1]] [labels Gradient[127 x *1]] [outputs Gradient[127 x 1 x *1]] }
-0x7ff0199b7418: {[LSTMoutput.bc Value[300 x 1]] }
-0x7ff0199b8fc8: {[LSTMoutput.bf Value[300 x 1]] }
-0x7ff0199c8178: {[LSTMoutput.bi Value[300 x 1]] }
-0x7ff0199c9c18: {[LSTMoutput.bo Value[300 x 1]] }
-0x7ff0199cafd8: {[LSTMoutput.delayCC Value[300 x 1 x *1]] }
-0x7ff0199cb3e8: {[LSTMoutput.delayCF Value[300 x 1 x *1]] }
-0x7ff0199cc798: {[LSTMoutput.delayCI Value[300 x 1 x *1]] }
-0x7ff0199ccea8: {[LSTMoutput.delayHC Value[300 x 1 x *1]] }
-0x7ff0199cd578: {[LSTMoutput.delayHF Value[300 x 1 x *1]] }
-0x7ff0199cdc88: {[LSTMoutput.delayHI Value[300 x 1 x *1]] }
-0x7ff0199ce398: {[LSTMoutput.delayHO Value[300 x 1 x *1]] }
-0x7ff0199d2328: {[LSTMoutput.Wcf Value[300 x 1]] }
-0x7ff0199d2b98: {[LSTMoutput.Wci Value[300 x 1]] }
-0x7ff0199d3e08: {[LSTMoutput.Wco Value[300 x 1]] }
-0x7ff0199d4f88: {[LSTMoutput.Whc Value[300 x 300]] }
-0x7ff0199d5318: {[LSTMoutput.Whf Value[300 x 300]] }
-0x7ff0199d6948: {[LSTMoutput.Whi Value[300 x 300]] }
-0x7ff0199d71f8: {[LSTMoutput.Who Value[300 x 300]] }
-0x7ff0199d79d8: {[LSTMoutput.Wxc Value[300 x 150]] }
-0x7ff0199d81b8: {[LSTMoutput.Wxf Value[300 x 150]] }
-0x7ff0199d8a08: {[LSTMoutput.Wxi Value[300 x 150]] }
-0x7ff0199d9258: {[LSTMoutput.Wxo Value[300 x 150]] }
-0x7ff0199d9d38: {[W1 Value[127 x 300]] }
-0x7ff0199d9de8: {[Wlookup Value[50 x 944]] }
-0x7ff0199e1008: {[outputs Value[127 x 1 x *1]] }
-0x7ff0199ed128: {[featLookuped Value[150 x *1]] }
-0x7ff0199ed4c8: {[LSTMoutput.Wxoinput Value[300 x *1]] }
-0x7ff0199edd48: {[LSTMoutput.Wxfinput Value[300 x *1]] }
-0x7ff0199edf08: {[LSTMoutput.unnamed132 Value[300 x 1 x *1]] }
-0x7ff0199ee4d8: {[LSTMoutput.unnamed135 Value[300 x 1 x *1]] }
-0x7ff0199eebb8: {[LSTMoutput.WxiInput Value[300 x *1]] }
-0x7ff0199eed78: {[LSTMoutput.unnamed126 Value[300 x 1 x *1]] }
-0x7ff0199eef38: {[LSTMoutput.WxcInput Value[300 x *1]] }
-0x7ff0199ef0f8: {[LSTMoutput.WhodelayHO Value[300 x 1 x *1]] }
-0x7ff0199ef2b8: {[LSTMoutput.unnamed134 Value[300 x 1 x *1]] }
-0x7ff0199ef478: {[LSTMoutput.WhfdelayHF Value[300 x 1 x *1]] }
-0x7ff0199ef638: {[LSTMoutput.unnamed131 Value[300 x 1 x *1]] }
-0x7ff0199ef7f8: {[LSTMoutput.WcfdelayCF Value[300 x 1 x *1]] }
-0x7ff0199ef9b8: {[LSTMoutput.unnamed130 Value[300 x 1 x *1]] }
-0x7ff0199efb78: {[LSTMoutput.ft Value[300 x 1 x *1]] }
-0x7ff0199efd38: {[LSTMoutput.bft Value[300 x 1 x *1]] }
-0x7ff0199efef8: {[LSTMoutput.WhidelayHI Value[300 x 1 x *1]] }
-0x7ff0199f00b8: {[LSTMoutput.unnamed125 Value[300 x 1 x *1]] }
-0x7ff0199f0278: {[LSTMoutput.WcidelayCI Value[300 x 1 x *1]] }
-0x7ff0199f0438: {[LSTMoutput.unnamed124 Value[300 x 1 x *1]] }
-0x7ff0199f05f8: {[LSTMoutput.it Value[300 x 1 x *1]] }
-0x7ff0199f07b8: {[LSTMoutput.WhcdelayHC Value[300 x 1 x *1]] }
-0x7ff0199f0978: {[LSTMoutput.unnamed129 Value[300 x 1 x *1]] }
-0x7ff0199f0b38: {[LSTMoutput.unnamed128 Value[300 x 1 x *1]] }
-0x7ff0199f0cf8: {[LSTMoutput.unnamed127 Value[300 x 1 x *1]] }
-0x7ff0199f0eb8: {[LSTMoutput.bit Value[300 x 1 x *1]] }
-0x7ff0199f1078: {[LSTMoutput.ct Value[300 x 1 x *1]] }
-0x7ff0199f1238: {[LSTMoutput.Wcoct Value[300 x 1 x *1]] }
-0x7ff0199f13f8: {[LSTMoutput.unnamed133 Value[300 x 1 x *1]] }
-0x7ff0199f15b8: {[LSTMoutput.ot Value[300 x 1 x *1]] }
-0x7ff0199f1778: {[LSTMoutput.unnamed136 Value[300 x 1 x *1]] }
-0x7ff0199f1938: {[LSTMoutput.outputTest Value[300 x 1 x *1]] }
-0x7ff0199f1af8: {[LSTMoutputW1 Value[127 x 1 x *1]] }
-0x7ff021be1478: {[features Value[2832 x *1]] }
-0x7ff021be39c8: {[labels Value[127 x *1]] }
+0x7f6d39d18be8: {[LSTMoutput.bc Value[300 x 1]] }
+0x7f6d39d3ba68: {[labels Value[127 x *1]] }
+0x7f6d39d65628: {[LSTMoutput.bf Value[300 x 1]] }
+0x7f6d39d747c8: {[LSTMoutput.bi Value[300 x 1]] }
+0x7f6d39d74b18: {[LSTMoutput.bo Value[300 x 1]] }
+0x7f6d39d77698: {[LSTMoutput.delayCC Value[300 x 1 x *1]] }
+0x7f6d39d78798: {[LSTMoutput.delayCF Value[300 x 1 x *1]] }
+0x7f6d39d78e08: {[LSTMoutput.delayCI Value[300 x 1 x *1]] }
+0x7f6d39d79528: {[LSTMoutput.delayHC Value[300 x 1 x *1]] }
+0x7f6d39d79c48: {[LSTMoutput.delayHF Value[300 x 1 x *1]] }
+0x7f6d39d7a368: {[LSTMoutput.delayHI Value[300 x 1 x *1]] }
+0x7f6d39d7aa88: {[LSTMoutput.delayHO Value[300 x 1 x *1]] }
+0x7f6d39d7ea28: {[LSTMoutput.Wcf Value[300 x 1]] }
+0x7f6d39d7f2a8: {[LSTMoutput.Wci Value[300 x 1]] }
+0x7f6d39d80518: {[LSTMoutput.Wco Value[300 x 1]] }
+0x7f6d39d81698: {[LSTMoutput.Whc Value[300 x 300]] }
+0x7f6d39d81a28: {[LSTMoutput.Whf Value[300 x 300]] }
+0x7f6d39d83068: {[LSTMoutput.Whi Value[300 x 300]] }
+0x7f6d39d838d8: {[LSTMoutput.Who Value[300 x 300]] }
+0x7f6d39d84148: {[LSTMoutput.Wxc Value[300 x 150]] }
+0x7f6d39d849b8: {[LSTMoutput.Wxf Value[300 x 150]] }
+0x7f6d39d85228: {[LSTMoutput.Wxi Value[300 x 150]] }
+0x7f6d39d85a98: {[LSTMoutput.Wxo Value[300 x 150]] }
+0x7f6d39d86598: {[W1 Value[127 x 300]] }
+0x7f6d39d86648: {[Wlookup Value[50 x 944]] }
+0x7f6d39db3ca8: {[features Value[2832 x *1]] }
+0x7f6d3a0c27a8: {[outputs Value[127 x 1 x *1]] }
+0x7f6d3a0d01a8: {[featLookuped Value[150 x *1]] }
+0x7f6d3a0d0548: {[LSTMoutput.Wxoinput Value[300 x *1]] }
+0x7f6d3a0d0dc8: {[LSTMoutput.Wxfinput Value[300 x *1]] }
+0x7f6d3a0d0f88: {[LSTMoutput.unnamed132 Value[300 x 1 x *1]] }
+0x7f6d3a0d1558: {[LSTMoutput.unnamed135 Value[300 x 1 x *1]] }
+0x7f6d3a0d1c38: {[LSTMoutput.WxiInput Value[300 x *1]] }
+0x7f6d3a0d1df8: {[LSTMoutput.unnamed126 Value[300 x 1 x *1]] }
+0x7f6d3a0d1fb8: {[LSTMoutput.WxcInput Value[300 x *1]] }
+0x7f6d3a0d2178: {[LSTMoutput.WhodelayHO Value[300 x 1 x *1]] }
+0x7f6d3a0d2338: {[LSTMoutput.unnamed134 Value[300 x 1 x *1]] }
+0x7f6d3a0d24f8: {[LSTMoutput.WhfdelayHF Value[300 x 1 x *1]] }
+0x7f6d3a0d26b8: {[LSTMoutput.unnamed131 Value[300 x 1 x *1]] }
+0x7f6d3a0d2878: {[LSTMoutput.WcfdelayCF Value[300 x 1 x *1]] }
+0x7f6d3a0d2a38: {[LSTMoutput.unnamed130 Value[300 x 1 x *1]] }
+0x7f6d3a0d2bf8: {[LSTMoutput.ft Value[300 x 1 x *1]] }
+0x7f6d3a0d2db8: {[LSTMoutput.bft Value[300 x 1 x *1]] }
+0x7f6d3a0d2f78: {[LSTMoutput.WhidelayHI Value[300 x 1 x *1]] }
+0x7f6d3a0d3138: {[LSTMoutput.unnamed125 Value[300 x 1 x *1]] }
+0x7f6d3a0d32f8: {[LSTMoutput.WcidelayCI Value[300 x 1 x *1]] }
+0x7f6d3a0d34b8: {[LSTMoutput.unnamed124 Value[300 x 1 x *1]] }
+0x7f6d3a0d3678: {[LSTMoutput.it Value[300 x 1 x *1]] }
+0x7f6d3a0d3838: {[LSTMoutput.WhcdelayHC Value[300 x 1 x *1]] }
+0x7f6d3a0d39f8: {[LSTMoutput.unnamed129 Value[300 x 1 x *1]] }
+0x7f6d3a0d3bb8: {[LSTMoutput.unnamed128 Value[300 x 1 x *1]] }
+0x7f6d3a0d3d78: {[LSTMoutput.unnamed127 Value[300 x 1 x *1]] }
+0x7f6d3a0d3f38: {[LSTMoutput.bit Value[300 x 1 x *1]] }
+0x7f6d3a0d40f8: {[LSTMoutput.ct Value[300 x 1 x *1]] }
+0x7f6d3a0d42b8: {[LSTMoutput.Wcoct Value[300 x 1 x *1]] }
+0x7f6d3a0d4478: {[LSTMoutput.unnamed133 Value[300 x 1 x *1]] }
+0x7f6d3a0d4638: {[LSTMoutput.ot Value[300 x 1 x *1]] }
+0x7f6d3a0d47f8: {[LSTMoutput.unnamed136 Value[300 x 1 x *1]] }
+0x7f6d3a0d49b8: {[LSTMoutput.outputTest Value[300 x 1 x *1]] }
+0x7f6d3a0d4b78: {[LSTMoutputW1 Value[127 x 1 x *1]] }
 
 BatchLUSequenceParser: Parsing input data...
 BatchLUSequenceParser: Parsed 5 lines with a total of 92+5 tokens.
@@ -1287,6 +1299,6 @@ BatchLUSequenceParser: Parsed 0 lines with a total of 0+0 tokens.
 EnsureDataAvailable: No more data.
 Total Samples Evaluated = 91
 
-05/03/2016 18:19:39: Action "write" complete.
+08/04/2016 13:56:51: Action "write" complete.
 
-05/03/2016 18:19:39: __COMPLETED__
+08/04/2016 13:56:51: __COMPLETED__

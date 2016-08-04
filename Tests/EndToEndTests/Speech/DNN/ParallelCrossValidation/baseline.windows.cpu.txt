@@ -1,37 +1,44 @@
-=== Running C:\Program Files\Microsoft MPI\Bin\/mpiexec.exe -n 2 C:\jenkins\workspace\CNTK-Test-Windows-W2\x64\release\cntk.exe configFile=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation/cntkcv.cntk currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu DeviceId=-1 timestamping=true numCPUThreads=12 shareNodeValueMatrices=true stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+CPU info:
+    CPU Model Name: Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
+    Hardware threads: 24
+    Total Memory: 268381192 kB
+-------------------------------------------------------------------
+=== Running C:\Program Files\Microsoft MPI\Bin\/mpiexec.exe -n 2 C:\jenkins\workspace\CNTK-Test-Windows-W2\x64\release\cntk.exe configFile=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation/cntkcv.cntk currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu DeviceId=-1 timestamping=true numCPUThreads=12 shareNodeValueMatrices=true stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 -------------------------------------------------------------------
 Build info: 
 
-		Built time: May  3 2016 13:23:06
-		Last modified date: Mon Apr 18 00:00:12 2016
+		Built time: Aug  4 2016 06:18:04
+		Last modified date: Thu Aug  4 03:39:14 2016
 		Build type: Release
 		Build target: GPU
 		With 1bit-SGD: no
+		Math lib: mkl
 		CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5
 		CUB_PATH: C:\src\cub-1.4.1
 		CUDNN_PATH: c:\NVIDIA\cudnn-4.0\cuda
 		Build Branch: HEAD
-		Build SHA1: af96f7cce6c3c78a4f1e9315e061291c79360e12
-		Built by svcphil on LIANA-09-w
-		Build Path: c:\jenkins\workspace\CNTK-Build-Windows\Source\CNTK\
+		Build SHA1: 0f61695dfc335f2406284d335678f57c215e6e9c
+		Built by svcphil on dphaim-26-new
+		Build Path: c:\jenkins\workspace\CNTK-Build-Windows@3\Source\CNTK\
 -------------------------------------------------------------------
 Changed current directory to C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPIWrapper: initializing MPI
 -------------------------------------------------------------------
 Build info: 
 
-		Built time: May  3 2016 13:23:06
-		Last modified date: Mon Apr 18 00:00:12 2016
+		Built time: Aug  4 2016 06:18:04
+		Last modified date: Thu Aug  4 03:39:14 2016
 		Build type: Release
 		Build target: GPU
 		With 1bit-SGD: no
+		Math lib: mkl
 		CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5
 		CUB_PATH: C:\src\cub-1.4.1
 		CUDNN_PATH: c:\NVIDIA\cudnn-4.0\cuda
 		Build Branch: HEAD
-		Build SHA1: af96f7cce6c3c78a4f1e9315e061291c79360e12
-		Built by svcphil on LIANA-09-w
-		Build Path: c:\jenkins\workspace\CNTK-Build-Windows\Source\CNTK\
+		Build SHA1: 0f61695dfc335f2406284d335678f57c215e6e9c
+		Built by svcphil on dphaim-26-new
+		Build Path: c:\jenkins\workspace\CNTK-Build-Windows@3\Source\CNTK\
 -------------------------------------------------------------------
 Changed current directory to C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPIWrapper: initializing MPI
@@ -39,58 +46,53 @@ ping [requestnodes (before change)]: 2 nodes pinging each other
 ping [requestnodes (before change)]: 2 nodes pinging each other
 ping [requestnodes (before change)]: all 2 nodes responded
 ping [requestnodes (before change)]: all 2 nodes responded
-requestnodes [MPIWrapper]: using 2 out of 2 MPI nodes (2 requested); we (1) are in (participating)
 requestnodes [MPIWrapper]: using 2 out of 2 MPI nodes (2 requested); we (0) are in (participating)
+requestnodes [MPIWrapper]: using 2 out of 2 MPI nodes (2 requested); we (1) are in (participating)
 ping [requestnodes (after change)]: 2 nodes pinging each other
 ping [requestnodes (after change)]: 2 nodes pinging each other
 ping [requestnodes (after change)]: all 2 nodes responded
 ping [requestnodes (after change)]: all 2 nodes responded
-mpihelper: we are cog 1 in a gearbox of 2
 mpihelper: we are cog 0 in a gearbox of 2
+mpihelper: we are cog 1 in a gearbox of 2
 ping [mpihelper]: 2 nodes pinging each other
 ping [mpihelper]: 2 nodes pinging each other
 ping [mpihelper]: all 2 nodes responded
 ping [mpihelper]: all 2 nodes responded
-
-job aborted:
-[ranks] message
-
-[0] process exited without calling finalize
-
-[1] terminated
-
----- error analysis -----
-
-[0] on DPHAIM-25
-C:\jenkins\workspace\CNTK-Test-Windows-W2\x64\release\cntk.exe ended prematurely and may have crashed. exit code 0
-
----- error analysis -----
-MPI Rank 0: 05/03/2016 14:21:08: Redirecting stderr to file C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr_speechTrain.logrank0
-MPI Rank 0: 05/03/2016 14:21:08: -------------------------------------------------------------------
-MPI Rank 0: 05/03/2016 14:21:08: Build info: 
+MPI Rank 0: 08/04/2016 09:18:49: Redirecting stderr to file C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr_speechTrain.logrank0
+MPI Rank 0: 08/04/2016 09:18:49: -------------------------------------------------------------------
+MPI Rank 0: 08/04/2016 09:18:49: Build info: 
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: 		Built time: May  3 2016 13:23:06
-MPI Rank 0: 05/03/2016 14:21:08: 		Last modified date: Mon Apr 18 00:00:12 2016
-MPI Rank 0: 05/03/2016 14:21:08: 		Build type: Release
-MPI Rank 0: 05/03/2016 14:21:08: 		Build target: GPU
-MPI Rank 0: 05/03/2016 14:21:08: 		With 1bit-SGD: no
-MPI Rank 0: 05/03/2016 14:21:08: 		CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5
-MPI Rank 0: 05/03/2016 14:21:08: 		CUB_PATH: C:\src\cub-1.4.1
-MPI Rank 0: 05/03/2016 14:21:08: 		CUDNN_PATH: c:\NVIDIA\cudnn-4.0\cuda
-MPI Rank 0: 05/03/2016 14:21:08: 		Build Branch: HEAD
-MPI Rank 0: 05/03/2016 14:21:08: 		Build SHA1: af96f7cce6c3c78a4f1e9315e061291c79360e12
-MPI Rank 0: 05/03/2016 14:21:08: 		Built by svcphil on LIANA-09-w
-MPI Rank 0: 05/03/2016 14:21:08: 		Build Path: c:\jenkins\workspace\CNTK-Build-Windows\Source\CNTK\
-MPI Rank 0: 05/03/2016 14:21:08: -------------------------------------------------------------------
+MPI Rank 0: 08/04/2016 09:18:49: 		Built time: Aug  4 2016 06:18:04
+MPI Rank 0: 08/04/2016 09:18:49: 		Last modified date: Thu Aug  4 03:39:14 2016
+MPI Rank 0: 08/04/2016 09:18:49: 		Build type: Release
+MPI Rank 0: 08/04/2016 09:18:49: 		Build target: GPU
+MPI Rank 0: 08/04/2016 09:18:49: 		With 1bit-SGD: no
+MPI Rank 0: 08/04/2016 09:18:49: 		Math lib: mkl
+MPI Rank 0: 08/04/2016 09:18:49: 		CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5
+MPI Rank 0: 08/04/2016 09:18:49: 		CUB_PATH: C:\src\cub-1.4.1
+MPI Rank 0: 08/04/2016 09:18:49: 		CUDNN_PATH: c:\NVIDIA\cudnn-4.0\cuda
+MPI Rank 0: 08/04/2016 09:18:49: 		Build Branch: HEAD
+MPI Rank 0: 08/04/2016 09:18:49: 		Build SHA1: 0f61695dfc335f2406284d335678f57c215e6e9c
+MPI Rank 0: 08/04/2016 09:18:49: 		Built by svcphil on dphaim-26-new
+MPI Rank 0: 08/04/2016 09:18:49: 		Build Path: c:\jenkins\workspace\CNTK-Build-Windows@3\Source\CNTK\
+MPI Rank 0: 08/04/2016 09:18:49: -------------------------------------------------------------------
+MPI Rank 0: 08/04/2016 09:18:52: -------------------------------------------------------------------
+MPI Rank 0: 08/04/2016 09:18:52: GPU info:
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: Running on DPHAIM-25 at 2016/05/03 14:21:08
-MPI Rank 0: 05/03/2016 14:21:08: Command line: 
-MPI Rank 0: C:\jenkins\workspace\CNTK-Test-Windows-W2\x64\release\cntk.exe  configFile=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation/cntkcv.cntk  currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu  DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation  OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu  DeviceId=-1  timestamping=true  numCPUThreads=12  shareNodeValueMatrices=true  stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 0: 08/04/2016 09:18:52: 		Device[0]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 0: 08/04/2016 09:18:52: 		Device[1]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 0: 08/04/2016 09:18:52: 		Device[2]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 0: 08/04/2016 09:18:52: 		Device[3]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 0: 08/04/2016 09:18:52: -------------------------------------------------------------------
+MPI Rank 0: 
+MPI Rank 0: 08/04/2016 09:18:52: Running on DPHAIM-22 at 2016/08/04 09:18:52
+MPI Rank 0: 08/04/2016 09:18:52: Command line: 
+MPI Rank 0: C:\jenkins\workspace\CNTK-Test-Windows-W2\x64\release\cntk.exe  configFile=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation/cntkcv.cntk  currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu  DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation  OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu  DeviceId=-1  timestamping=true  numCPUThreads=12  shareNodeValueMatrices=true  stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 0: 
 MPI Rank 0: 
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: >>>>>>>>>>>>>>>>>>>> RAW CONFIG (VARIABLES NOT RESOLVED) >>>>>>>>>>>>>>>>>>>>
-MPI Rank 0: 05/03/2016 14:21:08: precision = "double"
+MPI Rank 0: 08/04/2016 09:18:52: >>>>>>>>>>>>>>>>>>>> RAW CONFIG (VARIABLES NOT RESOLVED) >>>>>>>>>>>>>>>>>>>>
+MPI Rank 0: 08/04/2016 09:18:52: precision = "double"
 MPI Rank 0: command = speechTrain
 MPI Rank 0: deviceId = $DeviceId$
 MPI Rank 0: parallelTrain = true
@@ -198,26 +200,26 @@ MPI Rank 0:         ]
 MPI Rank 0:     ]
 MPI Rank 0: ]
 MPI Rank 0: currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
-MPI Rank 0: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 0: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 0: DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 0: ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation
-MPI Rank 0: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 0: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 0: DeviceId=-1
 MPI Rank 0: timestamping=true
 MPI Rank 0: numCPUThreads=12
 MPI Rank 0: shareNodeValueMatrices=true
-MPI Rank 0: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 0: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: <<<<<<<<<<<<<<<<<<<< RAW CONFIG (VARIABLES NOT RESOLVED)  <<<<<<<<<<<<<<<<<<<<
+MPI Rank 0: 08/04/2016 09:18:53: <<<<<<<<<<<<<<<<<<<< RAW CONFIG (VARIABLES NOT RESOLVED)  <<<<<<<<<<<<<<<<<<<<
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: >>>>>>>>>>>>>>>>>>>> RAW CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
-MPI Rank 0: 05/03/2016 14:21:08: precision = "double"
+MPI Rank 0: 08/04/2016 09:18:53: >>>>>>>>>>>>>>>>>>>> RAW CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
+MPI Rank 0: 08/04/2016 09:18:53: precision = "double"
 MPI Rank 0: command = speechTrain
 MPI Rank 0: deviceId = -1
 MPI Rank 0: parallelTrain = true
 MPI Rank 0: speechTrain = [
 MPI Rank 0:     action = "train"
-MPI Rank 0:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
+MPI Rank 0:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
 MPI Rank 0:     deviceId = -1
 MPI Rank 0:     traceLevel = 1
 MPI Rank 0:     SimpleNetworkBuilder = [
@@ -319,33 +321,33 @@ MPI Rank 0:         ]
 MPI Rank 0:     ]
 MPI Rank 0: ]
 MPI Rank 0: currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
-MPI Rank 0: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 0: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 0: DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 0: ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation
-MPI Rank 0: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 0: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 0: DeviceId=-1
 MPI Rank 0: timestamping=true
 MPI Rank 0: numCPUThreads=12
 MPI Rank 0: shareNodeValueMatrices=true
-MPI Rank 0: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 0: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: <<<<<<<<<<<<<<<<<<<< RAW CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
+MPI Rank 0: 08/04/2016 09:18:53: <<<<<<<<<<<<<<<<<<<< RAW CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: >>>>>>>>>>>>>>>>>>>> PROCESSED CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
+MPI Rank 0: 08/04/2016 09:18:53: >>>>>>>>>>>>>>>>>>>> PROCESSED CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
 MPI Rank 0: configparameters: cntkcv.cntk:command=speechTrain
 MPI Rank 0: configparameters: cntkcv.cntk:ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation
 MPI Rank 0: configparameters: cntkcv.cntk:currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 0: configparameters: cntkcv.cntk:DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 0: configparameters: cntkcv.cntk:deviceId=-1
 MPI Rank 0: configparameters: cntkcv.cntk:numCPUThreads=12
-MPI Rank 0: configparameters: cntkcv.cntk:OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 0: configparameters: cntkcv.cntk:OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 0: configparameters: cntkcv.cntk:parallelTrain=true
 MPI Rank 0: configparameters: cntkcv.cntk:precision=double
-MPI Rank 0: configparameters: cntkcv.cntk:RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 0: configparameters: cntkcv.cntk:RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 0: configparameters: cntkcv.cntk:shareNodeValueMatrices=true
 MPI Rank 0: configparameters: cntkcv.cntk:speechTrain=[
 MPI Rank 0:     action = "train"
-MPI Rank 0:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
+MPI Rank 0:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
 MPI Rank 0:     deviceId = -1
 MPI Rank 0:     traceLevel = 1
 MPI Rank 0:     SimpleNetworkBuilder = [
@@ -447,23 +449,23 @@ MPI Rank 0:         ]
 MPI Rank 0:     ]
 MPI Rank 0: ]
 MPI Rank 0: 
-MPI Rank 0: configparameters: cntkcv.cntk:stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 0: configparameters: cntkcv.cntk:stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 0: configparameters: cntkcv.cntk:timestamping=true
-MPI Rank 0: 05/03/2016 14:21:08: <<<<<<<<<<<<<<<<<<<< PROCESSED CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
-MPI Rank 0: 05/03/2016 14:21:08: Commands: speechTrain
-MPI Rank 0: 05/03/2016 14:21:08: Precision = "double"
-MPI Rank 0: 05/03/2016 14:21:08: Using 12 CPU threads.
-MPI Rank 0: 05/03/2016 14:21:08: CNTKModelPath: C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn
-MPI Rank 0: 05/03/2016 14:21:08: CNTKCommandTrainInfo: speechTrain : 3
-MPI Rank 0: 05/03/2016 14:21:08: CNTKCommandTrainInfo: CNTKNoMoreCommands_Total : 3
+MPI Rank 0: 08/04/2016 09:18:53: <<<<<<<<<<<<<<<<<<<< PROCESSED CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
+MPI Rank 0: 08/04/2016 09:18:53: Commands: speechTrain
+MPI Rank 0: 08/04/2016 09:18:53: Precision = "double"
+MPI Rank 0: 08/04/2016 09:18:53: Using 12 CPU threads.
+MPI Rank 0: 08/04/2016 09:18:53: CNTKModelPath: C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn
+MPI Rank 0: 08/04/2016 09:18:53: CNTKCommandTrainInfo: speechTrain : 3
+MPI Rank 0: 08/04/2016 09:18:53: CNTKCommandTrainInfo: CNTKNoMoreCommands_Total : 3
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: ##############################################################################
-MPI Rank 0: 05/03/2016 14:21:08: #                                                                            #
-MPI Rank 0: 05/03/2016 14:21:08: # Action "train"                                                             #
-MPI Rank 0: 05/03/2016 14:21:08: #                                                                            #
-MPI Rank 0: 05/03/2016 14:21:08: ##############################################################################
+MPI Rank 0: 08/04/2016 09:18:53: ##############################################################################
+MPI Rank 0: 08/04/2016 09:18:53: #                                                                            #
+MPI Rank 0: 08/04/2016 09:18:53: # Action "train"                                                             #
+MPI Rank 0: 08/04/2016 09:18:53: #                                                                            #
+MPI Rank 0: 08/04/2016 09:18:53: ##############################################################################
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: CNTKCommandTrainBegin: speechTrain
+MPI Rank 0: 08/04/2016 09:18:53: CNTKCommandTrainBegin: speechTrain
 MPI Rank 0: SimpleNetworkBuilder Using CPU
 MPI Rank 0: reading script file glob_0000.scp ... 948 entries
 MPI Rank 0: total 132 state names in state list C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data/state.list
@@ -478,7 +480,7 @@ MPI Rank 0: ....................................................................
 MPI Rank 0: label set 0: 129 classes
 MPI Rank 0: minibatchutterancesource: 300 utterances grouped into 1 chunks, av. chunk size: 300.0 utterances, 83050.0 frames
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: Creating virgin network.
+MPI Rank 0: 08/04/2016 09:18:53: Creating virgin network.
 MPI Rank 0: 
 MPI Rank 0: Post-processing network...
 MPI Rank 0: 
@@ -530,14 +532,14 @@ MPI Rank 0: 12 out of 25 nodes do not share the minibatch layout with the input 
 MPI Rank 0: 
 MPI Rank 0: Post-processing network complete.
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: Created model with 25 nodes on CPU.
+MPI Rank 0: 08/04/2016 09:18:53: Created model with 25 nodes on CPU.
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: Training criterion node(s):
-MPI Rank 0: 05/03/2016 14:21:08: 	CrossEntropyWithSoftmax = CrossEntropyWithSoftmax
+MPI Rank 0: 08/04/2016 09:18:53: Training criterion node(s):
+MPI Rank 0: 08/04/2016 09:18:53: 	CrossEntropyWithSoftmax = CrossEntropyWithSoftmax
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: Evaluation criterion node(s):
+MPI Rank 0: 08/04/2016 09:18:53: Evaluation criterion node(s):
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: 	EvalErrorPrediction = ErrorPrediction
+MPI Rank 0: 08/04/2016 09:18:53: 	EvalErrorPrediction = ErrorPrediction
 MPI Rank 0: 
 MPI Rank 0: 
 MPI Rank 0: Allocating matrices for forward and/or backward propagation.
@@ -545,147 +547,157 @@ MPI Rank 0:
 MPI Rank 0: Memory Sharing Structure:
 MPI Rank 0: 
 MPI Rank 0: 0000000000000000: {[EvalErrorPrediction Gradient[1]] [InvStdOfFeatures Gradient[363]] [LogOfPrior Gradient[132]] [MVNormalizedFeatures Gradient[363 x *]] [MeanOfFeatures Gradient[363]] [PosteriorProb Gradient[132 x 1 x *]] [PosteriorProb Value[132 x 1 x *]] [Prior Gradient[132]] [ScaledLogLikelihood Gradient[132 x 1 x *]] [features Gradient[363 x *]] [labels Gradient[132 x *]] }
-MPI Rank 0: 0000005207C5C6D0: {[B2 Value[132 x 1]] }
-MPI Rank 0: 0000005207C5C770: {[B1 Value[512 x 1]] }
-MPI Rank 0: 0000005207C5C810: {[H2 Value[512 x 1 x *]] [W0 Gradient[512 x 363]] [W0*features+B0 Gradient[512 x 1 x *]] [W0*features+B0 Value[512 x 1 x *]] [W1*H1 Gradient[512 x 1 x *]] [W1*H1 Value[512 x 1 x *]] }
-MPI Rank 0: 0000005207C5C950: {[CrossEntropyWithSoftmax Gradient[1]] }
-MPI Rank 0: 0000005207C5C9F0: {[B1 Gradient[512 x 1]] [H2 Gradient[512 x 1 x *]] [HLast Gradient[132 x 1 x *]] }
-MPI Rank 0: 0000005207C5CB30: {[W1 Gradient[512 x 512]] [W1*H1+B1 Gradient[512 x 1 x *]] [W2*H1 Gradient[132 x 1 x *]] }
-MPI Rank 0: 0000005207C5CBD0: {[B2 Gradient[132 x 1]] }
-MPI Rank 0: 0000005207C5CD10: {[labels Value[132 x *]] }
-MPI Rank 0: 0000005207C5CDB0: {[EvalErrorPrediction Value[1]] }
-MPI Rank 0: 0000005207C5CF90: {[LogOfPrior Value[132]] }
-MPI Rank 0: 0000005207C5D170: {[W2 Value[132 x 512]] }
-MPI Rank 0: 0000005207C5D350: {[MVNormalizedFeatures Value[363 x *]] }
-MPI Rank 0: 0000005207C5D3F0: {[H1 Value[512 x 1 x *]] [W0*features Gradient[512 x *]] [W0*features Value[512 x *]] }
-MPI Rank 0: 0000005207C5D5D0: {[Prior Value[132]] }
-MPI Rank 0: 0000005207C5D8F0: {[ScaledLogLikelihood Value[132 x 1 x *]] }
-MPI Rank 0: 0000005207C5D990: {[W1*H1+B1 Value[512 x 1 x *]] [W2*H1 Value[132 x 1 x *]] }
-MPI Rank 0: 0000005207C5DF30: {[W1 Value[512 x 512]] }
-MPI Rank 0: 0000005207C5E2F0: {[CrossEntropyWithSoftmax Value[1]] }
-MPI Rank 0: 0000005207C5E390: {[HLast Value[132 x 1 x *]] [W2 Gradient[132 x 512]] }
-MPI Rank 0: 0000005207C81070: {[B0 Gradient[512 x 1]] [H1 Gradient[512 x 1 x *]] }
-MPI Rank 0: 000000527E40F6A0: {[features Value[363 x *]] }
-MPI Rank 0: 000000527E40F7E0: {[W0 Value[512 x 363]] }
-MPI Rank 0: 000000527E40F920: {[B0 Value[512 x 1]] }
-MPI Rank 0: 000000527E40FE20: {[MeanOfFeatures Value[363]] }
-MPI Rank 0: 000000527E40FF60: {[InvStdOfFeatures Value[363]] }
+MPI Rank 0: 000000E49DFC7080: {[CrossEntropyWithSoftmax Gradient[1]] }
+MPI Rank 0: 000000E49DFC71C0: {[B1 Gradient[512 x 1]] [H2 Gradient[512 x 1 x *]] [HLast Gradient[132 x 1 x *]] }
+MPI Rank 0: 000000E49DFC7580: {[W2 Value[132 x 512]] }
+MPI Rank 0: 000000E49DFC79E0: {[B1 Value[512 x 1]] }
+MPI Rank 0: 000000E49DFC7C60: {[Prior Value[132]] }
+MPI Rank 0: 000000E49DFC7DA0: {[ScaledLogLikelihood Value[132 x 1 x *]] }
+MPI Rank 0: 000000E49DFC7E40: {[MVNormalizedFeatures Value[363 x *]] }
+MPI Rank 0: 000000E49DFC7EE0: {[W1 Value[512 x 512]] }
+MPI Rank 0: 000000E49DFC8020: {[H1 Value[512 x 1 x *]] [W0*features Gradient[512 x *]] [W0*features Value[512 x *]] }
+MPI Rank 0: 000000E49DFC80C0: {[B2 Value[132 x 1]] }
+MPI Rank 0: 000000E49DFC8160: {[labels Value[132 x *]] }
+MPI Rank 0: 000000E49DFC82A0: {[H2 Value[512 x 1 x *]] [W0 Gradient[512 x 363]] [W0*features+B0 Gradient[512 x 1 x *]] [W0*features+B0 Value[512 x 1 x *]] [W1*H1 Gradient[512 x 1 x *]] [W1*H1 Value[512 x 1 x *]] }
+MPI Rank 0: 000000E49DFC8340: {[W1*H1+B1 Value[512 x 1 x *]] [W2*H1 Value[132 x 1 x *]] }
+MPI Rank 0: 000000E49DFC83E0: {[LogOfPrior Value[132]] }
+MPI Rank 0: 000000E49DFC8480: {[HLast Value[132 x 1 x *]] [W2 Gradient[132 x 512]] }
+MPI Rank 0: 000000E49DFC8520: {[B0 Value[512 x 1]] }
+MPI Rank 0: 000000E49DFC87A0: {[EvalErrorPrediction Value[1]] }
+MPI Rank 0: 000000E49DFC8840: {[CrossEntropyWithSoftmax Value[1]] }
+MPI Rank 0: 000000E4FAC280C0: {[features Value[363 x *]] }
+MPI Rank 0: 000000E4FAC28700: {[W0 Value[512 x 363]] }
+MPI Rank 0: 000000E4FAC28C00: {[MeanOfFeatures Value[363]] }
+MPI Rank 0: 000000E4FAC28CA0: {[InvStdOfFeatures Value[363]] }
+MPI Rank 0: 000000E4FD715DA0: {[B2 Gradient[132 x 1]] }
+MPI Rank 0: 000000E4FD716520: {[B0 Gradient[512 x 1]] [H1 Gradient[512 x 1 x *]] }
+MPI Rank 0: 000000E4FD716D40: {[W1 Gradient[512 x 512]] [W1*H1+B1 Gradient[512 x 1 x *]] [W2*H1 Gradient[132 x 1 x *]] }
 MPI Rank 0: 
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: Precomputing --> 3 PreCompute nodes found.
+MPI Rank 0: 08/04/2016 09:18:53: Precomputing --> 3 PreCompute nodes found.
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:08: 	MeanOfFeatures = Mean()
-MPI Rank 0: 05/03/2016 14:21:08: 	InvStdOfFeatures = InvStdDev()
-MPI Rank 0: 05/03/2016 14:21:08: 	Prior = Mean()
+MPI Rank 0: 08/04/2016 09:18:53: 	MeanOfFeatures = Mean()
+MPI Rank 0: 08/04/2016 09:18:53: 	InvStdOfFeatures = InvStdDev()
+MPI Rank 0: 08/04/2016 09:18:53: 	Prior = Mean()
 MPI Rank 0: minibatchiterator: epoch 0: frames [0..252734] (first utterance at frame 0), data subset 0 of 1, with 1 datapasses
 MPI Rank 0: requiredata: determined feature kind as 33-dimensional 'USER' with frame shift 10.0 ms
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:10: Precomputing --> Completed.
+MPI Rank 0: 08/04/2016 09:18:56: Precomputing --> Completed.
 MPI Rank 0: 
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:10: Starting Epoch 1: learning rate per sample = 0.015625  effective momentum = 0.900000  momentum as time constant = 607.4 samples
+MPI Rank 0: 08/04/2016 09:18:57: Starting Epoch 1: learning rate per sample = 0.015625  effective momentum = 0.900000  momentum as time constant = 607.4 samples
 MPI Rank 0: minibatchiterator: epoch 0: frames [0..20480] (first utterance at frame 0), data subset 0 of 2, with 1 datapasses
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:10: Starting minibatch loop, DataParallelSGD training (MyRank = 0, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
-MPI Rank 0: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[   1-  10, 3.13%]: CrossEntropyWithSoftmax = 4.46944908 * 640; EvalErrorPrediction = 0.90781250 * 640; time = 0.1816s; samplesPerSecond = 3523.5
-MPI Rank 0: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  11-  20, 6.25%]: CrossEntropyWithSoftmax = 4.22299987 * 640; EvalErrorPrediction = 0.90156250 * 640; time = 0.1712s; samplesPerSecond = 3737.7
-MPI Rank 0: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  21-  30, 9.38%]: CrossEntropyWithSoftmax = 3.93971343 * 640; EvalErrorPrediction = 0.84687500 * 640; time = 0.1719s; samplesPerSecond = 3723.5
-MPI Rank 0: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  31-  40, 12.50%]: CrossEntropyWithSoftmax = 3.92341692 * 640; EvalErrorPrediction = 0.90468750 * 640; time = 0.1728s; samplesPerSecond = 3703.5
-MPI Rank 0: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  41-  50, 15.63%]: CrossEntropyWithSoftmax = 3.84074483 * 640; EvalErrorPrediction = 0.91093750 * 640; time = 0.1702s; samplesPerSecond = 3760.2
-MPI Rank 0: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  51-  60, 18.75%]: CrossEntropyWithSoftmax = 3.71252184 * 640; EvalErrorPrediction = 0.88437500 * 640; time = 0.1742s; samplesPerSecond = 3673.8
-MPI Rank 0: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  61-  70, 21.88%]: CrossEntropyWithSoftmax = 3.51563464 * 640; EvalErrorPrediction = 0.82500000 * 640; time = 0.1922s; samplesPerSecond = 3329.8
-MPI Rank 0: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  71-  80, 25.00%]: CrossEntropyWithSoftmax = 3.49349060 * 640; EvalErrorPrediction = 0.81093750 * 640; time = 0.1778s; samplesPerSecond = 3599.9
-MPI Rank 0: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  81-  90, 28.13%]: CrossEntropyWithSoftmax = 3.34740070 * 640; EvalErrorPrediction = 0.76562500 * 640; time = 0.1853s; samplesPerSecond = 3453.8
-MPI Rank 0: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  91- 100, 31.25%]: CrossEntropyWithSoftmax = 3.51960918 * 640; EvalErrorPrediction = 0.79843750 * 640; time = 0.1849s; samplesPerSecond = 3461.6
-MPI Rank 0: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[ 101- 110, 34.38%]: CrossEntropyWithSoftmax = 3.24656049 * 640; EvalErrorPrediction = 0.80312500 * 640; time = 0.1814s; samplesPerSecond = 3527.4
-MPI Rank 0: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[ 111- 120, 37.50%]: CrossEntropyWithSoftmax = 3.33397669 * 640; EvalErrorPrediction = 0.80000000 * 640; time = 0.1883s; samplesPerSecond = 3398.6
-MPI Rank 0: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 121- 130, 40.63%]: CrossEntropyWithSoftmax = 3.17780980 * 640; EvalErrorPrediction = 0.77031250 * 640; time = 0.1843s; samplesPerSecond = 3472.1
-MPI Rank 0: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 131- 140, 43.75%]: CrossEntropyWithSoftmax = 3.09845902 * 640; EvalErrorPrediction = 0.76875000 * 640; time = 0.1784s; samplesPerSecond = 3587.6
-MPI Rank 0: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 141- 150, 46.88%]: CrossEntropyWithSoftmax = 3.06458212 * 640; EvalErrorPrediction = 0.72968750 * 640; time = 0.1637s; samplesPerSecond = 3909.6
-MPI Rank 0: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 151- 160, 50.00%]: CrossEntropyWithSoftmax = 2.91633510 * 640; EvalErrorPrediction = 0.69531250 * 640; time = 0.1629s; samplesPerSecond = 3929.8
-MPI Rank 0: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 161- 170, 53.13%]: CrossEntropyWithSoftmax = 2.90607468 * 640; EvalErrorPrediction = 0.73281250 * 640; time = 0.1679s; samplesPerSecond = 3812.7
-MPI Rank 0: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 171- 180, 56.25%]: CrossEntropyWithSoftmax = 2.74095059 * 640; EvalErrorPrediction = 0.65937500 * 640; time = 0.1705s; samplesPerSecond = 3753.9
-MPI Rank 0: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 181- 190, 59.38%]: CrossEntropyWithSoftmax = 2.67087924 * 640; EvalErrorPrediction = 0.67343750 * 640; time = 0.1718s; samplesPerSecond = 3726.3
-MPI Rank 0: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 191- 200, 62.50%]: CrossEntropyWithSoftmax = 2.67609083 * 640; EvalErrorPrediction = 0.66406250 * 640; time = 0.1686s; samplesPerSecond = 3795.0
-MPI Rank 0: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 201- 210, 65.63%]: CrossEntropyWithSoftmax = 2.54732903 * 640; EvalErrorPrediction = 0.62968750 * 640; time = 0.1712s; samplesPerSecond = 3738.5
-MPI Rank 0: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 211- 220, 68.75%]: CrossEntropyWithSoftmax = 2.61925710 * 640; EvalErrorPrediction = 0.67343750 * 640; time = 0.1662s; samplesPerSecond = 3850.3
-MPI Rank 0: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 221- 230, 71.88%]: CrossEntropyWithSoftmax = 2.52388480 * 640; EvalErrorPrediction = 0.65781250 * 640; time = 0.1662s; samplesPerSecond = 3850.5
-MPI Rank 0: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 231- 240, 75.00%]: CrossEntropyWithSoftmax = 2.47544601 * 640; EvalErrorPrediction = 0.63437500 * 640; time = 0.1667s; samplesPerSecond = 3838.6
-MPI Rank 0: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 241- 250, 78.13%]: CrossEntropyWithSoftmax = 2.43265158 * 640; EvalErrorPrediction = 0.61406250 * 640; time = 0.1671s; samplesPerSecond = 3829.5
-MPI Rank 0: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 251- 260, 81.25%]: CrossEntropyWithSoftmax = 2.41728740 * 640; EvalErrorPrediction = 0.63125000 * 640; time = 0.1688s; samplesPerSecond = 3791.0
-MPI Rank 0: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 261- 270, 84.38%]: CrossEntropyWithSoftmax = 2.17674793 * 640; EvalErrorPrediction = 0.57812500 * 640; time = 0.1690s; samplesPerSecond = 3786.7
-MPI Rank 0: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 271- 280, 87.50%]: CrossEntropyWithSoftmax = 2.31020940 * 640; EvalErrorPrediction = 0.64062500 * 640; time = 0.1699s; samplesPerSecond = 3767.1
-MPI Rank 0: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 281- 290, 90.63%]: CrossEntropyWithSoftmax = 2.26400612 * 640; EvalErrorPrediction = 0.61093750 * 640; time = 0.1710s; samplesPerSecond = 3743.5
-MPI Rank 0: 05/03/2016 14:21:16:  Epoch[ 1 of 3]-Minibatch[ 291- 300, 93.75%]: CrossEntropyWithSoftmax = 2.15885172 * 640; EvalErrorPrediction = 0.58281250 * 640; time = 0.1694s; samplesPerSecond = 3777.5
-MPI Rank 0: 05/03/2016 14:21:16:  Epoch[ 1 of 3]-Minibatch[ 301- 310, 96.88%]: CrossEntropyWithSoftmax = 2.22712855 * 640; EvalErrorPrediction = 0.59218750 * 640; time = 0.1678s; samplesPerSecond = 3813.0
-MPI Rank 0: 05/03/2016 14:21:16:  Epoch[ 1 of 3]-Minibatch[ 311- 320, 100.00%]: CrossEntropyWithSoftmax = 2.25604782 * 640; EvalErrorPrediction = 0.60625000 * 640; time = 0.1729s; samplesPerSecond = 3701.5
-MPI Rank 0: 05/03/2016 14:21:16: Finished Epoch[ 1 of 3]: [Training] CrossEntropyWithSoftmax = 3.00704835 * 20480; EvalErrorPrediction = 0.72827148 * 20480; totalSamplesSeen = 20480; learningRatePerSample = 0.015625; epochTime=5.57554s
+MPI Rank 0: 08/04/2016 09:18:57: Starting minibatch loop, DataParallelSGD training (MyRank = 0, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
+MPI Rank 0: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[   1-  10, 3.13%]: CrossEntropyWithSoftmax = 4.56263636 * 640; EvalErrorPrediction = 0.94843750 * 640; time = 0.1347s; samplesPerSecond = 4752.2
+MPI Rank 0: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  11-  20, 6.25%]: CrossEntropyWithSoftmax = 4.27170689 * 640; EvalErrorPrediction = 0.90468750 * 640; time = 0.0975s; samplesPerSecond = 6566.2
+MPI Rank 0: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  21-  30, 9.38%]: CrossEntropyWithSoftmax = 4.01703811 * 640; EvalErrorPrediction = 0.87656250 * 640; time = 0.0981s; samplesPerSecond = 6522.0
+MPI Rank 0: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  31-  40, 12.50%]: CrossEntropyWithSoftmax = 3.90703628 * 640; EvalErrorPrediction = 0.87031250 * 640; time = 0.1068s; samplesPerSecond = 5991.1
+MPI Rank 0: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  41-  50, 15.63%]: CrossEntropyWithSoftmax = 3.74515175 * 640; EvalErrorPrediction = 0.84218750 * 640; time = 0.1271s; samplesPerSecond = 5035.5
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  51-  60, 18.75%]: CrossEntropyWithSoftmax = 3.78725315 * 640; EvalErrorPrediction = 0.87968750 * 640; time = 0.0994s; samplesPerSecond = 6435.7
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  61-  70, 21.88%]: CrossEntropyWithSoftmax = 3.57462549 * 640; EvalErrorPrediction = 0.84531250 * 640; time = 0.1201s; samplesPerSecond = 5329.9
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  71-  80, 25.00%]: CrossEntropyWithSoftmax = 3.42512241 * 640; EvalErrorPrediction = 0.79531250 * 640; time = 0.1151s; samplesPerSecond = 5558.3
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  81-  90, 28.13%]: CrossEntropyWithSoftmax = 3.47822355 * 640; EvalErrorPrediction = 0.82187500 * 640; time = 0.0991s; samplesPerSecond = 6460.5
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  91- 100, 31.25%]: CrossEntropyWithSoftmax = 3.39348346 * 640; EvalErrorPrediction = 0.80000000 * 640; time = 0.1298s; samplesPerSecond = 4932.0
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 101- 110, 34.38%]: CrossEntropyWithSoftmax = 3.42996467 * 640; EvalErrorPrediction = 0.82656250 * 640; time = 0.1052s; samplesPerSecond = 6085.7
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 111- 120, 37.50%]: CrossEntropyWithSoftmax = 3.12568867 * 640; EvalErrorPrediction = 0.77656250 * 640; time = 0.1006s; samplesPerSecond = 6362.7
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 121- 130, 40.63%]: CrossEntropyWithSoftmax = 3.15167866 * 640; EvalErrorPrediction = 0.74218750 * 640; time = 0.1278s; samplesPerSecond = 5006.3
+MPI Rank 0: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 131- 140, 43.75%]: CrossEntropyWithSoftmax = 3.10855922 * 640; EvalErrorPrediction = 0.75468750 * 640; time = 0.1071s; samplesPerSecond = 5973.0
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 141- 150, 46.88%]: CrossEntropyWithSoftmax = 3.06774575 * 640; EvalErrorPrediction = 0.74375000 * 640; time = 0.1093s; samplesPerSecond = 5857.1
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 151- 160, 50.00%]: CrossEntropyWithSoftmax = 3.03466860 * 640; EvalErrorPrediction = 0.75625000 * 640; time = 0.1132s; samplesPerSecond = 5655.2
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 161- 170, 53.13%]: CrossEntropyWithSoftmax = 2.99033200 * 640; EvalErrorPrediction = 0.73437500 * 640; time = 0.1057s; samplesPerSecond = 6056.0
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 171- 180, 56.25%]: CrossEntropyWithSoftmax = 2.81797457 * 640; EvalErrorPrediction = 0.70625000 * 640; time = 0.1067s; samplesPerSecond = 5998.4
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 181- 190, 59.38%]: CrossEntropyWithSoftmax = 2.81869403 * 640; EvalErrorPrediction = 0.68593750 * 640; time = 0.1075s; samplesPerSecond = 5950.9
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 191- 200, 62.50%]: CrossEntropyWithSoftmax = 2.72915318 * 640; EvalErrorPrediction = 0.70156250 * 640; time = 0.1083s; samplesPerSecond = 5909.1
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 201- 210, 65.63%]: CrossEntropyWithSoftmax = 2.76342985 * 640; EvalErrorPrediction = 0.67968750 * 640; time = 0.1047s; samplesPerSecond = 6111.5
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 211- 220, 68.75%]: CrossEntropyWithSoftmax = 2.60384390 * 640; EvalErrorPrediction = 0.67187500 * 640; time = 0.1046s; samplesPerSecond = 6117.2
+MPI Rank 0: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 221- 230, 71.88%]: CrossEntropyWithSoftmax = 2.54119332 * 640; EvalErrorPrediction = 0.65156250 * 640; time = 0.1048s; samplesPerSecond = 6105.6
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 231- 240, 75.00%]: CrossEntropyWithSoftmax = 2.42797599 * 640; EvalErrorPrediction = 0.65156250 * 640; time = 0.1061s; samplesPerSecond = 6034.7
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 241- 250, 78.13%]: CrossEntropyWithSoftmax = 2.46162954 * 640; EvalErrorPrediction = 0.63906250 * 640; time = 0.1036s; samplesPerSecond = 6179.8
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 251- 260, 81.25%]: CrossEntropyWithSoftmax = 2.40246470 * 640; EvalErrorPrediction = 0.64062500 * 640; time = 0.1060s; samplesPerSecond = 6038.6
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 261- 270, 84.38%]: CrossEntropyWithSoftmax = 2.30971941 * 640; EvalErrorPrediction = 0.63593750 * 640; time = 0.1070s; samplesPerSecond = 5982.7
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 271- 280, 87.50%]: CrossEntropyWithSoftmax = 2.42455525 * 640; EvalErrorPrediction = 0.62500000 * 640; time = 0.1034s; samplesPerSecond = 6191.5
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 281- 290, 90.63%]: CrossEntropyWithSoftmax = 2.39641403 * 640; EvalErrorPrediction = 0.60781250 * 640; time = 0.1060s; samplesPerSecond = 6040.0
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 291- 300, 93.75%]: CrossEntropyWithSoftmax = 2.21619313 * 640; EvalErrorPrediction = 0.59375000 * 640; time = 0.1053s; samplesPerSecond = 6078.0
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 301- 310, 96.88%]: CrossEntropyWithSoftmax = 2.31751416 * 640; EvalErrorPrediction = 0.60937500 * 640; time = 0.1047s; samplesPerSecond = 6110.7
+MPI Rank 0: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 311- 320, 100.00%]: CrossEntropyWithSoftmax = 2.18951812 * 640; EvalErrorPrediction = 0.56718750 * 640; time = 0.1061s; samplesPerSecond = 6031.0
+MPI Rank 0: 08/04/2016 09:19:00: Finished Epoch[ 1 of 3]: [Training] CrossEntropyWithSoftmax = 3.04659963 * 20480; EvalErrorPrediction = 0.73706055 * 20480; totalSamplesSeen = 20480; learningRatePerSample = 0.015625; epochTime=3.51074s
 MPI Rank 0: minibatchiterator: epoch 0: frames [0..83050] (first utterance at frame 0), data subset 0 of 2, with 1 datapasses
 MPI Rank 0: requiredata: determined feature kind as 33-dimensional 'USER' with frame shift 10.0 ms
-MPI Rank 0: 05/03/2016 14:21:23: Final Results: Minibatch[1-1299]: CrossEntropyWithSoftmax = 2.11139874 * 83050; perplexity = 8.25978650; EvalErrorPrediction = 0.57013847 * 83050
-MPI Rank 0: 05/03/2016 14:21:23: Finished Epoch[ 1 of 3]: [Validate] CrossEntropyWithSoftmax = 2.11139874 * 83050; EvalErrorPrediction = 0.57013847 * 83050
-MPI Rank 0: 05/03/2016 14:21:23: SGD: Saving checkpoint model 'C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn.1'
+MPI Rank 0: 08/04/2016 09:19:05: Final Results: Minibatch[1-1299]: CrossEntropyWithSoftmax = 2.13145294 * 83050; perplexity = 8.42710203; EvalErrorPrediction = 0.58441902 * 83050
+MPI Rank 0: 08/04/2016 09:19:05: Finished Epoch[ 1 of 3]: [Validate] CrossEntropyWithSoftmax = 2.13145294 * 83050; EvalErrorPrediction = 0.58441902 * 83050
+MPI Rank 0: 08/04/2016 09:19:05: SGD: Saving checkpoint model 'C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn.1'
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:23: Starting Epoch 2: learning rate per sample = 0.001953  effective momentum = 0.656119  momentum as time constant = 607.5 samples
+MPI Rank 0: 08/04/2016 09:19:05: Starting Epoch 2: learning rate per sample = 0.001953  effective momentum = 0.656119  momentum as time constant = 607.5 samples
 MPI Rank 0: minibatchiterator: epoch 1: frames [20480..40960] (first utterance at frame 20480), data subset 0 of 2, with 1 datapasses
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:23: Starting minibatch loop, DataParallelSGD training (MyRank = 0, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
-MPI Rank 0: 05/03/2016 14:21:24:  Epoch[ 2 of 3]-Minibatch[   1-  10, 12.50%]: CrossEntropyWithSoftmax = 2.10257724 * 2560; EvalErrorPrediction = 0.56484375 * 2560; time = 0.3562s; samplesPerSecond = 7186.2
-MPI Rank 0: 05/03/2016 14:21:24:  Epoch[ 2 of 3]-Minibatch[  11-  20, 25.00%]: CrossEntropyWithSoftmax = 2.00548829 * 2560; EvalErrorPrediction = 0.54843750 * 2560; time = 0.3542s; samplesPerSecond = 7226.6
-MPI Rank 0: 05/03/2016 14:21:24:  Epoch[ 2 of 3]-Minibatch[  21-  30, 37.50%]: CrossEntropyWithSoftmax = 2.00767228 * 2560; EvalErrorPrediction = 0.54960937 * 2560; time = 0.3509s; samplesPerSecond = 7294.5
-MPI Rank 0: 05/03/2016 14:21:25:  Epoch[ 2 of 3]-Minibatch[  31-  40, 50.00%]: CrossEntropyWithSoftmax = 1.92049656 * 2560; EvalErrorPrediction = 0.53281250 * 2560; time = 0.3574s; samplesPerSecond = 7163.8
-MPI Rank 0: 05/03/2016 14:21:25:  Epoch[ 2 of 3]-Minibatch[  41-  50, 62.50%]: CrossEntropyWithSoftmax = 1.90178602 * 2560; EvalErrorPrediction = 0.52265625 * 2560; time = 0.3480s; samplesPerSecond = 7357.2
-MPI Rank 0: 05/03/2016 14:21:26:  Epoch[ 2 of 3]-Minibatch[  51-  60, 75.00%]: CrossEntropyWithSoftmax = 1.91359666 * 2560; EvalErrorPrediction = 0.53984375 * 2560; time = 0.3633s; samplesPerSecond = 7046.5
-MPI Rank 0: 05/03/2016 14:21:26:  Epoch[ 2 of 3]-Minibatch[  61-  70, 87.50%]: CrossEntropyWithSoftmax = 1.91765335 * 2560; EvalErrorPrediction = 0.53125000 * 2560; time = 0.3601s; samplesPerSecond = 7109.6
-MPI Rank 0: 05/03/2016 14:21:26:  Epoch[ 2 of 3]-Minibatch[  71-  80, 100.00%]: CrossEntropyWithSoftmax = 1.87683041 * 2560; EvalErrorPrediction = 0.52890625 * 2560; time = 0.3542s; samplesPerSecond = 7228.0
-MPI Rank 0: 05/03/2016 14:21:26: Finished Epoch[ 2 of 3]: [Training] CrossEntropyWithSoftmax = 1.95576260 * 20480; EvalErrorPrediction = 0.53979492 * 20480; totalSamplesSeen = 40960; learningRatePerSample = 0.001953125; epochTime=2.85603s
+MPI Rank 0: 08/04/2016 09:19:05: Starting minibatch loop, DataParallelSGD training (MyRank = 0, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
+MPI Rank 0: 08/04/2016 09:19:05:  Epoch[ 2 of 3]-Minibatch[   1-  10, 12.50%]: CrossEntropyWithSoftmax = 2.11101386 * 2560; EvalErrorPrediction = 0.57734375 * 2560; time = 0.2159s; samplesPerSecond = 11855.7
+MPI Rank 0: 08/04/2016 09:19:05:  Epoch[ 2 of 3]-Minibatch[  11-  20, 25.00%]: CrossEntropyWithSoftmax = 2.08753080 * 2560; EvalErrorPrediction = 0.57148438 * 2560; time = 0.2061s; samplesPerSecond = 12419.6
+MPI Rank 0: 08/04/2016 09:19:05:  Epoch[ 2 of 3]-Minibatch[  21-  30, 37.50%]: CrossEntropyWithSoftmax = 1.98163015 * 2560; EvalErrorPrediction = 0.54843750 * 2560; time = 0.1967s; samplesPerSecond = 13012.2
+MPI Rank 0: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  31-  40, 50.00%]: CrossEntropyWithSoftmax = 2.01895374 * 2560; EvalErrorPrediction = 0.54218750 * 2560; time = 0.1942s; samplesPerSecond = 13179.2
+MPI Rank 0: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  41-  50, 62.50%]: CrossEntropyWithSoftmax = 1.97025970 * 2560; EvalErrorPrediction = 0.53828125 * 2560; time = 0.1936s; samplesPerSecond = 13222.9
+MPI Rank 0: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  51-  60, 75.00%]: CrossEntropyWithSoftmax = 1.93199974 * 2560; EvalErrorPrediction = 0.52460938 * 2560; time = 0.1923s; samplesPerSecond = 13311.4
+MPI Rank 0: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  61-  70, 87.50%]: CrossEntropyWithSoftmax = 1.91190754 * 2560; EvalErrorPrediction = 0.53828125 * 2560; time = 0.1897s; samplesPerSecond = 13495.6
+MPI Rank 0: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  71-  80, 100.00%]: CrossEntropyWithSoftmax = 1.94515256 * 2560; EvalErrorPrediction = 0.52226562 * 2560; time = 0.1897s; samplesPerSecond = 13494.8
+MPI Rank 0: 08/04/2016 09:19:06: Finished Epoch[ 2 of 3]: [Training] CrossEntropyWithSoftmax = 1.99480601 * 20480; EvalErrorPrediction = 0.54536133 * 20480; totalSamplesSeen = 40960; learningRatePerSample = 0.001953125; epochTime=1.58916s
 MPI Rank 0: minibatchiterator: epoch 0: frames [0..83050] (first utterance at frame 0), data subset 0 of 2, with 1 datapasses
-MPI Rank 0: 05/03/2016 14:21:31: Final Results: Minibatch[1-326]: CrossEntropyWithSoftmax = 1.87468724 * 83050; perplexity = 6.51878000; EvalErrorPrediction = 0.52056592 * 83050
-MPI Rank 0: 05/03/2016 14:21:31: Finished Epoch[ 2 of 3]: [Validate] CrossEntropyWithSoftmax = 1.87468724 * 83050; EvalErrorPrediction = 0.52056592 * 83050
-MPI Rank 0: 05/03/2016 14:21:31: SGD: Saving checkpoint model 'C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn.2'
+MPI Rank 0: 08/04/2016 09:19:09: Final Results: Minibatch[1-326]: CrossEntropyWithSoftmax = 1.91057681 * 83050; perplexity = 6.75698519; EvalErrorPrediction = 0.53046358 * 83050
+MPI Rank 0: 08/04/2016 09:19:09: Finished Epoch[ 2 of 3]: [Validate] CrossEntropyWithSoftmax = 1.91057681 * 83050; EvalErrorPrediction = 0.53046358 * 83050
+MPI Rank 0: 08/04/2016 09:19:09: SGD: Saving checkpoint model 'C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn.2'
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:31: Starting Epoch 3: learning rate per sample = 0.000098  effective momentum = 0.656119  momentum as time constant = 2429.9 samples
+MPI Rank 0: 08/04/2016 09:19:10: Starting Epoch 3: learning rate per sample = 0.000098  effective momentum = 0.656119  momentum as time constant = 2429.9 samples
 MPI Rank 0: minibatchiterator: epoch 2: frames [40960..61440] (first utterance at frame 40960), data subset 0 of 2, with 1 datapasses
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:31: Starting minibatch loop, DataParallelSGD training (MyRank = 0, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
-MPI Rank 0: 05/03/2016 14:21:32:  Epoch[ 3 of 3]-Minibatch[   1-  10, 50.00%]: CrossEntropyWithSoftmax = 1.88594165 * 10240; EvalErrorPrediction = 0.52529297 * 10240; time = 1.1944s; samplesPerSecond = 8573.7
-MPI Rank 0: 05/03/2016 14:21:33:  Epoch[ 3 of 3]-Minibatch[  11-  20, 100.00%]: CrossEntropyWithSoftmax = 1.89384783 * 10240; EvalErrorPrediction = 0.51816406 * 10240; time = 1.1536s; samplesPerSecond = 8876.3
-MPI Rank 0: 05/03/2016 14:21:33: Finished Epoch[ 3 of 3]: [Training] CrossEntropyWithSoftmax = 1.88989474 * 20480; EvalErrorPrediction = 0.52172852 * 20480; totalSamplesSeen = 61440; learningRatePerSample = 9.7656251e-005; epochTime=2.36001s
+MPI Rank 0: 08/04/2016 09:19:10: Starting minibatch loop, DataParallelSGD training (MyRank = 0, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
+MPI Rank 0: 08/04/2016 09:19:10:  Epoch[ 3 of 3]-Minibatch[   1-  10, 50.00%]: CrossEntropyWithSoftmax = 1.91278933 * 10240; EvalErrorPrediction = 0.52451172 * 10240; time = 0.7253s; samplesPerSecond = 14118.6
+MPI Rank 0: 08/04/2016 09:19:11:  Epoch[ 3 of 3]-Minibatch[  11-  20, 100.00%]: CrossEntropyWithSoftmax = 1.92157935 * 10240; EvalErrorPrediction = 0.53515625 * 10240; time = 0.6210s; samplesPerSecond = 16489.4
+MPI Rank 0: 08/04/2016 09:19:11: Finished Epoch[ 3 of 3]: [Training] CrossEntropyWithSoftmax = 1.91718434 * 20480; EvalErrorPrediction = 0.52983398 * 20480; totalSamplesSeen = 61440; learningRatePerSample = 9.7656251e-005; epochTime=1.35551s
 MPI Rank 0: minibatchiterator: epoch 0: frames [0..83050] (first utterance at frame 0), data subset 0 of 2, with 1 datapasses
-MPI Rank 0: 05/03/2016 14:21:37: Final Results: Minibatch[1-83]: CrossEntropyWithSoftmax = 1.85215758 * 83050; perplexity = 6.37355618; EvalErrorPrediction = 0.50912703 * 83050
-MPI Rank 0: 05/03/2016 14:21:37: Finished Epoch[ 3 of 3]: [Validate] CrossEntropyWithSoftmax = 1.85215758 * 83050; EvalErrorPrediction = 0.50912703 * 83050
-MPI Rank 0: 05/03/2016 14:21:37: SGD: Saving checkpoint model 'C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn'
-MPI Rank 0: 05/03/2016 14:21:38: CNTKCommandTrainEnd: speechTrain
+MPI Rank 0: 08/04/2016 09:19:14: Final Results: Minibatch[1-83]: CrossEntropyWithSoftmax = 1.89392512 * 83050; perplexity = 6.64540157; EvalErrorPrediction = 0.52320289 * 83050
+MPI Rank 0: 08/04/2016 09:19:14: Finished Epoch[ 3 of 3]: [Validate] CrossEntropyWithSoftmax = 1.89392512 * 83050; EvalErrorPrediction = 0.52320289 * 83050
+MPI Rank 0: 08/04/2016 09:19:14: SGD: Saving checkpoint model 'C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn'
+MPI Rank 0: 08/04/2016 09:19:14: CNTKCommandTrainEnd: speechTrain
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:38: Action "train" complete.
+MPI Rank 0: 08/04/2016 09:19:14: Action "train" complete.
 MPI Rank 0: 
-MPI Rank 0: 05/03/2016 14:21:38: __COMPLETED__
-MPI Rank 1: 05/03/2016 14:21:08: Redirecting stderr to file C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr_speechTrain.logrank1
-MPI Rank 1: 05/03/2016 14:21:08: -------------------------------------------------------------------
-MPI Rank 1: 05/03/2016 14:21:08: Build info: 
+MPI Rank 0: 08/04/2016 09:19:14: __COMPLETED__
+MPI Rank 0: ~MPIWrapper
+MPI Rank 1: 08/04/2016 09:18:50: Redirecting stderr to file C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr_speechTrain.logrank1
+MPI Rank 1: 08/04/2016 09:18:50: -------------------------------------------------------------------
+MPI Rank 1: 08/04/2016 09:18:50: Build info: 
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: 		Built time: May  3 2016 13:23:06
-MPI Rank 1: 05/03/2016 14:21:08: 		Last modified date: Mon Apr 18 00:00:12 2016
-MPI Rank 1: 05/03/2016 14:21:08: 		Build type: Release
-MPI Rank 1: 05/03/2016 14:21:08: 		Build target: GPU
-MPI Rank 1: 05/03/2016 14:21:08: 		With 1bit-SGD: no
-MPI Rank 1: 05/03/2016 14:21:08: 		CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5
-MPI Rank 1: 05/03/2016 14:21:08: 		CUB_PATH: C:\src\cub-1.4.1
-MPI Rank 1: 05/03/2016 14:21:08: 		CUDNN_PATH: c:\NVIDIA\cudnn-4.0\cuda
-MPI Rank 1: 05/03/2016 14:21:08: 		Build Branch: HEAD
-MPI Rank 1: 05/03/2016 14:21:08: 		Build SHA1: af96f7cce6c3c78a4f1e9315e061291c79360e12
-MPI Rank 1: 05/03/2016 14:21:08: 		Built by svcphil on LIANA-09-w
-MPI Rank 1: 05/03/2016 14:21:08: 		Build Path: c:\jenkins\workspace\CNTK-Build-Windows\Source\CNTK\
-MPI Rank 1: 05/03/2016 14:21:08: -------------------------------------------------------------------
+MPI Rank 1: 08/04/2016 09:18:50: 		Built time: Aug  4 2016 06:18:04
+MPI Rank 1: 08/04/2016 09:18:50: 		Last modified date: Thu Aug  4 03:39:14 2016
+MPI Rank 1: 08/04/2016 09:18:50: 		Build type: Release
+MPI Rank 1: 08/04/2016 09:18:50: 		Build target: GPU
+MPI Rank 1: 08/04/2016 09:18:50: 		With 1bit-SGD: no
+MPI Rank 1: 08/04/2016 09:18:50: 		Math lib: mkl
+MPI Rank 1: 08/04/2016 09:18:50: 		CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5
+MPI Rank 1: 08/04/2016 09:18:50: 		CUB_PATH: C:\src\cub-1.4.1
+MPI Rank 1: 08/04/2016 09:18:50: 		CUDNN_PATH: c:\NVIDIA\cudnn-4.0\cuda
+MPI Rank 1: 08/04/2016 09:18:50: 		Build Branch: HEAD
+MPI Rank 1: 08/04/2016 09:18:50: 		Build SHA1: 0f61695dfc335f2406284d335678f57c215e6e9c
+MPI Rank 1: 08/04/2016 09:18:50: 		Built by svcphil on dphaim-26-new
+MPI Rank 1: 08/04/2016 09:18:50: 		Build Path: c:\jenkins\workspace\CNTK-Build-Windows@3\Source\CNTK\
+MPI Rank 1: 08/04/2016 09:18:50: -------------------------------------------------------------------
+MPI Rank 1: 08/04/2016 09:18:53: -------------------------------------------------------------------
+MPI Rank 1: 08/04/2016 09:18:53: GPU info:
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: Running on DPHAIM-25 at 2016/05/03 14:21:08
-MPI Rank 1: 05/03/2016 14:21:08: Command line: 
-MPI Rank 1: C:\jenkins\workspace\CNTK-Test-Windows-W2\x64\release\cntk.exe  configFile=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation/cntkcv.cntk  currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu  DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation  OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu  DeviceId=-1  timestamping=true  numCPUThreads=12  shareNodeValueMatrices=true  stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 1: 08/04/2016 09:18:53: 		Device[0]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 1: 08/04/2016 09:18:53: 		Device[1]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 1: 08/04/2016 09:18:53: 		Device[2]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 1: 08/04/2016 09:18:53: 		Device[3]: cores = 2880; computeCapability = 3.5; type = "GeForce GTX 780 Ti"; memory = 3072 MB
+MPI Rank 1: 08/04/2016 09:18:53: -------------------------------------------------------------------
+MPI Rank 1: 
+MPI Rank 1: 08/04/2016 09:18:53: Running on DPHAIM-22 at 2016/08/04 09:18:53
+MPI Rank 1: 08/04/2016 09:18:53: Command line: 
+MPI Rank 1: C:\jenkins\workspace\CNTK-Test-Windows-W2\x64\release\cntk.exe  configFile=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation/cntkcv.cntk  currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu  DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data  ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation  OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu  DeviceId=-1  timestamping=true  numCPUThreads=12  shareNodeValueMatrices=true  stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 1: 
 MPI Rank 1: 
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: >>>>>>>>>>>>>>>>>>>> RAW CONFIG (VARIABLES NOT RESOLVED) >>>>>>>>>>>>>>>>>>>>
-MPI Rank 1: 05/03/2016 14:21:08: precision = "double"
+MPI Rank 1: 08/04/2016 09:18:53: >>>>>>>>>>>>>>>>>>>> RAW CONFIG (VARIABLES NOT RESOLVED) >>>>>>>>>>>>>>>>>>>>
+MPI Rank 1: 08/04/2016 09:18:53: precision = "double"
 MPI Rank 1: command = speechTrain
 MPI Rank 1: deviceId = $DeviceId$
 MPI Rank 1: parallelTrain = true
@@ -793,26 +805,26 @@ MPI Rank 1:         ]
 MPI Rank 1:     ]
 MPI Rank 1: ]
 MPI Rank 1: currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
-MPI Rank 1: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 1: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 1: DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 1: ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation
-MPI Rank 1: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 1: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 1: DeviceId=-1
 MPI Rank 1: timestamping=true
 MPI Rank 1: numCPUThreads=12
 MPI Rank 1: shareNodeValueMatrices=true
-MPI Rank 1: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 1: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: <<<<<<<<<<<<<<<<<<<< RAW CONFIG (VARIABLES NOT RESOLVED)  <<<<<<<<<<<<<<<<<<<<
+MPI Rank 1: 08/04/2016 09:18:53: <<<<<<<<<<<<<<<<<<<< RAW CONFIG (VARIABLES NOT RESOLVED)  <<<<<<<<<<<<<<<<<<<<
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: >>>>>>>>>>>>>>>>>>>> RAW CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
-MPI Rank 1: 05/03/2016 14:21:08: precision = "double"
+MPI Rank 1: 08/04/2016 09:18:53: >>>>>>>>>>>>>>>>>>>> RAW CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
+MPI Rank 1: 08/04/2016 09:18:53: precision = "double"
 MPI Rank 1: command = speechTrain
 MPI Rank 1: deviceId = -1
 MPI Rank 1: parallelTrain = true
 MPI Rank 1: speechTrain = [
 MPI Rank 1:     action = "train"
-MPI Rank 1:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
+MPI Rank 1:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
 MPI Rank 1:     deviceId = -1
 MPI Rank 1:     traceLevel = 1
 MPI Rank 1:     SimpleNetworkBuilder = [
@@ -914,33 +926,33 @@ MPI Rank 1:         ]
 MPI Rank 1:     ]
 MPI Rank 1: ]
 MPI Rank 1: currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
-MPI Rank 1: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 1: RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 1: DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 1: ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation
-MPI Rank 1: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 1: OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 1: DeviceId=-1
 MPI Rank 1: timestamping=true
 MPI Rank 1: numCPUThreads=12
 MPI Rank 1: shareNodeValueMatrices=true
-MPI Rank 1: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 1: stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: <<<<<<<<<<<<<<<<<<<< RAW CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
+MPI Rank 1: 08/04/2016 09:18:53: <<<<<<<<<<<<<<<<<<<< RAW CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: >>>>>>>>>>>>>>>>>>>> PROCESSED CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
+MPI Rank 1: 08/04/2016 09:18:53: >>>>>>>>>>>>>>>>>>>> PROCESSED CONFIG WITH ALL VARIABLES RESOLVED >>>>>>>>>>>>>>>>>>>>
 MPI Rank 1: configparameters: cntkcv.cntk:command=speechTrain
 MPI Rank 1: configparameters: cntkcv.cntk:ConfigDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\DNN\ParallelCrossValidation
 MPI Rank 1: configparameters: cntkcv.cntk:currentDirectory=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 1: configparameters: cntkcv.cntk:DataDir=C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data
 MPI Rank 1: configparameters: cntkcv.cntk:deviceId=-1
 MPI Rank 1: configparameters: cntkcv.cntk:numCPUThreads=12
-MPI Rank 1: configparameters: cntkcv.cntk:OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 1: configparameters: cntkcv.cntk:OutputDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 1: configparameters: cntkcv.cntk:parallelTrain=true
 MPI Rank 1: configparameters: cntkcv.cntk:precision=double
-MPI Rank 1: configparameters: cntkcv.cntk:RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu
+MPI Rank 1: configparameters: cntkcv.cntk:RunDir=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu
 MPI Rank 1: configparameters: cntkcv.cntk:shareNodeValueMatrices=true
 MPI Rank 1: configparameters: cntkcv.cntk:speechTrain=[
 MPI Rank 1:     action = "train"
-MPI Rank 1:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
+MPI Rank 1:     modelPath = "C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn"
 MPI Rank 1:     deviceId = -1
 MPI Rank 1:     traceLevel = 1
 MPI Rank 1:     SimpleNetworkBuilder = [
@@ -1042,23 +1054,23 @@ MPI Rank 1:         ]
 MPI Rank 1:     ]
 MPI Rank 1: ]
 MPI Rank 1: 
-MPI Rank 1: configparameters: cntkcv.cntk:stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
+MPI Rank 1: configparameters: cntkcv.cntk:stderr=C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/stderr
 MPI Rank 1: configparameters: cntkcv.cntk:timestamping=true
-MPI Rank 1: 05/03/2016 14:21:08: <<<<<<<<<<<<<<<<<<<< PROCESSED CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
-MPI Rank 1: 05/03/2016 14:21:08: Commands: speechTrain
-MPI Rank 1: 05/03/2016 14:21:08: Precision = "double"
-MPI Rank 1: 05/03/2016 14:21:08: Using 12 CPU threads.
-MPI Rank 1: 05/03/2016 14:21:08: CNTKModelPath: C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160503141958.750677\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn
-MPI Rank 1: 05/03/2016 14:21:08: CNTKCommandTrainInfo: speechTrain : 3
-MPI Rank 1: 05/03/2016 14:21:08: CNTKCommandTrainInfo: CNTKNoMoreCommands_Total : 3
+MPI Rank 1: 08/04/2016 09:18:53: <<<<<<<<<<<<<<<<<<<< PROCESSED CONFIG WITH ALL VARIABLES RESOLVED <<<<<<<<<<<<<<<<<<<<
+MPI Rank 1: 08/04/2016 09:18:53: Commands: speechTrain
+MPI Rank 1: 08/04/2016 09:18:53: Precision = "double"
+MPI Rank 1: 08/04/2016 09:18:53: Using 12 CPU threads.
+MPI Rank 1: 08/04/2016 09:18:53: CNTKModelPath: C:\Users\svcphil\AppData\Local\Temp\cntk-test-20160804091731.173127\Speech\DNN_ParallelCrossValidation@release_cpu/models/cntkSpeech.dnn
+MPI Rank 1: 08/04/2016 09:18:53: CNTKCommandTrainInfo: speechTrain : 3
+MPI Rank 1: 08/04/2016 09:18:53: CNTKCommandTrainInfo: CNTKNoMoreCommands_Total : 3
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: ##############################################################################
-MPI Rank 1: 05/03/2016 14:21:08: #                                                                            #
-MPI Rank 1: 05/03/2016 14:21:08: # Action "train"                                                             #
-MPI Rank 1: 05/03/2016 14:21:08: #                                                                            #
-MPI Rank 1: 05/03/2016 14:21:08: ##############################################################################
+MPI Rank 1: 08/04/2016 09:18:53: ##############################################################################
+MPI Rank 1: 08/04/2016 09:18:53: #                                                                            #
+MPI Rank 1: 08/04/2016 09:18:53: # Action "train"                                                             #
+MPI Rank 1: 08/04/2016 09:18:53: #                                                                            #
+MPI Rank 1: 08/04/2016 09:18:53: ##############################################################################
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:08: CNTKCommandTrainBegin: speechTrain
+MPI Rank 1: 08/04/2016 09:18:53: CNTKCommandTrainBegin: speechTrain
 MPI Rank 1: SimpleNetworkBuilder Using CPU
 MPI Rank 1: reading script file glob_0000.scp ... 948 entries
 MPI Rank 1: total 132 state names in state list C:\jenkins\workspace\CNTK-Test-Windows-W2\Tests\EndToEndTests\Speech\Data/state.list
@@ -1073,7 +1085,7 @@ MPI Rank 1: ....................................................................
 MPI Rank 1: label set 0: 129 classes
 MPI Rank 1: minibatchutterancesource: 300 utterances grouped into 1 chunks, av. chunk size: 300.0 utterances, 83050.0 frames
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:09: Creating virgin network.
+MPI Rank 1: 08/04/2016 09:18:54: Creating virgin network.
 MPI Rank 1: 
 MPI Rank 1: Post-processing network...
 MPI Rank 1: 
@@ -1125,14 +1137,14 @@ MPI Rank 1: 12 out of 25 nodes do not share the minibatch layout with the input 
 MPI Rank 1: 
 MPI Rank 1: Post-processing network complete.
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:09: Created model with 25 nodes on CPU.
+MPI Rank 1: 08/04/2016 09:18:54: Created model with 25 nodes on CPU.
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:09: Training criterion node(s):
-MPI Rank 1: 05/03/2016 14:21:09: 	CrossEntropyWithSoftmax = CrossEntropyWithSoftmax
+MPI Rank 1: 08/04/2016 09:18:54: Training criterion node(s):
+MPI Rank 1: 08/04/2016 09:18:54: 	CrossEntropyWithSoftmax = CrossEntropyWithSoftmax
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:09: Evaluation criterion node(s):
+MPI Rank 1: 08/04/2016 09:18:54: Evaluation criterion node(s):
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:09: 	EvalErrorPrediction = ErrorPrediction
+MPI Rank 1: 08/04/2016 09:18:54: 	EvalErrorPrediction = ErrorPrediction
 MPI Rank 1: 
 MPI Rank 1: 
 MPI Rank 1: Allocating matrices for forward and/or backward propagation.
@@ -1140,114 +1152,115 @@ MPI Rank 1:
 MPI Rank 1: Memory Sharing Structure:
 MPI Rank 1: 
 MPI Rank 1: 0000000000000000: {[EvalErrorPrediction Gradient[1]] [InvStdOfFeatures Gradient[363]] [LogOfPrior Gradient[132]] [MVNormalizedFeatures Gradient[363 x *]] [MeanOfFeatures Gradient[363]] [PosteriorProb Gradient[132 x 1 x *]] [PosteriorProb Value[132 x 1 x *]] [Prior Gradient[132]] [ScaledLogLikelihood Gradient[132 x 1 x *]] [features Gradient[363 x *]] [labels Gradient[132 x *]] }
-MPI Rank 1: 00000090B8478430: {[B0 Gradient[512 x 1]] [H1 Gradient[512 x 1 x *]] }
-MPI Rank 1: 00000090B848F740: {[features Value[363 x *]] }
-MPI Rank 1: 00000090B848FF60: {[W0 Value[512 x 363]] }
-MPI Rank 1: 00000090B8490000: {[InvStdOfFeatures Value[363]] }
-MPI Rank 1: 00000090B84901E0: {[B0 Value[512 x 1]] }
-MPI Rank 1: 00000090B8490320: {[MeanOfFeatures Value[363]] }
-MPI Rank 1: 00000090C1A620F0: {[B1 Gradient[512 x 1]] [H2 Gradient[512 x 1 x *]] [HLast Gradient[132 x 1 x *]] }
-MPI Rank 1: 00000090C1A62190: {[W1 Gradient[512 x 512]] [W1*H1+B1 Gradient[512 x 1 x *]] [W2*H1 Gradient[132 x 1 x *]] }
-MPI Rank 1: 00000090C1A62230: {[Prior Value[132]] }
-MPI Rank 1: 00000090C1A62370: {[MVNormalizedFeatures Value[363 x *]] }
-MPI Rank 1: 00000090C1A624B0: {[HLast Value[132 x 1 x *]] [W2 Gradient[132 x 512]] }
-MPI Rank 1: 00000090C1A625F0: {[W1*H1+B1 Value[512 x 1 x *]] [W2*H1 Value[132 x 1 x *]] }
-MPI Rank 1: 00000090C1A62690: {[B2 Gradient[132 x 1]] }
-MPI Rank 1: 00000090C1A62730: {[H1 Value[512 x 1 x *]] [W0*features Gradient[512 x *]] [W0*features Value[512 x *]] }
-MPI Rank 1: 00000090C1A62910: {[W2 Value[132 x 512]] }
-MPI Rank 1: 00000090C1A629B0: {[W1 Value[512 x 512]] }
-MPI Rank 1: 00000090C1A62AF0: {[EvalErrorPrediction Value[1]] }
-MPI Rank 1: 00000090C1A62D70: {[labels Value[132 x *]] }
-MPI Rank 1: 00000090C1A62FF0: {[CrossEntropyWithSoftmax Gradient[1]] }
-MPI Rank 1: 00000090C1A631D0: {[B1 Value[512 x 1]] }
-MPI Rank 1: 00000090C1A63630: {[ScaledLogLikelihood Value[132 x 1 x *]] }
-MPI Rank 1: 00000090C1A636D0: {[CrossEntropyWithSoftmax Value[1]] }
-MPI Rank 1: 00000090C1A63770: {[H2 Value[512 x 1 x *]] [W0 Gradient[512 x 363]] [W0*features+B0 Gradient[512 x 1 x *]] [W0*features+B0 Value[512 x 1 x *]] [W1*H1 Gradient[512 x 1 x *]] [W1*H1 Value[512 x 1 x *]] }
-MPI Rank 1: 00000090C1A63C70: {[LogOfPrior Value[132]] }
-MPI Rank 1: 00000090C1A63E50: {[B2 Value[132 x 1]] }
+MPI Rank 1: 0000005151398480: {[InvStdOfFeatures Value[363]] }
+MPI Rank 1: 0000005151398A20: {[features Value[363 x *]] }
+MPI Rank 1: 0000005151398C00: {[MeanOfFeatures Value[363]] }
+MPI Rank 1: 0000005151398DE0: {[W0 Value[512 x 363]] }
+MPI Rank 1: 0000005159D80C80: {[ScaledLogLikelihood Value[132 x 1 x *]] }
+MPI Rank 1: 0000005159D80DC0: {[Prior Value[132]] }
+MPI Rank 1: 0000005159D80E60: {[B2 Value[132 x 1]] }
+MPI Rank 1: 0000005159D80F00: {[MVNormalizedFeatures Value[363 x *]] }
+MPI Rank 1: 0000005159D81040: {[HLast Value[132 x 1 x *]] [W2 Gradient[132 x 512]] }
+MPI Rank 1: 0000005159D81180: {[B1 Gradient[512 x 1]] [H2 Gradient[512 x 1 x *]] [HLast Gradient[132 x 1 x *]] }
+MPI Rank 1: 0000005159D81220: {[B1 Value[512 x 1]] }
+MPI Rank 1: 0000005159D81680: {[B0 Value[512 x 1]] }
+MPI Rank 1: 0000005159D81C20: {[W1 Value[512 x 512]] }
+MPI Rank 1: 0000005159D81EA0: {[CrossEntropyWithSoftmax Value[1]] }
+MPI Rank 1: 0000005159D81FE0: {[H1 Value[512 x 1 x *]] [W0*features Gradient[512 x *]] [W0*features Value[512 x *]] }
+MPI Rank 1: 0000005159D82080: {[H2 Value[512 x 1 x *]] [W0 Gradient[512 x 363]] [W0*features+B0 Gradient[512 x 1 x *]] [W0*features+B0 Value[512 x 1 x *]] [W1*H1 Gradient[512 x 1 x *]] [W1*H1 Value[512 x 1 x *]] }
+MPI Rank 1: 0000005159D821C0: {[W1*H1+B1 Value[512 x 1 x *]] [W2*H1 Value[132 x 1 x *]] }
+MPI Rank 1: 0000005159D823A0: {[LogOfPrior Value[132]] }
+MPI Rank 1: 0000005159D82580: {[CrossEntropyWithSoftmax Gradient[1]] }
+MPI Rank 1: 0000005159D826C0: {[W2 Value[132 x 512]] }
+MPI Rank 1: 0000005159D82760: {[labels Value[132 x *]] }
+MPI Rank 1: 0000005159D82B20: {[EvalErrorPrediction Value[1]] }
+MPI Rank 1: 000000516E5F81B0: {[B2 Gradient[132 x 1]] }
+MPI Rank 1: 000000516E5F91F0: {[B0 Gradient[512 x 1]] [H1 Gradient[512 x 1 x *]] }
+MPI Rank 1: 000000516E5F9A10: {[W1 Gradient[512 x 512]] [W1*H1+B1 Gradient[512 x 1 x *]] [W2*H1 Gradient[132 x 1 x *]] }
 MPI Rank 1: 
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:09: Precomputing --> 3 PreCompute nodes found.
+MPI Rank 1: 08/04/2016 09:18:54: Precomputing --> 3 PreCompute nodes found.
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:09: 	MeanOfFeatures = Mean()
-MPI Rank 1: 05/03/2016 14:21:09: 	InvStdOfFeatures = InvStdDev()
-MPI Rank 1: 05/03/2016 14:21:09: 	Prior = Mean()
+MPI Rank 1: 08/04/2016 09:18:54: 	MeanOfFeatures = Mean()
+MPI Rank 1: 08/04/2016 09:18:54: 	InvStdOfFeatures = InvStdDev()
+MPI Rank 1: 08/04/2016 09:18:54: 	Prior = Mean()
 MPI Rank 1: minibatchiterator: epoch 0: frames [0..252734] (first utterance at frame 0), data subset 0 of 1, with 1 datapasses
 MPI Rank 1: requiredata: determined feature kind as 33-dimensional 'USER' with frame shift 10.0 ms
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:10: Precomputing --> Completed.
+MPI Rank 1: 08/04/2016 09:18:57: Precomputing --> Completed.
 MPI Rank 1: 
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:10: Starting Epoch 1: learning rate per sample = 0.015625  effective momentum = 0.900000  momentum as time constant = 607.4 samples
+MPI Rank 1: 08/04/2016 09:18:57: Starting Epoch 1: learning rate per sample = 0.015625  effective momentum = 0.900000  momentum as time constant = 607.4 samples
 MPI Rank 1: minibatchiterator: epoch 0: frames [0..20480] (first utterance at frame 0), data subset 1 of 2, with 1 datapasses
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:10: Starting minibatch loop, DataParallelSGD training (MyRank = 1, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
-MPI Rank 1: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[   1-  10, 3.13%]: CrossEntropyWithSoftmax = 4.46944908 * 640; EvalErrorPrediction = 0.90781250 * 640; time = 0.1815s; samplesPerSecond = 3525.9
-MPI Rank 1: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  11-  20, 6.25%]: CrossEntropyWithSoftmax = 4.22299987 * 640; EvalErrorPrediction = 0.90156250 * 640; time = 0.1713s; samplesPerSecond = 3736.8
-MPI Rank 1: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  21-  30, 9.38%]: CrossEntropyWithSoftmax = 3.93971343 * 640; EvalErrorPrediction = 0.84687500 * 640; time = 0.1719s; samplesPerSecond = 3722.6
-MPI Rank 1: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  31-  40, 12.50%]: CrossEntropyWithSoftmax = 3.92341692 * 640; EvalErrorPrediction = 0.90468750 * 640; time = 0.1728s; samplesPerSecond = 3703.2
-MPI Rank 1: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  41-  50, 15.63%]: CrossEntropyWithSoftmax = 3.84074483 * 640; EvalErrorPrediction = 0.91093750 * 640; time = 0.1703s; samplesPerSecond = 3759.0
-MPI Rank 1: 05/03/2016 14:21:11:  Epoch[ 1 of 3]-Minibatch[  51-  60, 18.75%]: CrossEntropyWithSoftmax = 3.71252184 * 640; EvalErrorPrediction = 0.88437500 * 640; time = 0.1742s; samplesPerSecond = 3673.5
-MPI Rank 1: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  61-  70, 21.88%]: CrossEntropyWithSoftmax = 3.51563464 * 640; EvalErrorPrediction = 0.82500000 * 640; time = 0.1923s; samplesPerSecond = 3328.8
-MPI Rank 1: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  71-  80, 25.00%]: CrossEntropyWithSoftmax = 3.49349060 * 640; EvalErrorPrediction = 0.81093750 * 640; time = 0.1778s; samplesPerSecond = 3599.6
-MPI Rank 1: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  81-  90, 28.13%]: CrossEntropyWithSoftmax = 3.34740070 * 640; EvalErrorPrediction = 0.76562500 * 640; time = 0.1853s; samplesPerSecond = 3453.3
-MPI Rank 1: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[  91- 100, 31.25%]: CrossEntropyWithSoftmax = 3.51960918 * 640; EvalErrorPrediction = 0.79843750 * 640; time = 0.1852s; samplesPerSecond = 3456.6
-MPI Rank 1: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[ 101- 110, 34.38%]: CrossEntropyWithSoftmax = 3.24656049 * 640; EvalErrorPrediction = 0.80312500 * 640; time = 0.1815s; samplesPerSecond = 3526.2
-MPI Rank 1: 05/03/2016 14:21:12:  Epoch[ 1 of 3]-Minibatch[ 111- 120, 37.50%]: CrossEntropyWithSoftmax = 3.33397669 * 640; EvalErrorPrediction = 0.80000000 * 640; time = 0.1884s; samplesPerSecond = 3397.8
-MPI Rank 1: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 121- 130, 40.63%]: CrossEntropyWithSoftmax = 3.17780980 * 640; EvalErrorPrediction = 0.77031250 * 640; time = 0.1844s; samplesPerSecond = 3471.4
-MPI Rank 1: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 131- 140, 43.75%]: CrossEntropyWithSoftmax = 3.09845902 * 640; EvalErrorPrediction = 0.76875000 * 640; time = 0.1784s; samplesPerSecond = 3587.0
-MPI Rank 1: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 141- 150, 46.88%]: CrossEntropyWithSoftmax = 3.06458212 * 640; EvalErrorPrediction = 0.72968750 * 640; time = 0.1637s; samplesPerSecond = 3908.6
-MPI Rank 1: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 151- 160, 50.00%]: CrossEntropyWithSoftmax = 2.91633510 * 640; EvalErrorPrediction = 0.69531250 * 640; time = 0.1629s; samplesPerSecond = 3928.6
-MPI Rank 1: 05/03/2016 14:21:13:  Epoch[ 1 of 3]-Minibatch[ 161- 170, 53.13%]: CrossEntropyWithSoftmax = 2.90607468 * 640; EvalErrorPrediction = 0.73281250 * 640; time = 0.1679s; samplesPerSecond = 3812.0
-MPI Rank 1: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 171- 180, 56.25%]: CrossEntropyWithSoftmax = 2.74095059 * 640; EvalErrorPrediction = 0.65937500 * 640; time = 0.1705s; samplesPerSecond = 3752.9
-MPI Rank 1: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 181- 190, 59.38%]: CrossEntropyWithSoftmax = 2.67087924 * 640; EvalErrorPrediction = 0.67343750 * 640; time = 0.1718s; samplesPerSecond = 3725.3
-MPI Rank 1: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 191- 200, 62.50%]: CrossEntropyWithSoftmax = 2.67609083 * 640; EvalErrorPrediction = 0.66406250 * 640; time = 0.1687s; samplesPerSecond = 3794.7
-MPI Rank 1: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 201- 210, 65.63%]: CrossEntropyWithSoftmax = 2.54732903 * 640; EvalErrorPrediction = 0.62968750 * 640; time = 0.1713s; samplesPerSecond = 3737.0
-MPI Rank 1: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 211- 220, 68.75%]: CrossEntropyWithSoftmax = 2.61925710 * 640; EvalErrorPrediction = 0.67343750 * 640; time = 0.1663s; samplesPerSecond = 3849.6
-MPI Rank 1: 05/03/2016 14:21:14:  Epoch[ 1 of 3]-Minibatch[ 221- 230, 71.88%]: CrossEntropyWithSoftmax = 2.52388480 * 640; EvalErrorPrediction = 0.65781250 * 640; time = 0.1662s; samplesPerSecond = 3849.9
-MPI Rank 1: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 231- 240, 75.00%]: CrossEntropyWithSoftmax = 2.47544601 * 640; EvalErrorPrediction = 0.63437500 * 640; time = 0.1668s; samplesPerSecond = 3837.7
-MPI Rank 1: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 241- 250, 78.13%]: CrossEntropyWithSoftmax = 2.43265158 * 640; EvalErrorPrediction = 0.61406250 * 640; time = 0.1672s; samplesPerSecond = 3828.3
-MPI Rank 1: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 251- 260, 81.25%]: CrossEntropyWithSoftmax = 2.41728740 * 640; EvalErrorPrediction = 0.63125000 * 640; time = 0.1689s; samplesPerSecond = 3790.3
-MPI Rank 1: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 261- 270, 84.38%]: CrossEntropyWithSoftmax = 2.17674793 * 640; EvalErrorPrediction = 0.57812500 * 640; time = 0.1690s; samplesPerSecond = 3786.3
-MPI Rank 1: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 271- 280, 87.50%]: CrossEntropyWithSoftmax = 2.31020940 * 640; EvalErrorPrediction = 0.64062500 * 640; time = 0.1699s; samplesPerSecond = 3766.1
-MPI Rank 1: 05/03/2016 14:21:15:  Epoch[ 1 of 3]-Minibatch[ 281- 290, 90.63%]: CrossEntropyWithSoftmax = 2.26400612 * 640; EvalErrorPrediction = 0.61093750 * 640; time = 0.1710s; samplesPerSecond = 3742.6
-MPI Rank 1: 05/03/2016 14:21:16:  Epoch[ 1 of 3]-Minibatch[ 291- 300, 93.75%]: CrossEntropyWithSoftmax = 2.15885172 * 640; EvalErrorPrediction = 0.58281250 * 640; time = 0.1695s; samplesPerSecond = 3776.5
-MPI Rank 1: 05/03/2016 14:21:16:  Epoch[ 1 of 3]-Minibatch[ 301- 310, 96.88%]: CrossEntropyWithSoftmax = 2.22712855 * 640; EvalErrorPrediction = 0.59218750 * 640; time = 0.1679s; samplesPerSecond = 3812.7
-MPI Rank 1: 05/03/2016 14:21:16:  Epoch[ 1 of 3]-Minibatch[ 311- 320, 100.00%]: CrossEntropyWithSoftmax = 2.25604782 * 640; EvalErrorPrediction = 0.60625000 * 640; time = 0.1729s; samplesPerSecond = 3700.5
-MPI Rank 1: 05/03/2016 14:21:16: Finished Epoch[ 1 of 3]: [Training] CrossEntropyWithSoftmax = 3.00704835 * 20480; EvalErrorPrediction = 0.72827148 * 20480; totalSamplesSeen = 20480; learningRatePerSample = 0.015625; epochTime=5.57554s
+MPI Rank 1: 08/04/2016 09:18:57: Starting minibatch loop, DataParallelSGD training (MyRank = 1, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
+MPI Rank 1: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[   1-  10, 3.13%]: CrossEntropyWithSoftmax = 4.56263636 * 640; EvalErrorPrediction = 0.94843750 * 640; time = 0.1344s; samplesPerSecond = 4761.4
+MPI Rank 1: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  11-  20, 6.25%]: CrossEntropyWithSoftmax = 4.27170689 * 640; EvalErrorPrediction = 0.90468750 * 640; time = 0.0974s; samplesPerSecond = 6568.1
+MPI Rank 1: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  21-  30, 9.38%]: CrossEntropyWithSoftmax = 4.01703811 * 640; EvalErrorPrediction = 0.87656250 * 640; time = 0.0982s; samplesPerSecond = 6517.8
+MPI Rank 1: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  31-  40, 12.50%]: CrossEntropyWithSoftmax = 3.90703628 * 640; EvalErrorPrediction = 0.87031250 * 640; time = 0.1067s; samplesPerSecond = 5996.3
+MPI Rank 1: 08/04/2016 09:18:57:  Epoch[ 1 of 3]-Minibatch[  41-  50, 15.63%]: CrossEntropyWithSoftmax = 3.74515175 * 640; EvalErrorPrediction = 0.84218750 * 640; time = 0.1271s; samplesPerSecond = 5035.3
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  51-  60, 18.75%]: CrossEntropyWithSoftmax = 3.78725315 * 640; EvalErrorPrediction = 0.87968750 * 640; time = 0.0994s; samplesPerSecond = 6435.4
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  61-  70, 21.88%]: CrossEntropyWithSoftmax = 3.57462549 * 640; EvalErrorPrediction = 0.84531250 * 640; time = 0.1201s; samplesPerSecond = 5329.9
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  71-  80, 25.00%]: CrossEntropyWithSoftmax = 3.42512241 * 640; EvalErrorPrediction = 0.79531250 * 640; time = 0.1152s; samplesPerSecond = 5558.0
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  81-  90, 28.13%]: CrossEntropyWithSoftmax = 3.47822355 * 640; EvalErrorPrediction = 0.82187500 * 640; time = 0.0991s; samplesPerSecond = 6460.2
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[  91- 100, 31.25%]: CrossEntropyWithSoftmax = 3.39348346 * 640; EvalErrorPrediction = 0.80000000 * 640; time = 0.1298s; samplesPerSecond = 4931.4
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 101- 110, 34.38%]: CrossEntropyWithSoftmax = 3.42996467 * 640; EvalErrorPrediction = 0.82656250 * 640; time = 0.1052s; samplesPerSecond = 6083.1
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 111- 120, 37.50%]: CrossEntropyWithSoftmax = 3.12568867 * 640; EvalErrorPrediction = 0.77656250 * 640; time = 0.1006s; samplesPerSecond = 6359.9
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 121- 130, 40.63%]: CrossEntropyWithSoftmax = 3.15167866 * 640; EvalErrorPrediction = 0.74218750 * 640; time = 0.1278s; samplesPerSecond = 5005.9
+MPI Rank 1: 08/04/2016 09:18:58:  Epoch[ 1 of 3]-Minibatch[ 131- 140, 43.75%]: CrossEntropyWithSoftmax = 3.10855922 * 640; EvalErrorPrediction = 0.75468750 * 640; time = 0.1072s; samplesPerSecond = 5972.7
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 141- 150, 46.88%]: CrossEntropyWithSoftmax = 3.06774575 * 640; EvalErrorPrediction = 0.74375000 * 640; time = 0.1093s; samplesPerSecond = 5855.6
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 151- 160, 50.00%]: CrossEntropyWithSoftmax = 3.03466860 * 640; EvalErrorPrediction = 0.75625000 * 640; time = 0.1132s; samplesPerSecond = 5654.3
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 161- 170, 53.13%]: CrossEntropyWithSoftmax = 2.99033200 * 640; EvalErrorPrediction = 0.73437500 * 640; time = 0.1057s; samplesPerSecond = 6054.1
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 171- 180, 56.25%]: CrossEntropyWithSoftmax = 2.81797457 * 640; EvalErrorPrediction = 0.70625000 * 640; time = 0.1066s; samplesPerSecond = 6005.6
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 181- 190, 59.38%]: CrossEntropyWithSoftmax = 2.81869403 * 640; EvalErrorPrediction = 0.68593750 * 640; time = 0.1076s; samplesPerSecond = 5946.1
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 191- 200, 62.50%]: CrossEntropyWithSoftmax = 2.72915318 * 640; EvalErrorPrediction = 0.70156250 * 640; time = 0.1083s; samplesPerSecond = 5907.4
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 201- 210, 65.63%]: CrossEntropyWithSoftmax = 2.76342985 * 640; EvalErrorPrediction = 0.67968750 * 640; time = 0.1047s; samplesPerSecond = 6110.1
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 211- 220, 68.75%]: CrossEntropyWithSoftmax = 2.60384390 * 640; EvalErrorPrediction = 0.67187500 * 640; time = 0.1045s; samplesPerSecond = 6124.5
+MPI Rank 1: 08/04/2016 09:18:59:  Epoch[ 1 of 3]-Minibatch[ 221- 230, 71.88%]: CrossEntropyWithSoftmax = 2.54119332 * 640; EvalErrorPrediction = 0.65156250 * 640; time = 0.1049s; samplesPerSecond = 6101.5
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 231- 240, 75.00%]: CrossEntropyWithSoftmax = 2.42797599 * 640; EvalErrorPrediction = 0.65156250 * 640; time = 0.1061s; samplesPerSecond = 6031.8
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 241- 250, 78.13%]: CrossEntropyWithSoftmax = 2.46162954 * 640; EvalErrorPrediction = 0.63906250 * 640; time = 0.1036s; samplesPerSecond = 6178.4
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 251- 260, 81.25%]: CrossEntropyWithSoftmax = 2.40246470 * 640; EvalErrorPrediction = 0.64062500 * 640; time = 0.1059s; samplesPerSecond = 6044.8
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 261- 270, 84.38%]: CrossEntropyWithSoftmax = 2.30971941 * 640; EvalErrorPrediction = 0.63593750 * 640; time = 0.1071s; samplesPerSecond = 5976.8
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 271- 280, 87.50%]: CrossEntropyWithSoftmax = 2.42455525 * 640; EvalErrorPrediction = 0.62500000 * 640; time = 0.1035s; samplesPerSecond = 6182.1
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 281- 290, 90.63%]: CrossEntropyWithSoftmax = 2.39641403 * 640; EvalErrorPrediction = 0.60781250 * 640; time = 0.1059s; samplesPerSecond = 6042.9
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 291- 300, 93.75%]: CrossEntropyWithSoftmax = 2.21619313 * 640; EvalErrorPrediction = 0.59375000 * 640; time = 0.1053s; samplesPerSecond = 6080.6
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 301- 310, 96.88%]: CrossEntropyWithSoftmax = 2.31751416 * 640; EvalErrorPrediction = 0.60937500 * 640; time = 0.1047s; samplesPerSecond = 6110.0
+MPI Rank 1: 08/04/2016 09:19:00:  Epoch[ 1 of 3]-Minibatch[ 311- 320, 100.00%]: CrossEntropyWithSoftmax = 2.18951812 * 640; EvalErrorPrediction = 0.56718750 * 640; time = 0.1061s; samplesPerSecond = 6031.2
+MPI Rank 1: 08/04/2016 09:19:00: Finished Epoch[ 1 of 3]: [Training] CrossEntropyWithSoftmax = 3.04659963 * 20480; EvalErrorPrediction = 0.73706055 * 20480; totalSamplesSeen = 20480; learningRatePerSample = 0.015625; epochTime=3.51073s
 MPI Rank 1: minibatchiterator: epoch 0: frames [0..83050] (first utterance at frame 0), data subset 1 of 2, with 1 datapasses
-MPI Rank 1: 05/03/2016 14:21:23: Final Results: Minibatch[1-1299]: CrossEntropyWithSoftmax = 2.11139874 * 83050; perplexity = 8.25978650; EvalErrorPrediction = 0.57013847 * 83050
-MPI Rank 1: 05/03/2016 14:21:23: Finished Epoch[ 1 of 3]: [Validate] CrossEntropyWithSoftmax = 2.11139874 * 83050; EvalErrorPrediction = 0.57013847 * 83050
+MPI Rank 1: 08/04/2016 09:19:05: Final Results: Minibatch[1-1299]: CrossEntropyWithSoftmax = 2.13145294 * 83050; perplexity = 8.42710203; EvalErrorPrediction = 0.58441902 * 83050
+MPI Rank 1: 08/04/2016 09:19:05: Finished Epoch[ 1 of 3]: [Validate] CrossEntropyWithSoftmax = 2.13145294 * 83050; EvalErrorPrediction = 0.58441902 * 83050
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:23: Starting Epoch 2: learning rate per sample = 0.001953  effective momentum = 0.656119  momentum as time constant = 607.5 samples
+MPI Rank 1: 08/04/2016 09:19:05: Starting Epoch 2: learning rate per sample = 0.001953  effective momentum = 0.656119  momentum as time constant = 607.5 samples
 MPI Rank 1: minibatchiterator: epoch 1: frames [20480..40960] (first utterance at frame 20480), data subset 1 of 2, with 1 datapasses
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:23: Starting minibatch loop, DataParallelSGD training (MyRank = 1, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
-MPI Rank 1: 05/03/2016 14:21:24:  Epoch[ 2 of 3]-Minibatch[   1-  10, 12.50%]: CrossEntropyWithSoftmax = 2.10257724 * 2560; EvalErrorPrediction = 0.56484375 * 2560; time = 0.3559s; samplesPerSecond = 7192.2
-MPI Rank 1: 05/03/2016 14:21:24:  Epoch[ 2 of 3]-Minibatch[  11-  20, 25.00%]: CrossEntropyWithSoftmax = 2.00548829 * 2560; EvalErrorPrediction = 0.54843750 * 2560; time = 0.3543s; samplesPerSecond = 7226.5
-MPI Rank 1: 05/03/2016 14:21:24:  Epoch[ 2 of 3]-Minibatch[  21-  30, 37.50%]: CrossEntropyWithSoftmax = 2.00767228 * 2560; EvalErrorPrediction = 0.54960937 * 2560; time = 0.3510s; samplesPerSecond = 7293.9
-MPI Rank 1: 05/03/2016 14:21:25:  Epoch[ 2 of 3]-Minibatch[  31-  40, 50.00%]: CrossEntropyWithSoftmax = 1.92049656 * 2560; EvalErrorPrediction = 0.53281250 * 2560; time = 0.3574s; samplesPerSecond = 7162.8
-MPI Rank 1: 05/03/2016 14:21:25:  Epoch[ 2 of 3]-Minibatch[  41-  50, 62.50%]: CrossEntropyWithSoftmax = 1.90178602 * 2560; EvalErrorPrediction = 0.52265625 * 2560; time = 0.3480s; samplesPerSecond = 7356.9
-MPI Rank 1: 05/03/2016 14:21:26:  Epoch[ 2 of 3]-Minibatch[  51-  60, 75.00%]: CrossEntropyWithSoftmax = 1.91359666 * 2560; EvalErrorPrediction = 0.53984375 * 2560; time = 0.3633s; samplesPerSecond = 7046.2
-MPI Rank 1: 05/03/2016 14:21:26:  Epoch[ 2 of 3]-Minibatch[  61-  70, 87.50%]: CrossEntropyWithSoftmax = 1.91765335 * 2560; EvalErrorPrediction = 0.53125000 * 2560; time = 0.3601s; samplesPerSecond = 7109.1
-MPI Rank 1: 05/03/2016 14:21:26:  Epoch[ 2 of 3]-Minibatch[  71-  80, 100.00%]: CrossEntropyWithSoftmax = 1.87683041 * 2560; EvalErrorPrediction = 0.52890625 * 2560; time = 0.3542s; samplesPerSecond = 7227.3
-MPI Rank 1: 05/03/2016 14:21:26: Finished Epoch[ 2 of 3]: [Training] CrossEntropyWithSoftmax = 1.95576260 * 20480; EvalErrorPrediction = 0.53979492 * 20480; totalSamplesSeen = 40960; learningRatePerSample = 0.001953125; epochTime=2.85603s
+MPI Rank 1: 08/04/2016 09:19:05: Starting minibatch loop, DataParallelSGD training (MyRank = 1, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
+MPI Rank 1: 08/04/2016 09:19:05:  Epoch[ 2 of 3]-Minibatch[   1-  10, 12.50%]: CrossEntropyWithSoftmax = 2.11101386 * 2560; EvalErrorPrediction = 0.57734375 * 2560; time = 0.2160s; samplesPerSecond = 11854.4
+MPI Rank 1: 08/04/2016 09:19:05:  Epoch[ 2 of 3]-Minibatch[  11-  20, 25.00%]: CrossEntropyWithSoftmax = 2.08753080 * 2560; EvalErrorPrediction = 0.57148438 * 2560; time = 0.2061s; samplesPerSecond = 12421.0
+MPI Rank 1: 08/04/2016 09:19:05:  Epoch[ 2 of 3]-Minibatch[  21-  30, 37.50%]: CrossEntropyWithSoftmax = 1.98163015 * 2560; EvalErrorPrediction = 0.54843750 * 2560; time = 0.1968s; samplesPerSecond = 13009.2
+MPI Rank 1: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  31-  40, 50.00%]: CrossEntropyWithSoftmax = 2.01895374 * 2560; EvalErrorPrediction = 0.54218750 * 2560; time = 0.1941s; samplesPerSecond = 13188.0
+MPI Rank 1: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  41-  50, 62.50%]: CrossEntropyWithSoftmax = 1.97025970 * 2560; EvalErrorPrediction = 0.53828125 * 2560; time = 0.1936s; samplesPerSecond = 13222.3
+MPI Rank 1: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  51-  60, 75.00%]: CrossEntropyWithSoftmax = 1.93199974 * 2560; EvalErrorPrediction = 0.52460938 * 2560; time = 0.1924s; samplesPerSecond = 13308.5
+MPI Rank 1: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  61-  70, 87.50%]: CrossEntropyWithSoftmax = 1.91190754 * 2560; EvalErrorPrediction = 0.53828125 * 2560; time = 0.1896s; samplesPerSecond = 13504.5
+MPI Rank 1: 08/04/2016 09:19:06:  Epoch[ 2 of 3]-Minibatch[  71-  80, 100.00%]: CrossEntropyWithSoftmax = 1.94515256 * 2560; EvalErrorPrediction = 0.52226562 * 2560; time = 0.1896s; samplesPerSecond = 13501.3
+MPI Rank 1: 08/04/2016 09:19:06: Finished Epoch[ 2 of 3]: [Training] CrossEntropyWithSoftmax = 1.99480601 * 20480; EvalErrorPrediction = 0.54536133 * 20480; totalSamplesSeen = 40960; learningRatePerSample = 0.001953125; epochTime=1.58915s
 MPI Rank 1: minibatchiterator: epoch 0: frames [0..83050] (first utterance at frame 0), data subset 1 of 2, with 1 datapasses
-MPI Rank 1: 05/03/2016 14:21:31: Final Results: Minibatch[1-326]: CrossEntropyWithSoftmax = 1.87468724 * 83050; perplexity = 6.51878000; EvalErrorPrediction = 0.52056592 * 83050
-MPI Rank 1: 05/03/2016 14:21:31: Finished Epoch[ 2 of 3]: [Validate] CrossEntropyWithSoftmax = 1.87468724 * 83050; EvalErrorPrediction = 0.52056592 * 83050
+MPI Rank 1: 08/04/2016 09:19:09: Final Results: Minibatch[1-326]: CrossEntropyWithSoftmax = 1.91057681 * 83050; perplexity = 6.75698519; EvalErrorPrediction = 0.53046358 * 83050
+MPI Rank 1: 08/04/2016 09:19:09: Finished Epoch[ 2 of 3]: [Validate] CrossEntropyWithSoftmax = 1.91057681 * 83050; EvalErrorPrediction = 0.53046358 * 83050
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:31: Starting Epoch 3: learning rate per sample = 0.000098  effective momentum = 0.656119  momentum as time constant = 2429.9 samples
+MPI Rank 1: 08/04/2016 09:19:10: Starting Epoch 3: learning rate per sample = 0.000098  effective momentum = 0.656119  momentum as time constant = 2429.9 samples
 MPI Rank 1: minibatchiterator: epoch 2: frames [40960..61440] (first utterance at frame 40960), data subset 1 of 2, with 1 datapasses
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:31: Starting minibatch loop, DataParallelSGD training (MyRank = 1, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
-MPI Rank 1: 05/03/2016 14:21:32:  Epoch[ 3 of 3]-Minibatch[   1-  10, 50.00%]: CrossEntropyWithSoftmax = 1.88594165 * 10240; EvalErrorPrediction = 0.52529297 * 10240; time = 1.1961s; samplesPerSecond = 8561.3
-MPI Rank 1: 05/03/2016 14:21:33:  Epoch[ 3 of 3]-Minibatch[  11-  20, 100.00%]: CrossEntropyWithSoftmax = 1.89384783 * 10240; EvalErrorPrediction = 0.51816406 * 10240; time = 1.1537s; samplesPerSecond = 8876.1
-MPI Rank 1: 05/03/2016 14:21:33: Finished Epoch[ 3 of 3]: [Training] CrossEntropyWithSoftmax = 1.88989474 * 20480; EvalErrorPrediction = 0.52172852 * 20480; totalSamplesSeen = 61440; learningRatePerSample = 9.7656251e-005; epochTime=2.36s
+MPI Rank 1: 08/04/2016 09:19:10: Starting minibatch loop, DataParallelSGD training (MyRank = 1, NumNodes = 2, NumGradientBits = 64), distributed reading is ENABLED.
+MPI Rank 1: 08/04/2016 09:19:10:  Epoch[ 3 of 3]-Minibatch[   1-  10, 50.00%]: CrossEntropyWithSoftmax = 1.91278933 * 10240; EvalErrorPrediction = 0.52451172 * 10240; time = 0.7260s; samplesPerSecond = 14105.6
+MPI Rank 1: 08/04/2016 09:19:11:  Epoch[ 3 of 3]-Minibatch[  11-  20, 100.00%]: CrossEntropyWithSoftmax = 1.92157935 * 10240; EvalErrorPrediction = 0.53515625 * 10240; time = 0.6208s; samplesPerSecond = 16493.9
+MPI Rank 1: 08/04/2016 09:19:11: Finished Epoch[ 3 of 3]: [Training] CrossEntropyWithSoftmax = 1.91718434 * 20480; EvalErrorPrediction = 0.52983398 * 20480; totalSamplesSeen = 61440; learningRatePerSample = 9.7656251e-005; epochTime=1.3555s
 MPI Rank 1: minibatchiterator: epoch 0: frames [0..83050] (first utterance at frame 0), data subset 1 of 2, with 1 datapasses
-MPI Rank 1: 05/03/2016 14:21:37: Final Results: Minibatch[1-83]: CrossEntropyWithSoftmax = 1.85215758 * 83050; perplexity = 6.37355618; EvalErrorPrediction = 0.50912703 * 83050
-MPI Rank 1: 05/03/2016 14:21:37: Finished Epoch[ 3 of 3]: [Validate] CrossEntropyWithSoftmax = 1.85215758 * 83050; EvalErrorPrediction = 0.50912703 * 83050
-MPI Rank 1: 05/03/2016 14:21:38: CNTKCommandTrainEnd: speechTrain
+MPI Rank 1: 08/04/2016 09:19:14: Final Results: Minibatch[1-83]: CrossEntropyWithSoftmax = 1.89392512 * 83050; perplexity = 6.64540157; EvalErrorPrediction = 0.52320289 * 83050
+MPI Rank 1: 08/04/2016 09:19:14: Finished Epoch[ 3 of 3]: [Validate] CrossEntropyWithSoftmax = 1.89392512 * 83050; EvalErrorPrediction = 0.52320289 * 83050
+MPI Rank 1: 08/04/2016 09:19:14: CNTKCommandTrainEnd: speechTrain
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:38: Action "train" complete.
+MPI Rank 1: 08/04/2016 09:19:14: Action "train" complete.
 MPI Rank 1: 
-MPI Rank 1: 05/03/2016 14:21:38: __COMPLETED__
+MPI Rank 1: 08/04/2016 09:19:14: __COMPLETED__
+MPI Rank 1: ~MPIWrapper
