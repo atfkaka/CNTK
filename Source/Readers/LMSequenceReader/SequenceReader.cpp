@@ -1791,19 +1791,8 @@ bool BatchSequenceReader<ElemType>::GetMinibatchData(size_t& /*out*/ firstPosInS
         if (mNumRead == 0)
             return false; // end
 
-#ifdef _MSC_VER // make some old configurations reproducable (m_cacheBlockSize used to be a constant)  --TODO: remove in a few months
-        if (m_cacheBlockSize == 50000)
-        {
-            srand(++m_randomSeed); // TODO: older code did not have that; so no idea what random seed was used
-            std::random_shuffle(m_parser.mSentenceIndex2SentenceInfo.begin(), m_parser.mSentenceIndex2SentenceInfo.end());
-            // Note: random_shuffle is deprecated since C++14.
-        }
-        else // new configs use a wider randomization
-#endif
-        {
-            std::mt19937 g(++m_randomSeed); // random seed is initialized to epoch, but gets incremented for intermediate reshuffles
-            std::shuffle(m_parser.mSentenceIndex2SentenceInfo.begin(), m_parser.mSentenceIndex2SentenceInfo.end(), g);
-        }
+        std::mt19937 g(++m_randomSeed); // random seed is initialized to epoch, but gets incremented for intermediate reshuffles
+        std::shuffle(m_parser.mSentenceIndex2SentenceInfo.begin(), m_parser.mSentenceIndex2SentenceInfo.end(), g);
 
         m_readNextSampleLine += mNumRead;
         sLn = DetermineSequencesToProcess();

@@ -12,7 +12,8 @@
 #include "latticearchive.h" // for reading HTK phoneme lattices (MMI training)
 #include "minibatchsourcehelpers.h"
 #include "minibatchiterator.h"
-#include "unordered_set"
+#include <unordered_set>
+#include <random>
 
 namespace msra { namespace dbn {
 
@@ -37,6 +38,8 @@ class minibatchutterancesourcemulti : public minibatchsource
     // lattice reader
     // const std::vector<unique_ptr<latticesource>> &lattices;
     const latticesource &lattices;
+
+    std::mt19937_64 m_rng;
 
     // std::vector<latticesource> lattices;
     // word-level transcripts (for MMI mode when adding best path to lattices)
@@ -429,6 +432,8 @@ class minibatchutterancesourcemulti : public minibatchsource
         size_t m_currentRangeEndChunkIdx;
         size_t m_nextFramePosNotYetRandomized;
 
+        std::mt19937_64 m_rng;
+
     public:
         framerandomizer(const std::vector<std::vector<chunk>>& randomizedChunks, bool minimizeMemoryFootprint)
             : m_randomizedChunks(randomizedChunks), m_minimizeMemoryFootprint(minimizeMemoryFootprint), m_currentRangeBeginChunkIdx(0), m_currentRangeEndChunkIdx(0), m_nextFramePosNotYetRandomized(0)
@@ -496,7 +501,7 @@ class minibatchutterancesourcemulti : public minibatchsource
 
                 for (;;) // (randomization retry loop)
                 {
-                    size_t tswap = Microsoft::MSR::CNTK::rand(postbegin, postend); // random frame position within allowed range
+                    size_t tswap = Microsoft::MSR::CNTK::RandMT(postbegin, postend, m_rng); // random frame position within allowed range
                     // We want to swap 't' to 'tswap' and 'tswap' to 't'.
                     //  - Both may have been swapped before.
                     //  - Both must stay within the randomization window of their respective position.
@@ -542,7 +547,7 @@ class minibatchutterancesourcemulti : public minibatchsource
 
         void reset(unsigned int randSeed)
         {
-            srand(randSeed);
+            m_rng.seed(randSeed);
             size_t sweepts = m_randomizedChunks[0][0].globalts;
             size_t totalFrames = m_randomizedChunks[0].back().globalte() - sweepts;
             if (m_minimizeMemoryFootprint)
@@ -604,7 +609,7 @@ class minibatchutterancesourcemulti : public minibatchsource
 
                     for (;;) // (randomization retry loop)
                     {
-                        size_t tswap = Microsoft::MSR::CNTK::rand(postbegin, postend); // random frame position within allowed range
+                        size_t tswap = Microsoft::MSR::CNTK::RandMT(postbegin, postend, m_rng); // random frame position within allowed range
                         // We want to swap 't' to 'tswap' and 'tswap' to 't'.
                         //  - Both may have been swapped before.
                         //  - Both must stay within the randomization window of their respective position.
@@ -1193,25 +1198,7 @@ public:
     }
 
 private:
-    // shuffle a vector into random order by randomly swapping elements
 
-    template <typename VECTOR>
-    static void randomshuffle(VECTOR &v, size_t randomseed)
-    {
-        if (v.size() > RAND_MAX * (size_t) RAND_MAX)
-            RuntimeError("randomshuffle: too large set: need to change to different random generator!");
-        srand((unsigned int) randomseed);
-        foreach_index (i, v)
-        {
-            // pick a random location
-            const size_t irand = Microsoft::MSR::CNTK::rand(0, v.size());
-
-            // swap element i with it
-            if (irand == (size_t) i)
-                continue;
-            ::swap(v[i], v[irand]);
-        }
-    }
     static void checkoverflow(size_t fieldval, size_t targetval, const char *fieldname)
     {
         if (fieldval != targetval)
@@ -1252,7 +1239,8 @@ private:
             assert(randomizedchunkrefs[i].size() == allchunks[i].size());
 
             // note that sincew randomshuffle() uses sweep as seed, this will keep the randomization common across all feature streams
-            randomshuffle(randomizedchunkrefs[i], sweep); // bring into random order (with random seed depending on sweep)
+            m_rng.seed((unsigned long)sweep);
+            Microsoft::MSR::CNTK::RandomShuffle(randomizedchunkrefs[i], m_rng); // bring into random order (with random seed depending on sweep)
         }
 
         // place them onto the global timeline -> randomizedchunks[]
@@ -1348,7 +1336,7 @@ private:
             // check we got those setup right
 
             // we now randomly shuffle randomizedutterancerefs[pos], while considering the constraints of what chunk range needs to be in memory
-            srand((unsigned int) sweep + 1);
+            m_rng.seed((unsigned long)sweep + 1);
             for (size_t i = 0; i < randomizedutterancerefs.size(); i++)
             {
                 // get valid randomization range, expressed in chunks
@@ -1364,7 +1352,7 @@ private:
                 for (;;)
                 {
                     // pick a random location
-                    const size_t j = Microsoft::MSR::CNTK::rand(posbegin, posend); // a random number within the window
+                    const size_t j = Microsoft::MSR::CNTK::RandMT(posbegin, posend, m_rng); // a random number within the window
                     if (i == j)
                         break; // the random gods say "this one points to its original position"... nothing wrong about that, but better not try to swap
 

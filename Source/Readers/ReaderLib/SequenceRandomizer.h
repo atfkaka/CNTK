@@ -164,6 +164,8 @@ private:
 
     // General configuration
     int m_verbosity;
+
+    std::mt19937_64 m_rng;
 };
 
 typedef std::shared_ptr<SequenceRandomizer> SequenceRandomizerPtr;
