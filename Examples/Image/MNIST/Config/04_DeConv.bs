@@ -10,52 +10,56 @@ labelDim = 10
 # Setup input dimension
 features = ImageInput (imageW, imageH, 1)
 
-# Compute per pixel mean
-featMean = Mean(features)
-
-# Substract this mean to input
-featScaled = features - featMean
-
 # Setup classification labels
 labels = Input(labelDim)
 
-# Convolution Filter Parameters (All the Convolution Layers use the same shape)
-kW      = 5  
-kH      = 5
-strideH = 2
-strideV = 2
+model(features) = [
 
-# Pooling Parameters (All the Pooling Layers use the same shape)
-poolW = 2
-poolH = 2
-poolHStride = 2
-poolVStride = 2
+    # Compute per pixel mean
+    featMean = Mean(features)
 
-# Hidden Layer Dimensions
-h1Dim = 128
+    # Substract this mean to input
+    featScaled = features - featMean
+
+    # Convolution Filter Parameters (All the Convolution Layers use the same shape)
+    kW      = 5  
+    kH      = 5
+    strideH = 2
+    strideV = 2
+
+    # Pooling Parameters (All the Pooling Layers use the same shape)
+    poolW = 2
+    poolH = 2
+    poolHStride = 2
+    poolVStride = 2
+
+    # Hidden Layer Dimensions
+    h1Dim = 128
 
 
-#### Neural Network Topology Description ####
+    #### Neural Network Topology Description ####
 
-# Convolution filters are used to extract features from the input, by adjusting convolution kernel weights
-# First convolution (5 * 5) Convolution Kernel, with 16 filters
-# There is only one channel as images are binary (black/white)
-# Output of this layer will be: [imageW * imageH * cMap1]
-cMap1 = 16
-conv1 = ConvNDReLULayer (featScaled, kW, kH, 1, cMap1, strideH, strideV, 0.1)
+    # Convolution filters are used to extract features from the input, by adjusting convolution kernel weights
+    # First convolution (5 * 5) Convolution Kernel, with 16 filters
+    # There is only one channel as images are binary (black/white)
+    # Output of this layer will be: [imageW * imageH * cMap1]
+    cMap1 = 16
+    conv1 = ConvNDReLULayer (featScaled, kW, kH, 1, cMap1, strideH, strideV, 0.1)
 
-# First Pooling. 
-# Pooling is used as subsampling method to reduce shape of the input and number of parameter for the next layer
-# It takes a [poolW * poolH] matrix and output the pixel with the highest value. 
-# It iterates over the input with a offset increment of poolHStride / poolVStride
-# Output of this layer will be: [(imageW / 2) * (imageH /2) * cMap1] (= By default: [14 * 14 * 16])
-pool1 = MaxNDPooling(conv1, poolW, poolH, poolHStride, poolVStride)
+    # First Pooling. 
+    # Pooling is used as subsampling method to reduce shape of the input and number of parameter for the next layer
+    # It takes a [poolW * poolH] matrix and output the pixel with the highest value. 
+    # It iterates over the input with a offset increment of poolHStride / poolVStride
+    # Output of this layer will be: [(imageW / 2) * (imageH /2) * cMap1] (= By default: [14 * 14 * 16])
+    pool1 = MaxNDPooling(conv1, poolW, poolH, poolHStride, poolVStride)
 
-# Unpooling
-unpool1 = MaxUnpool(pool1, conv1, poolW, poolH, poolHStride, poolVStride)
+    # Unpooling
+    unpool1 = MaxUnpool(pool1, conv1, poolW, poolH, poolHStride, poolVStride)
 
-# DeConvolution
-deconv1 = DeconvReLULayer(unpool1, kW, kH, 1, cMap1, strideH, strideV, 2, 1, 0.1)
+    # DeConvolution
+    deconv1 = DeconvReLULayer(unpool1, kW, kH, 1, cMap1, strideH, strideV, 2, 1, 0.1)
+
+].deconv1
 
 #### Mandatory nodes ####
 mse = SquareError(deconv1, featScaled)
