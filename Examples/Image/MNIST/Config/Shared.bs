@@ -16,22 +16,18 @@ DNNSigmoidLayer (inDim, outDim, x, wScale) = Sigmoid (DNNLayer (inDim, outDim, x
 DNNReLULayer(inDim, outDim, x, wScale) = RectifiedLinear(DNNLayer(inDim, outDim, x, wScale))
 
 #### Convolutions ####
-
-ConvND (w, inp, kW, kH, inMap, outMap, hStride, vStride) =
-    Convolution (w, inp, (kW:kH:inMap), mapDims=outMap, stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
-
-ConvNDLayer (inp, kW, kH, inMap, outMap, hStride, vStride, wScale) = [
+ConvLayer (inp, kW, kH, inMap, outMap, hStride, vStride, wScale) = [
     inWCount = kW * kH * inMap
     W = BS.Parameters.Parameter(outMap, inWCount, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
     b = BS.Parameters.BiasParam(1:1:outMap)
-    c = ConvND (W, inp, kW, kH, inMap, outMap, hStride, vStride)
+    c = Convolution (W, inp, (kW:kH:inMap), mapDims=outMap, stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
     out = c + b
 ].out
 
-ConvNDReLULayer (inp, kW, kH, inMap, outMap, hStride, vStride, wScale) = 
-    RectifiedLinear (ConvNDLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale))
+ConvReLULayer (inp, kW, kH, inMap, outMap, hStride, vStride, wScale) = 
+    RectifiedLinear (ConvLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale))
 
-MaxNDPooling(inp, kW, kH, hStride, vStride) =
+MaxPooling(inp, kW, kH, hStride, vStride) =
     Pooling(inp, "max", (kW:kH:1), stride=(hStride:vStride:1), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
 
 MaxUnpool(inp, poolInp, kW, kH, hStride, vStride) = 
@@ -50,7 +46,7 @@ DeconvReLULayer(inp, kW, kH, inMap, outMap, hStride, vStride, lpad, upad, wScale
 
 #### Batch Normalization ####
 
-DnnBNReLULayer (inWCount, outMap, x, wScale, scValue, bnTimeConst) = [
+DNNBNReLULayer (inWCount, outMap, x, wScale, scValue, bnTimeConst) = [
     W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
     b   = BS.Parameters.BiasParam((1:1:outMap))
     sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue, initOnCPUOnly=true)
@@ -61,16 +57,13 @@ DnnBNReLULayer (inWCount, outMap, x, wScale, scValue, bnTimeConst) = [
     y = RectifiedLinear(bn)
 ].y
 
-ConvNDBNLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst) = [
-    inWCount = kW * kH * inMap
-    W = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
-    b = BS.Parameters.BiasParam((1:1:outMap))
-    c = ConvND(W, inp, kW, kH, inMap, outMap, hStride, vStride)
-    y = BatchNormalization(c, sc, b, m, isd, true, normalizationTimeConstant=bnTimeConst)
+ConvBNLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst) = [
+    c = ConvLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale) 
+    y = BatchNormalization(c, sc, b, m, isd, true, normalizationTimeConstant = bnTimeConst)
     out = c + b
 ].c
 
-ConvNDBNReLULayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst) = [
-    c = ConvNDBNLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst)
+ConvBNReLULayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst) = [
+    c = ConvBNLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst)
     y = RectifiedLinear(c)
 ].y
