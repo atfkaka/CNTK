@@ -17,10 +17,9 @@ DNNReLULayer(inDim, outDim, x, wScale) = RectifiedLinear(DNNLayer(inDim, outDim,
 
 #### Convolutions ####
 ConvLayer (inp, kW, kH, inMap, outMap, hStride, vStride, wScale) = [
-    inWCount = kW * kH * inMap
-    W = BS.Parameters.Parameter(outMap, inWCount, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
+    W = BS.Parameters.Parameter(outMap, kW * kH * inMap, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
     b = BS.Parameters.BiasParam(1:1:outMap)
-    c = Convolution (W, inp, (kW:kH:inMap), mapDims=outMap, stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
+    c = Convolution (W, inp, (kW:kH:inMap), stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
     out = c + b
 ].out
 
@@ -34,7 +33,7 @@ MaxUnpool(inp, poolInp, kW, kH, hStride, vStride) =
     MaxUnpooling(inp, poolInp, (kW:kH:1), stride=(hStride:vStride:1), autoPadding=(false:false:false), lowerPad=0, upperPad=0)
 
 DeConv(w, inp, kW, kH, inMap, outMap, hStride, vStride, lpad, upad) = 
-    Convolution(w, inp, (kW:kH:inMap), mapDims=outMap, stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(false:false:false), lowerPad=(lpad:lpad:0), upperPad=(upad:upad:0), transpose=true)
+    Convolution(w, inp, (kW:kH:inMap), stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(false:false:false), lowerPad=(lpad:lpad:0), upperPad=(upad:upad:0), transpose=true)
 
 DeconvReLULayer(inp, kW, kH, inMap, outMap, hStride, vStride, lpad, upad, wScale) = [
     # No bias here.
