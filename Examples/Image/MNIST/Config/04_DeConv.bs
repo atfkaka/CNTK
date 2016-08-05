@@ -38,26 +38,17 @@ model(features) = [
 
 
     #### Neural Network Topology Description ####
-
-    # Convolution filters are used to extract features from the input, by adjusting convolution kernel weights
-    # First convolution (5 * 5) Convolution Kernel, with 16 filters
-    # There is only one channel as images are binary (black/white)
-    # Output of this layer will be: [imageW * imageH * cMap1]
-    cMap1 = 16
+    
+    cMap1 = 16      # First convolution (5 * 5) Convolution Kernel, with 16 filters
     conv1 = ConvReLULayer (featScaled, kW, kH, 1, cMap1, strideH, strideV, 0.1)
 
-    # First Pooling. 
-    # Pooling is used as subsampling method to reduce shape of the input and number of parameter for the next layer
-    # It takes a [poolW * poolH] matrix and output the pixel with the highest value. 
-    # It iterates over the input with a offset increment of poolHStride / poolVStride
-    # Output of this layer will be: [(imageW / 2) * (imageH /2) * cMap1] (= By default: [14 * 14 * 16])
-    pool1 = MaxPooling(conv1, poolW, poolH, poolHStride, poolVStride)
+    pool1 = MaxPooling(conv1, poolW, poolH, poolHStride, poolVStride)   # Output [ 14 x 14 x 16 ]
 
     # Unpooling
-    unpool1 = MaxUnpool(pool1, conv1, poolW, poolH, poolHStride, poolVStride)
+    unpool1 = MaxUnpool(pool1, conv1, poolW, poolH, poolHStride, poolVStride)   # Output [ 28 x 28 x 16 ]
 
     # DeConvolution
-    deconv1 = DeconvReLULayer(unpool1, kW, kH, 1, cMap1, strideH, strideV, 2, 1, 0.1)
+    deconv1 = DeconvReLULayer(unpool1, kW, kH, 1, cMap1, strideH, strideV, 2, 1, 0.1)   # Output [ 28 x 28 x 3 ]
 
 ].deconv1
 
