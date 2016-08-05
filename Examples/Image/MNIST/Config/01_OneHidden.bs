@@ -1,15 +1,8 @@
+featDim = 28 * 28               # number of pixels
+labelDim = 10                   # number of distinct labels
 
-# number of pixels
-featDim = 28 * 28
-
-# number of distinct labels
-labelDim = 10
-
-# Setup input dimension
-features = Input (featDim)
-
-# Setup classification labels
-labels = Input (labelDim)
+features = Input (featDim)      # Setup input dimension
+labels = Input (labelDim)       # Setup classification labels
 
 model(features) = [
     # Compute per pixel mean
