@@ -1,17 +1,11 @@
 #### Parameters ####
 
-# Number of pixels
-imageW = 28
-imageH = 28
+imageW = 28     # Number of pixels on width
+imageH = 28     # Number of pixels on height
+labelDim = 10   # Number of distinct labels
 
-# Number of distinct labels
-labelDim = 10
-
-# Setup input dimension
-features = ImageInput (imageW, imageH, 1)
-
-# Setup classification labels
-labels = Input(labelDim)
+features = ImageInput (imageW, imageH, 1)   # Setup input dimension
+labels = Input(labelDim)                    # Setup classification labels
 
 model(features) = [
 
