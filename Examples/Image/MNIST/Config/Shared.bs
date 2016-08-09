@@ -4,7 +4,7 @@
 
 # linear layer (no non-linearity)
 DNNLayer (inDim, outDim, x, wScale) = [
-    W = BS.Parameters.Parameter (outDim, inDim, init="uniform", initValueScale=wScale, initOnCPUOnly=true)
+    W = BS.Parameters.Parameter (outDim, inDim, init="uniform", initValueScale=wScale)
     b = BS.Parameters.BiasParam(outDim)
     z = W * x + b
 ].z
@@ -17,7 +17,7 @@ DNNReLULayer(inDim, outDim, x, wScale) = RectifiedLinear(DNNLayer(inDim, outDim,
 
 #### Convolutions ####
 ConvLayer (inp, kW, kH, inMap, outMap, hStride, vStride, wScale) = [
-    W = BS.Parameters.Parameter(outMap, kW * kH * inMap, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
+    W = BS.Parameters.Parameter(outMap, kW * kH * inMap, init='gaussian', initValueScale=wScale)
     b = BS.Parameters.BiasParam(1:1:outMap)
     c = Convolution (W, inp, (kW:kH:inMap), stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
     out = c + b
@@ -37,7 +37,7 @@ DeConv(w, inp, kW, kH, inMap, outMap, hStride, vStride, lpad, upad) =
 
 DeconvReLULayer(inp, kW, kH, inMap, outMap, hStride, vStride, lpad, upad, wScale) = [
     # No bias here.
-    W = BS.Parameters.Parameter(outMap, kW * kH * inMap, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
+    W = BS.Parameters.Parameter(outMap, kW * kH * inMap, init='gaussian', initValueScale=wScale)
     act = RectifiedLinear(inp)
     out = DeConv(W, act, kW, kH, inMap, outMap, hStride, vStride, lpad, upad)
 ].out
@@ -45,22 +45,22 @@ DeconvReLULayer(inp, kW, kH, inMap, outMap, hStride, vStride, lpad, upad, wScale
 #### Batch Normalization ####
 
 DNNBNReLULayer (inWCount, outMap, x, wScale, scValue, bnTimeConst) = [
-    W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
+    W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale)
     b   = BS.Parameters.BiasParam((1:1:outMap))
-    sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue, initOnCPUOnly=true)
-    m   = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0, initOnCPUOnly=true)
-    isd = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0, initOnCPUOnly=true)
+    sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue)
+    m   = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
+    isd = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
     t = W * x
     bn = BatchNormalization(t, sc, b, m, isd, false, normalizationTimeConstant = bnTimeConst)
     y = RectifiedLinear(bn)
 ].y
 
 ConvBNLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst) = [
-    W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale, initOnCPUOnly=true)
+    W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale)
     b   = BS.Parameters.BiasParam((1:1:outMap))
-    sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue, initOnCPUOnly=true)
-    m   = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0, initOnCPUOnly=true)
-    isd = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0, initOnCPUOnly=true)
+    sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue)
+    m   = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
+    isd = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
     c = Convolution (W, inp, (kW:kH:inMap), stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
     y = BatchNormalization(c, sc, b, m, isd, true, normalizationTimeConstant = bnTimeConst)
 ].y
