@@ -56,6 +56,7 @@ DNNBNReLULayer (inWCount, outMap, x, wScale, scValue, bnTimeConst) = [
 ].y
 
 ConvBNLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTimeConst) = [
+    inWCount = kW * kH * inMap
     W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale)
     b   = BS.Parameters.BiasParam((1:1:outMap))
     sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue)
