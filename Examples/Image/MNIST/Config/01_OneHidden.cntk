@@ -9,7 +9,7 @@ dataDir   = "$rootDir$/Data"
 outputDir = "$rootDir$/Output"
 modelDir  = "$outputDir$/Models"
 
-deviceId = 0
+deviceId = auto
 # override the above as follows when running on CPU:
 # deviceId = -1
 

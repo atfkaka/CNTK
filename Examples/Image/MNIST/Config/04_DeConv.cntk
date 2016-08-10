@@ -9,7 +9,7 @@ DataDir   = "$RootDir$/Data"
 OutputDir = "$RootDir$/Output"
 ModelDir  = "$OutputDir$/Models"
 
-deviceId = 0
+deviceId = auto
 imageLayout = "cudnn"
 # Override the above as follows when running on CPU:
 # deviceId = -1
