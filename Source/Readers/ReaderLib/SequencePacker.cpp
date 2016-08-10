@@ -82,7 +82,11 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
     const auto& stream = m_inputStreamDescriptions[streamIndex];
     auto& buffer = m_streamBuffers[streamIndex];
     size_t sampleSize = GetSampleSize(stream);
+    Timer t2;
+    t2.Start();
     auto pMBLayout = CreateMBLayout(batch);
+    t2.Stop();
+    fprintf(stderr, "CreateMBLayout took: %.5gs\n", t2.ElapsedSeconds());
     size_t requiredSize = pMBLayout->GetNumCols() * sampleSize;
     if (buffer.m_size < requiredSize)
     {
@@ -95,6 +99,8 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
 
     // Iterate over sequences in the layout, copy samples from the
     // source sequences into the buffer (at appropriate offsets).
+    Timer t;
+    t.Start();
     for (const auto& sequenceInfo : sequenceInfos)
     {
         // skip gaps
@@ -144,6 +150,8 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
             }
         }
     }
+    t.Stop();
+    fprintf(stderr, "loop took: %.5gs\n", t.ElapsedSeconds());
 
     return pMBLayout;
 }
