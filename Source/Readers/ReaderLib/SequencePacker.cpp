@@ -103,6 +103,9 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
     // source sequences into the buffer (at appropriate offsets).
     Timer t;
     t.Start();
+
+    Timer t1;
+    double all = 0;
     for (const auto& sequenceInfo : sequenceInfos)
     {
         // skip gaps
@@ -139,7 +142,10 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
                 SparseSequenceDataPtr sparseSequence = static_pointer_cast<SparseSequenceData>(sequence);
                 // make sure that the sequence meta-data is correct.
                 assert(numSamples == sparseSequence->m_nnzCounts.size());
+                t1.Start();
                 PackSparseSampleAsDense(destination, sparseSequence, sampleIndex, sampleOffset, sampleSize, elementSize);
+                t1.Stop();
+                all += t1.ElapsedSeconds();
                 // move the offset by nnz count of the sample.
                 sampleOffset += sparseSequence->m_nnzCounts[sampleIndex];
                 // verify that the offset is within the bounds (less or equal 
@@ -154,6 +160,8 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
     }
     t.Stop();
     fprintf(stderr, "loop took: %.5gs\n", t.ElapsedSeconds());
+
+    fprintf(stderr, "PackSparseSampleAsDense took: %.5gs\n", t.ElapsedSeconds());
 
     return pMBLayout;
 }
