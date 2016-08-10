@@ -47,8 +47,7 @@ PackerBase::PackerBase(MemoryProviderPtr memoryProvider,
     m_streamBuffers.reserve(m_outputStreamDescriptions.size());
 
     // Sanity checks:
-    size_t i = m_outputStreamDescriptions.size();
-    while (i--)
+    for (size_t i = 0; i < m_outputStreamDescriptions.size(); ++i)
     {
         const auto& stream = m_outputStreamDescriptions[i];
         UNUSED(stream);

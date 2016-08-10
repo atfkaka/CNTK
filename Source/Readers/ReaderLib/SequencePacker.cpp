@@ -54,7 +54,7 @@ Minibatch SequencePacker::ReadMinibatch()
 
     assert(m_outputStreamDescriptions.size() == batch.size());
 
-    for (int streamIndex = 0; streamIndex < batch.size(); ++streamIndex)
+    for (int streamIndex = batch.size() - 1; streamIndex >= 0; --streamIndex)
     {
         Timer t2;
         t2.Start();
