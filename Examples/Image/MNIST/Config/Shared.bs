@@ -47,9 +47,9 @@ DeconvReLULayer(inp, kW, kH, inMap, outMap, hStride, vStride, lpad, upad, wScale
 DNNBNReLULayer (inWCount, outMap, x, wScale, scValue, bnTimeConst) = [
     W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale)
     b   = BS.Parameters.BiasParam((1:1:outMap))
-    sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue)
-    m   = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
-    isd = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
+    sc  = BS.Parameters.Parameter (outMap, 1, init='gaussian', initValueScale=scValue)
+    m   = BS.Parameters.Parameter (outMap, 1, init='fixedValue', initValueScale=0)
+    isd = BS.Parameters.Parameter (outMap, 1, init='fixedValue', initValueScale=0)
     t = W * x
     bn = BatchNormalization(t, sc, b, m, isd, false, normalizationTimeConstant = bnTimeConst)
     y = RectifiedLinear(bn)
@@ -59,9 +59,9 @@ ConvBNLayer(inp, kW, kH, inMap, outMap, hStride, vStride, wScale, scValue, bnTim
     inWCount = kW * kH * inMap
     W   = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=wScale)
     b   = BS.Parameters.BiasParam((1:1:outMap))
-    sc  = BS.Parameters.Parameter (outMap, inWCount, init='gaussian', initValueScale=scValue)
-    m   = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
-    isd = BS.Parameters.Parameter (outMap, inWCount, init='fixedValue', initValueScale=0)
+    sc  = BS.Parameters.Parameter (outMap, 1, init='gaussian', initValueScale=scValue)
+    m   = BS.Parameters.Parameter (outMap, 1, init='fixedValue', initValueScale=0)
+    isd = BS.Parameters.Parameter (outMap, 1, init='fixedValue', initValueScale=0)
     c = Convolution (W, inp, (kW:kH:inMap), stride=(hStride:vStride:inMap), sharing=(true:true:true), autoPadding=(true:true:false), lowerPad=0, upperPad=0)
     y = BatchNormalization(c, sc, b, m, isd, true, normalizationTimeConstant = bnTimeConst)
 ].y
