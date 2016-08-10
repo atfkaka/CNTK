@@ -9,6 +9,7 @@
 #include "MemoryProvider.h"
 #include "SequenceEnumerator.h"
 #include "Packer.h"
+#include "TimerUtility.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -48,7 +49,7 @@ protected:
     // first value from the given sample in the sequence data/indices array (sampleOffset is equal
     // to the sum of non-zero value counts of all preceding samples).
     void PackSparseSampleAsDense(char* destination, SparseSequenceDataPtr sequence,
-        size_t sampleIndex, size_t sampleOffset, size_t sampleSize, size_t elementSize);
+        size_t sampleIndex, size_t sampleOffset, size_t sampleSize, size_t elementSize, double& memset, double& memcpy);
 
     // Packs a dense sample as dense. Copies sampleSize bytes staring at the sampleOffset from 
     // the data portion of the source sequence to the destination block of memory. sampleOffset 
@@ -76,16 +77,23 @@ public:
 };
 
 inline void PackerBase::PackSparseSampleAsDense(char* destination, SparseSequenceDataPtr sequence,
-    size_t sampleIndex, size_t sampleOffset, size_t sampleSize, size_t elementSize)
+    size_t sampleIndex, size_t sampleOffset, size_t sampleSize, size_t elementSize, double& memset, double& memcpy)
 {
     //The sample is sparse, first, need to zero out the buffer.
+    Timer t1;
+    t1.Start();
     std::memset(destination, 0, sampleSize);
+    t1.Stop();
+    memset += t1.ElapsedSeconds();
+
     // Get the nnz count of the sample.
     size_t nonZeroCount = sequence->m_nnzCounts[sampleIndex];
     // In a sparse sequence, m_data points to the array of non zero elements,
     // m_indices stores the corresponding indices for each element. 
     // Iterate through non zero elements and copy from m_data them into the 
     // destination at the offset given by the corresponding row index (m_index).
+    Timer t2;
+    t2.Start();
     for (size_t nonZeroIndex = 0; nonZeroIndex < nonZeroCount; ++nonZeroIndex)
     {
         auto sourceOffset = sampleOffset + nonZeroIndex;
@@ -96,6 +104,8 @@ inline void PackerBase::PackSparseSampleAsDense(char* destination, SparseSequenc
 
         std::memcpy(destination + destinationOffset, source, elementSize);
     }
+    t2.Stop();
+    memcpy += t2.ElapsedSeconds();
 }
 
 inline void PackerBase::PackDenseSample(char* destination, SequenceDataPtr sequence, size_t sampleOffset, size_t sampleSize)

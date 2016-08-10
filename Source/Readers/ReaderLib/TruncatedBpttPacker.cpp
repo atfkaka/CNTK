@@ -258,6 +258,7 @@ void TruncatedBPTTPacker::PackSlot(size_t streamIndex, size_t slotIndex, size_t&
                 currentTimestep + slot.FrontSequence()->m_numberOfSamples);
         }
 
+        double tmp1, tmp2;
         // Fill in the data from the first sequence in the slot.
         auto data = slot.FrontSequence();
         // Get buffer destination for the current sample.
@@ -280,7 +281,7 @@ void TruncatedBPTTPacker::PackSlot(size_t streamIndex, size_t slotIndex, size_t&
             SparseSequenceDataPtr sparseSequence = static_pointer_cast<SparseSequenceData>(data);
             assert(slot.m_sampleCursor < sparseSequence->m_nnzCounts.size());
             PackSparseSampleAsDense(destination, sparseSequence, slot.m_sampleCursor, 
-                slot.m_sampleOffset, sampleSize, elementSize);
+                slot.m_sampleOffset, sampleSize, elementSize, tmp1, tmp2);
             slot.m_sampleOffset += sparseSequence->m_nnzCounts[slot.m_sampleCursor];
             assert(slot.m_sampleOffset <= sparseSequence->m_totalNnzCount);
         }
