@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include "SequencePacker.h"
 #include "ElementTypeUtils.h"
+#include "TimerUtility.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
