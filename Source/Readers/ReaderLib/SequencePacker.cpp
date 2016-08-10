@@ -54,6 +54,8 @@ Minibatch SequencePacker::ReadMinibatch()
 
     assert(m_outputStreamDescriptions.size() == batch.size());
 
+minibatch.m_data.resize(batch.size());
+
     for (int streamIndex = batch.size() - 1; streamIndex >= 0; --streamIndex)
     {
         Timer t2;
@@ -70,7 +72,7 @@ Minibatch SequencePacker::ReadMinibatch()
         auto streamMinibatch = std::make_shared<StreamMinibatch>();
         streamMinibatch->m_data = buffer.m_data.get();
         streamMinibatch->m_layout = pMBLayout;
-        minibatch.m_data.push_back(streamMinibatch);
+        minibatch.m_data[streamIndex] = streamMinibatch;
     }
 
     return minibatch;
