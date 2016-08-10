@@ -6,6 +6,7 @@
 #define _CRT_SECURE_NO_WARNINGS // "secure" CRT not available on all platforms  --add this at the top of all CPP files that give "function or variable may be unsafe" warnings
 
 #include "Basics.h"
+#include "basetypes.h"
 #include "ComputationNode.h"
 #include "ComputationNetwork.h"
 #include "RecurrentNodes.h"
@@ -20,6 +21,52 @@
 using namespace std;
 
 namespace Microsoft { namespace MSR { namespace CNTK {
+    static map<ComputationNodeBasePtr, double> forwardTimes;
+    static map<ComputationNodeBasePtr, double> backwardTimes;
+
+    void ComputationNetwork::WriteProfilingData()
+    {
+        // compute total time
+        double total = 0;
+        for (auto& iter : forwardTimes)
+        {
+            total += iter.second;
+        }
+        for (auto& iter : backwardTimes)
+        {
+            total += iter.second;
+        }
+
+        //print header
+        fprintf(stderr, "Path\tPercent\tSeconds\tNode\n");
+
+        auto forwardTimesVector = vector<pair<double, ComputationNodeBasePtr>>();
+        auto backwardTimesVector = vector<pair<double, ComputationNodeBasePtr>>();
+
+        for (auto& iter : forwardTimes)
+        {
+            pair<double, ComputationNodeBasePtr> p(iter.second, iter.first);
+            forwardTimesVector.push_back(p);
+        }
+
+        for (auto& iter : backwardTimes)
+        {
+            pair<double, ComputationNodeBasePtr> p(iter.second, iter.first);
+            backwardTimesVector.push_back(p);
+        }
+
+        sort(forwardTimesVector.rbegin(), forwardTimesVector.rend());
+        sort(backwardTimesVector.rbegin(), backwardTimesVector.rend());
+
+        for (auto& iter : forwardTimesVector)
+        {
+            fprintf(stderr, "Forward\t%.1f\t%.1f\t%s\n", 100 * iter.first / total, iter.first / 1000, iter.second->FormatOperationPrototype("").c_str());
+        }
+        for (auto& iter : backwardTimesVector)
+        {
+            fprintf(stderr, "Backward\t%.1f\t%.1f\t%s\n", 100 * iter.first / total, iter.first / 1000, iter.second->FormatOperationPrototype("").c_str());
+        }
+    }
 
 // This source file contains methods related to evaluation (forward prop, backprop), network validation, and matrix memory allocation (memory sharing).
 
@@ -140,7 +187,10 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
         if (node->IsOutOfDateWrtInputs())
         {
             node->BeginForwardProp();
+            msra::basetypes::auto_timer timer;
             node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
+            auto runtime = (double)timer;
+            forwardTimes[node] += runtime;
             node->EndForwardProp();
 
             node->BumpEvalTimeStamp();
@@ -157,7 +207,10 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
         auto& node = *pnode;
 
         node->BeginBackprop();
+        msra::basetypes::auto_timer timer;
         node->Backprop(fr.WithLayout(node->GetMBLayout()), true /*childrenInThisLoop*/, true /*childrenInOuterLoop*/);
+        auto runtime = (double)timer;
+        backwardTimes[node] += runtime;
         node->EndBackprop();
     }
 }
@@ -220,7 +273,10 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
     {
         for (auto& node : m_nestedNodes)
         {
+            msra::basetypes::auto_timer timer;
             node->ForwardProp(t);
+            auto runtime = (double)timer;
+            forwardTimes[node] += runtime;
             node->BumpEvalTimeStamp();
         }
     }
@@ -251,7 +307,10 @@ ComputationNetwork::PARTraversalFlowControlNode::PARTraversalFlowControlNode(con
         for (auto nodeIter2 = recurrentNodes.rbegin(); nodeIter2 != recurrentNodes.rend(); ++nodeIter2)
         {
             auto& node2 = *nodeIter2;
+            msra::basetypes::auto_timer timer;
             node2->Backprop(t, true /*childrenInThisLoop*/, false /*childrenInOuterLoop*/);
+            auto runtime = (double)timer;
+            backwardTimes[node2] += runtime;
             // The above flags tell Backprop() to skip back-propagation from inside a node into
             // a node that is outside the loop, which is done later in EndBackprop() in PAR mode.
         }

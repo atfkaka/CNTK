@@ -1011,6 +1011,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
             fineGrainedPerfMeasurementTimer.Stop();
             computeTime = fineGrainedPerfMeasurementTimer.ElapsedSeconds();
             fineGrainedPerfMeasurementTimer.Start();
+            net->WriteProfilingData();
         }
 
         // for momentum/clipping/regularization/etc., as well as for progress and statistics, we should only count frames that are not gaps

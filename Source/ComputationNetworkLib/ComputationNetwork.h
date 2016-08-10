@@ -78,6 +78,8 @@ public:
         m_deviceId = deviceId;
     }
 
+    void WriteProfilingData();
+
     DEVICEID_TYPE GetDeviceId() const { return m_deviceId; }
 
 protected:
