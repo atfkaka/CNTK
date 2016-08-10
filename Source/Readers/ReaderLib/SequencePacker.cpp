@@ -56,7 +56,7 @@ Minibatch SequencePacker::ReadMinibatch()
 
     minibatch.m_data.resize(batch.size());
 
-    for (size_t streamIndex = batch.size() - 1; streamIndex >= 0; --streamIndex)
+    for (int streamIndex = batch.size() - 1; streamIndex >= 0; --streamIndex)
     {
         Timer t2;
         t2.Start();
