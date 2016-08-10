@@ -79,7 +79,7 @@ inline void PackerBase::PackSparseSampleAsDense(char* destination, SparseSequenc
     size_t sampleIndex, size_t sampleOffset, size_t sampleSize, size_t elementSize)
 {
     //The sample is sparse, first, need to zero out the buffer.
-    memset(destination, 0, sampleSize);
+    std::memset(destination, 0, sampleSize);
     // Get the nnz count of the sample.
     size_t nonZeroCount = sequence->m_nnzCounts[sampleIndex];
     // In a sparse sequence, m_data points to the array of non zero elements,
@@ -93,7 +93,8 @@ inline void PackerBase::PackSparseSampleAsDense(char* destination, SparseSequenc
         auto destinationOffset = elementIndex * elementSize;
         assert(destinationOffset < sampleSize);
         const auto* source = (const char*)(sequence->m_data) + (sourceOffset)* elementSize;
-        memcpy(destination + destinationOffset, source, elementSize);
+
+        std::memcpy(destination + destinationOffset, source, elementSize);
     }
 }
 
