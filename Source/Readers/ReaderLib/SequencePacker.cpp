@@ -38,8 +38,12 @@ MBLayoutPtr SequencePacker::CreateMBLayout(const StreamBatch& batch)
 
 Minibatch SequencePacker::ReadMinibatch()
 {
+    Timer t;
+    t.Start();
     auto sequences = m_sequenceEnumerator->GetNextSequences(m_minibatchSize);
     const auto& batch = sequences.m_data;
+    t.Stop();
+    fprintf(stderr, "GetNextSequences took: %.5gs\n", t.ElapsedSeconds());
 
     Minibatch minibatch(sequences.m_endOfEpoch);
     if (batch.empty())
@@ -51,10 +55,14 @@ Minibatch SequencePacker::ReadMinibatch()
 
     for (int streamIndex = 0; streamIndex < batch.size(); ++streamIndex)
     {
+        Timer t2;
+        t2.Start();
         const auto& streamBatch = batch[streamIndex];
         const auto& type = m_outputStreamDescriptions[streamIndex]->m_storageType;
         auto pMBLayout = (type == StorageType::dense) ?
             PackDenseStream(streamBatch, streamIndex) : PackSparseStream(streamBatch, streamIndex);
+        t2.Stop();
+        fprintf(stderr, "PackDenseStream: %.5gs\n", t2.ElapsedSeconds());
 
         auto& buffer = m_streamBuffers[streamIndex];
 

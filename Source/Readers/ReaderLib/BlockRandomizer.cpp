@@ -1,4 +1,4 @@
-//
+/
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 //
@@ -117,8 +117,6 @@ Sequences BlockRandomizer::GetNextSequences(size_t sampleCount)
     // Get next sequence descriptions.
     Sequences result;
     std::vector<RandomizedSequenceDescription> sequences;
-    Timer t;
-    t.Start();
     result.m_endOfEpoch = GetNextSequenceDescriptions(sampleCount, sequences);
     if (sequences.size() == 0)
     {
@@ -136,8 +134,6 @@ Sequences BlockRandomizer::GetNextSequences(size_t sampleCount)
 
     // Retrieve new data chunks if required.
     ChunkIdType chunkToPrefetchNext = LoadDataChunks();
-    t.Stop();
-    fprintf(stderr, "GetNextSequences up to LoadDataChunks took: %.5gs\n", t.ElapsedSeconds());
 
     if (m_verbosity >= Debug)
         fprintf(stderr, "BlockRandomizer::GetNextSequences(): getting %" PRIu64 " out of %" PRIu64 " sequences for %" PRIu64 " requested samples in sweep %" PRIu64 "\n",
@@ -146,8 +142,6 @@ Sequences BlockRandomizer::GetNextSequences(size_t sampleCount)
             sampleCount,
             m_sweep);
 
-    Timer t2;
-    t2.Start();
     result.m_data.resize(m_streams.size(), std::vector<SequenceDataPtr>(decimated.size()));
 
     auto process = [&](int i) -> void {
@@ -185,9 +179,6 @@ Sequences BlockRandomizer::GetNextSequences(size_t sampleCount)
 
     // Now it is safe to start the new chunk prefetch.
     Prefetch(chunkToPrefetchNext);
-
-    t2.Stop();
-    fprintf(stderr, "from LoadDataChunks to Prefetch took: %.5gs\n", t2.ElapsedSeconds());
 
     return result;
 }
