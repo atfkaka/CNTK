@@ -40,7 +40,10 @@ public:
 
             size_t sampleSize = GetSampleSize(stream);
             size_t requiredSize = numberOfSamples * sampleSize;
-            m_streamBuffers[i].Resize(requiredSize);
+            if (m_streamBuffers[i].m_size < requiredSize)
+            {
+                m_streamBuffers[i].Resize(requiredSize);
+            }
         }
     }
 
