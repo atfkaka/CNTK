@@ -93,6 +93,7 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
     if (buffer.m_size < requiredSize)
     {
         buffer.Resize(requiredSize);
+        fprintf(stderr, "Resizing packer buffer to: %d, %llu\n", (int)requiredSize, (size_t)buffer.m_data.get());
     }
 
     auto elementSize = GetSizeByType(stream->m_elementType);
@@ -108,6 +109,7 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
     double all = 0;
     double memsetT = 0;
     double memcpyT = 0;
+    int sequenceIndex = 0;
     for (const auto& sequenceInfo : sequenceInfos)
     {
         // skip gaps
@@ -148,6 +150,10 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
                 PackSparseSampleAsDense(destination, sparseSequence, sampleIndex, sampleOffset, sampleSize, elementSize, memsetT, memcpyT);
                 t1.Stop();
                 all += t1.ElapsedSeconds();
+                if (t1.ElapsedSeconds() > 0.2)
+                {
+                    fprintf(stderr, "Long sequence: %5gs, index %d, buffer %llu, %llu\n", t1.ElapsedSeconds(), sequenceIndex, (size_t)bufferPtr, (size_t)destination);
+                }
                 // move the offset by nnz count of the sample.
                 sampleOffset += sparseSequence->m_nnzCounts[sampleIndex];
                 // verify that the offset is within the bounds (less or equal 
@@ -159,6 +165,9 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
                 RuntimeError("Storage type %d is not supported.", (int)stream->m_storageType);
             }
         }
+        sequenceIndex++;
+
+        
     }
     t.Stop();
     fprintf(stderr, "loop took: %.5gs\n", t.ElapsedSeconds());
