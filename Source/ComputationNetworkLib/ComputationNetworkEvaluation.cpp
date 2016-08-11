@@ -39,6 +39,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
         //print header
         fprintf(stderr, "Path\tPercent\tSeconds\tNode\n");
+        fprintf(stderr, "Total\t100%%\t%.1f\t\n", total);
 
         auto forwardTimesVector = vector<pair<double, ComputationNodeBasePtr>>();
         auto backwardTimesVector = vector<pair<double, ComputationNodeBasePtr>>();
@@ -60,12 +61,15 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
         for (auto& iter : forwardTimesVector)
         {
-            fprintf(stderr, "Forward\t%.1f\t%.1f\t%s\n", 100 * iter.first / total, iter.first / 1000, iter.second->FormatOperationPrototype("").c_str());
+            fprintf(stderr, "Forward\t%.1f%%\t%.1f\t%s\n", 100.0 * iter.first / total, iter.first, iter.second->FormatOperationPrototype("").c_str());
         }
         for (auto& iter : backwardTimesVector)
         {
-            fprintf(stderr, "Backward\t%.1f\t%.1f\t%s\n", 100 * iter.first / total, iter.first / 1000, iter.second->FormatOperationPrototype("").c_str());
+            fprintf(stderr, "Backward\t%.1f%%\t%.1f\t%s\n", 100.0 * iter.first / total, iter.first, iter.second->FormatOperationPrototype("").c_str());
         }
+
+        forwardTimesVector.clear();
+        backwardTimesVector.clear();
     }
 
 // This source file contains methods related to evaluation (forward prop, backprop), network validation, and matrix memory allocation (memory sharing).
