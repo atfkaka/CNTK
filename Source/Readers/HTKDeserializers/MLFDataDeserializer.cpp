@@ -45,9 +45,6 @@ struct MLFUtterance : SequenceDescription
 
 MLFDataDeserializer::MLFDataDeserializer(CorpusDescriptorPtr corpus, const ConfigParameters& cfg, bool primary)
 {
-    // TODO: This should be read in one place, potentially given by SGD.
-    m_frameMode = (ConfigValue)cfg("frameMode", "true");
-
     // MLF cannot control chunking.
     if (primary)
     {
@@ -75,11 +72,6 @@ MLFDataDeserializer::MLFDataDeserializer(CorpusDescriptorPtr corpus, const Confi
 
 MLFDataDeserializer::MLFDataDeserializer(CorpusDescriptorPtr corpus, const ConfigParameters& labelConfig, const wstring& name)
 {
-    // The frame mode is currently specified once per configuration,
-    // not in the configuration of a particular deserializer, but on a higher level in the configuration.
-    // Because of that we are using find method below.
-    m_frameMode = labelConfig.Find("frameMode", "true");
-
     ConfigHelper config(labelConfig);
 
     config.CheckLabelType();
@@ -242,7 +234,7 @@ ChunkDescriptions MLFDataDeserializer::GetChunkDescriptions()
 {
     auto cd = make_shared<ChunkDescription>();
     cd->m_id = 0;
-    cd->m_numberOfSequences = m_frameMode ? m_totalNumberOfFrames : m_numberOfSequences;
+    cd->m_numberOfSequences = m_numberOfSequences;
     cd->m_numberOfSamples = m_totalNumberOfFrames;
     return ChunkDescriptions{cd};
 }
@@ -289,36 +281,27 @@ struct MLFSequenceData : SparseSequenceData
 
 void MLFDataDeserializer::GetSequenceById(size_t sequenceId, vector<SequenceDataPtr>& result)
 {
-    if (m_frameMode)
+    // Packing labels for the utterance into sparse sequence.
+    size_t startFrameIndex = m_utteranceIndex[sequenceId];
+    size_t numberOfSamples = m_utteranceIndex[sequenceId + 1] - startFrameIndex;
+    SparseSequenceDataPtr s;
+    if (m_elementType == ElementType::tfloat)
     {
-        size_t label = m_classIds[sequenceId];
-        assert(label < m_categories.size());
-        result.push_back(m_categories[label]);
+        s = make_shared<MLFSequenceData<float>>(numberOfSamples);
     }
     else
     {
-        // Packing labels for the utterance into sparse sequence.
-        size_t startFrameIndex = m_utteranceIndex[sequenceId];
-        size_t numberOfSamples = m_utteranceIndex[sequenceId + 1] - startFrameIndex;
-        SparseSequenceDataPtr s;
-        if (m_elementType == ElementType::tfloat)
-        {
-            s = make_shared<MLFSequenceData<float>>(numberOfSamples);
-        }
-        else
-        {
-            assert(m_elementType == ElementType::tdouble);
-            s = make_shared<MLFSequenceData<double>>(numberOfSamples);
-        }
-
-        for (size_t i = 0; i < numberOfSamples; i++)
-        {
-            size_t frameIndex = startFrameIndex + i;
-            size_t label = m_classIds[frameIndex];
-            s->m_indices[i] = static_cast<IndexType>(label);
-        }
-        result.push_back(s);
+        assert(m_elementType == ElementType::tdouble);
+        s = make_shared<MLFSequenceData<double>>(numberOfSamples);
     }
+
+    for (size_t i = 0; i < numberOfSamples; i++)
+    {
+        size_t frameIndex = startFrameIndex + i;
+        size_t label = m_classIds[frameIndex];
+        s->m_indices[i] = static_cast<IndexType>(label);
+    }
+    result.push_back(s);
 }
 
 bool MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, SequenceDescription& result)
@@ -334,18 +317,10 @@ bool MLFDataDeserializer::GetSequenceDescriptionByKey(const KeyType& key, Sequen
     result.m_chunkId = 0;
     result.m_key = key;
 
-    if (m_frameMode)
-    {
-        size_t index = m_utteranceIndex[sequenceId] + key.m_sample;
-        result.m_id = index;
-        result.m_numberOfSamples = 1;
-    }
-    else
-    {
-        assert(result.m_key.m_sample == 0);
-        result.m_id = sequenceId;
-        result.m_numberOfSamples = (uint32_t) (m_utteranceIndex[sequenceId + 1] - m_utteranceIndex[sequenceId]);
-    }
+    assert(result.m_key.m_sample == 0);
+    result.m_id = sequenceId;
+    result.m_numberOfSamples = (uint32_t) (m_utteranceIndex[sequenceId + 1] - m_utteranceIndex[sequenceId]);
+
     return true;
 }
 

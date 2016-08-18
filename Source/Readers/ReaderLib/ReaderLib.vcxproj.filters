@@ -79,6 +79,9 @@
     <ClInclude Include="ExceptionCapture.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="FramingHelper.h">
+      <Filter>Deserializers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NoRandomizer.cpp">
@@ -113,6 +116,9 @@
     </ClCompile>
     <ClCompile Include="ChunkCache.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="FramingHelper.cpp">
+      <Filter>Deserializers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

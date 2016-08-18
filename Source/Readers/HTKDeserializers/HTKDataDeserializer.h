@@ -70,9 +70,6 @@ private:
     // Total number of frames.
     size_t m_totalNumberOfFrames = 0;
 
-    // Flag that indicates whether a single speech frames should be exposed as a sequence.
-    bool m_frameMode;
-
     // Indicates, whether the deserializers is the "primary" one, the one that drives chunking.
     bool m_primary;
 

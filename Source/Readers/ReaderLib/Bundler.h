@@ -8,6 +8,7 @@
 #include "DataDeserializer.h"
 #include "DataDeserializerBase.h"
 #include "Config.h"
+#include <set>
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -28,12 +29,14 @@ public:
     // Gets a chunk with data.
     virtual ChunkPtr GetChunk(ChunkIdType chunkId) override;
 
+    class BundlingChunk;
+    typedef std::shared_ptr<BundlingChunk> BundlingChunkPtr;
+
+    struct BundlerChunkDescription;
+    typedef std::shared_ptr<BundlerChunkDescription>BundlerChunkDescriptionPtr;
+
 private:
     DISABLE_COPY_AND_MOVE(Bundler);
-
-    class BundlingChunk;
-    struct BundlerChunkDescription;
-    typedef std::shared_ptr<BundlerChunkDescription> BundlerChunkDescriptionPtr;
 
     // Creates chunk descriptions based on chunks of underlying deserializers.
     void CreateChunkDescriptions();
@@ -65,6 +68,39 @@ private:
 
     // General configuration
     int m_verbosity;
+};
+
+// Represents a chunk that has pointers to the underlying deserializer chunks.
+class Bundler::BundlingChunk : public Chunk
+{
+	size_t m_numberOfInputs;
+	Bundler* m_parent;
+	ChunkIdType m_chunkId;
+
+	// A mapping between exposed sequence id and inner chunk for each deserializer.
+	// Index i of the vector maps to the chunk of inner sequence (i / number of deserializers) of
+	// deserializer (i % number of deserializers).
+	std::vector<ChunkPtr> m_innerChunks;
+	// A mapping between exposed sequence id and inner sequence id for each deserializer.
+	// Indices as above.
+	std::vector<size_t> m_sequenceToSequence;
+
+	DISABLE_COPY_AND_MOVE(BundlingChunk);
+
+public:
+	BundlingChunk(size_t numberOfInputs, Bundler* parent, ChunkIdType chunkId);
+
+	// Gets sequence by its id.
+	virtual void GetSequence(size_t sequenceId, std::vector<SequenceDataPtr>& result) override;
+};
+
+// Represents bundled chunk description with possible cleansed data.
+struct Bundler::BundlerChunkDescription : public ChunkDescription
+{
+    ChunkDescriptionPtr m_original;
+
+    // Sequences that are invalid in at least one deserializer.
+    std::set<size_t> m_invalid;
 };
 
 }}}

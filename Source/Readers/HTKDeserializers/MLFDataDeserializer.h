@@ -73,9 +73,6 @@ private:
     // A list of category indices
     // (a list of numbers from 0 to N, where N = (number of categories -1))
     std::vector<IndexType> m_categoryIndices;
-
-    // Flag that indicates whether a single speech frames should be exposed as a sequence.
-    bool m_frameMode;
 };
 
 }}}

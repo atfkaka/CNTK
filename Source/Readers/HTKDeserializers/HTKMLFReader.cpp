@@ -10,6 +10,7 @@
 #include "MLFDataDeserializer.h"
 #include "ConfigHelper.h"
 #include "Bundler.h"
+#include "FramingHelper.h"
 #include "StringUtil.h"
 #include "FramePacker.h"
 #include "SequencePacker.h"
@@ -106,18 +107,26 @@ HTKMLFReader::HTKMLFReader(MemoryProviderPtr provider,
     }
 
     bool cleanse = readerConfig(L"checkData", true);
+
     auto bundler = std::make_shared<Bundler>(readerConfig, deserializers[0], deserializers, cleanse);
+
+    IDataDeserializerPtr deserializer = bundler;
+    if (m_packingMode == PackingMode::sample)
+    {
+        deserializer = std::make_shared<FramingHelper>(bundler);
+    }
+
     int verbosity = readerConfig(L"verbosity", 0);
     std::wstring readMethod = config.GetRandomizer();
 
     // TODO: this should be bool. Change when config per deserializer is allowed.
     if (AreEqualIgnoreCase(readMethod, std::wstring(L"blockRandomize")))
     {
-        m_randomizer = std::make_shared<BlockRandomizer>(verbosity, window, bundler, true  /* should Prefetch */, BlockRandomizer::DecimationMode::chunk, true /* useLegacyRandomization */);
+        m_randomizer = std::make_shared<BlockRandomizer>(verbosity, window, deserializer, true  /* should Prefetch */, BlockRandomizer::DecimationMode::chunk, true /* useLegacyRandomization */);
     }
     else if (AreEqualIgnoreCase(readMethod, std::wstring(L"none")))
     {
-        m_randomizer = std::make_shared<NoRandomizer>(bundler);
+        m_randomizer = std::make_shared<NoRandomizer>(deserializer);
     }
     else
     {
