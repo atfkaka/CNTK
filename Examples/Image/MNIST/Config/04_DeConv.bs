@@ -1,0 +1,54 @@
+#### Parameters ####
+
+imageW = 28     # Number of pixels on width
+imageH = 28     # Number of pixels on height
+labelDim = 10   # Number of distinct labels
+
+features = ImageInput (imageW, imageH, 1)   # Setup input dimension
+labels = Input(labelDim)                    # Setup classification labels
+
+model(features) = [
+
+    # Compute per pixel mean
+    featMean = Mean(features)
+
+    # Substract this mean to input
+    featScaled = features - featMean
+
+    # Convolution Filter Parameters (All the Convolution Layers use the same shape)
+    kW      = 5  
+    kH      = 5
+    strideH = 2
+    strideV = 2
+
+    # Pooling Parameters (All the Pooling Layers use the same shape)
+    poolW = 2
+    poolH = 2
+    poolHStride = 2
+    poolVStride = 2
+
+    # Hidden Layer Dimensions
+    h1Dim = 128
+
+
+    #### Neural Network Topology Description ####
+    
+    cMap1 = 16      # First convolution (5 * 5) Convolution Kernel, with 16 filters
+    conv1 = ConvReLULayer (featScaled, kW, kH, 1, cMap1, strideH, strideV, 0.1)
+
+    pool1 = MaxPooling(conv1, poolW, poolH, poolHStride, poolVStride)   # Output [ 14 x 14 x 16 ]
+
+    # Unpooling
+    unpool1 = MaxUnpool(pool1, conv1, poolW, poolH, poolHStride, poolVStride)   # Output [ 28 x 28 x 16 ]
+
+    # DeConvolution
+    deconv1 = DeconvReLULayer(unpool1, kW, kH, 1, cMap1, strideH, strideV, 2, 1, 0.1)   # Output [ 28 x 28 x 3 ]
+
+].deconv1
+
+#### Mandatory nodes ####
+mse = SquareError(deconv1, featScaled)
+
+# Special Nodes
+featureNodes = (features)
+criterionNodes = (mse)

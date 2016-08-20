@@ -1,0 +1,73 @@
+#### Parameters ####
+
+imageW = 28     # Number of pixels on width
+imageH = 28     # Number of pixels on height
+labelDim = 10   # Number of distinct labels
+
+features = ImageInput (imageW, imageH, 1)   # Setup input dimension
+labels = Input(labelDim)                    # Setup classification labels
+
+model(features) = [
+
+    # Compute per pixel mean
+    featMean = Mean(features)
+
+    # Substract this mean to input
+    featScaled = (features - featMean) .* Constant(1/256)
+
+    # Convolution Filter Parameters (All the Convolution Layers use the same shape)
+    kW      = 5  
+    kH      = 5
+    strideH = 1
+    strideV = 1
+
+    # Pooling Parameters (All the Pooling Layers use the same shape)
+    poolW = 2
+    poolH = 2
+    poolHStride = 2
+    poolVStride = 2
+
+    # Hidden Layer Dimensions
+    h1Dim = 128
+
+
+    #### Neural Network Topology Description ####
+
+    cMap1 = 16   # First convolution (5 * 5) Convolution Kernel, with 16 filters
+    conv1 = ConvReLULayer (featScaled, kW, kH, 1, cMap1, strideH, strideV, 1)
+
+    pool1 = MaxPooling(conv1, poolW, poolH, poolHStride, poolVStride)   # Output [ 14 x 14 x 16 ]
+
+    cMap2 = 32  # Second convolution, (5 * 5) Convolution Kernel, with 32 filters
+    conv2 = ConvReLULayer(pool1, kW, kH, cMap1, cMap2, strideH, strideV, 1)
+ 
+    pool2 = MaxPooling(conv2, poolW, poolH, poolHStride, poolVStride)   # Output [7 x 7 x 32]
+
+    # Hidden Layer
+    h1 = DNNReLULayer((7:7:cMap2), h1Dim, pool2, 0.01)
+
+    # Linear Output Layer (without non linearity function)
+    ol = DNNLayer(h1Dim, labelDim, h1, 0.001)
+
+].ol
+
+ol = model(features)
+
+#### Usefull additional nodes ####
+
+# Softmax convert the ol output ([-Inf, +Inf]) to [0, 1] which can be interpreted as probabilities
+p = Softmax(ol)
+
+#### Mandatory nodes ####
+# Objective function to optimize by Gradient Descent
+ce = CrossEntropyWithSoftmax(labels, ol)
+
+# Error indicator
+errs = ErrorPrediction(labels, ol)
+
+# Special Nodes
+featureNodes    = (features)
+labelNodes      = (labels)
+criterionNodes  = (ce)
+evaluationNodes = (errs)
+outputNodes     = (ol:p)

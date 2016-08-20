@@ -9,7 +9,7 @@ DataDir   = "$RootDir$/Data"
 OutputDir = "$RootDir$/Output"
 ModelDir  = "$OutputDir$/Models"
 
-deviceId = 0
+deviceId = auto
 imageLayout = "cudnn"
 # Override the above as follows when running on CPU:
 # deviceId = -1
@@ -37,15 +37,22 @@ initOnCPUOnly=true
 train = [
     action = "train"
 
-    NDLNetworkBuilder = [
-        networkDescription = "$ConfigDir$/04_DeConv.ndl"
+    # BrainScript version as described in Tutorial II.
+    BrainScriptNetworkBuilder = [
+        # macros to include
+        include "Shared.bs"
+
+        # include the definition file
+        include "04_DeConv.bs"
     ]
+
     
     SGD = [
         epochSize = 60000
         minibatchSize = 32
-        learningRatesPerMB = 0.001
-        momentumPerMB = 0.9
+        learningRatesPerSample = 0.015625:0.003125 # (0.1 / 32)
+        momentumPerSample = 0*5:0.998
+        clippingThresholdPerSample=1000000
         maxEpochs = 10
     ]
     
@@ -73,10 +80,6 @@ train = [
 test = [
     action = test
     minibatchSize = 16
-    
-    NDLNetworkBuilder = [
-        networkDescription = "$ConfigDir$/04_DeConv.ndl"
-    ]
     
     reader = [
         readerType = "CNTKTextFormatReader"

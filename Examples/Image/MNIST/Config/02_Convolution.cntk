@@ -9,7 +9,7 @@ dataDir   = "$rootDir$/Data"
 outputDir = "$rootDir$/Output"
 modelDir  = "$outputDir$/Models"
 
-deviceId = 0
+deviceId = auto
 # Override the above as follows when running on CPU:
 # deviceId = -1
 
@@ -30,20 +30,21 @@ numMBsToShowResult = 500
 train = [
     action = "train"
 
-    NDLNetworkBuilder = [
-        imageLayout = "cudnn"
-        initOnCPUOnly = true
-        ndlMacros = "$configDir$/Macros.ndl"
-        networkDescription = "$ConfigDir$/02_Convolution.ndl"
+    # BrainScript version as described in Tutorial II.
+    BrainScriptNetworkBuilder = [
+        # macros to include
+        include "Shared.bs"
+
+        # include the definition file
+        include "02_Convolution.bs"
     ]
+
 
     SGD = [
         epochSize = 60000
         minibatchSize = 32
-        #learningRatesPerSample = 0.003125    # TODO
-        #momentumAsTimeConstant = 0
-        learningRatesPerMB = 0.1*5:0.3
-        momentumPerMB = 0*10:0.7
+        learningRatesPerSample = 0.015625:0.003125 # (0.1 / 32)
+        momentumAsTimeConstant = 0
         maxEpochs = 15
     ]
 
@@ -51,6 +52,7 @@ train = [
         readerType = "CNTKTextFormatReader"
         # See ../REAMDE.md for details on getting the data (Train-28x28_cntk_text.txt).
         file = "$DataDir$/Train-28x28_cntk_text.txt"
+        randomize = true
         input = [
             features = [
                 dim = 784
