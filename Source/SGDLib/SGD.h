@@ -20,6 +20,7 @@
 #include "Profiler.h"
 #include "MASGD.h"
 #include "GPUMatrix.h"
+#include "PerformanceProfiler.h"
 
 using namespace std; // ugh! TODO: get rid of this from .h files!!!
 
@@ -251,8 +252,6 @@ protected:
 
     bool m_useAllDataForPreComputedNode;
 
-    int m_perfTraceLevel;
-
     // Parallel training
     MPIWrapperPtr m_mpi;
 
@@ -327,7 +326,8 @@ public:
           m_prevChosenMinibatchSize(0),
           m_lastFinishedEpochTrainLoss(0.0),
           m_distGradAgg(nullptr),
-          m_gradHeader(nullptr)
+          m_gradHeader(nullptr),
+          m_pCudaProfilerTimer(nullptr)
     {
         msra::files::make_intermediate_dirs(m_modelPath);
     }
@@ -368,8 +368,7 @@ protected:
                            ComputationNetworkPtr refNet,
                            ComputationNodeBasePtr refNode,
                            IDataReader* trainSetDataReader,
-                           IDataReader* validationSetDataReader,
-                           CudaProfilerTimer& cudaProfilerTimer);
+                           IDataReader* validationSetDataReader);
 
 protected:
 
@@ -394,8 +393,7 @@ protected:
                                   const std::list<ComputationNodeBasePtr>& learnableNodes,
                                   std::list<Matrix<ElemType>>& smoothedGradients,
                                   const bool learnRateInitialized,
-                                  const double largestPrevLearnRatePerSample,
-                                  CudaProfilerTimer& cudaProfilerTimer);
+                                  const double largestPrevLearnRatePerSample);
 
     void TrainOneMiniEpochAndReloadModel(ComputationNetworkPtr net,
                                          ComputationNetworkPtr refNet,
@@ -412,7 +410,6 @@ protected:
                                          std::list<Matrix<ElemType>>& smoothedGradients,
                                          /*out*/ EpochCriterion& epochCriterion,
                                          /*out*/ std::vector<EpochCriterion>& epochEvalErrors,
-                                         CudaProfilerTimer& cudaProfilerTimer,
                                          std::string prefixMsg = "");
 
     size_t AdaptiveMinibatchSizing(ComputationNetworkPtr net,
@@ -430,8 +427,7 @@ protected:
                                    StreamMinibatchInputs* inputMatrices,
                                    const std::list<ComputationNodeBasePtr>& learnableNodes,
                                    std::list<Matrix<ElemType>>& smoothedGradients,
-                                   const double learningRateAdjustmentFactor,
-                                   CudaProfilerTimer& cudaProfilerTimer);
+                                   const double learningRateAdjustmentFactor);
 
     // uses a small percentage of training data of minibatch to
     // speculatively train with various MB sizes; then picks the best
@@ -449,8 +445,7 @@ protected:
                                       StreamMinibatchInputs* inputMatrices,
                                       const std::list<ComputationNodeBasePtr>& learnableNodes,
                                       std::list<Matrix<ElemType>>& smoothedGradients,
-                                      const size_t minMinibatchSize, const size_t maxMinibatchSize,
-                                      CudaProfilerTimer& cudaProfilerTimer);
+                                      const size_t minMinibatchSize, const size_t maxMinibatchSize);
 
     // Attemps to compute the error signal for the whole utterance, which will
     // be fed to the neural network as features. Currently it is a workaround
@@ -479,7 +474,6 @@ protected:
                          std::list<Matrix<ElemType>>& smoothedGradients,
                          /*out*/ EpochCriterion& epochCriterion,
                          /*out*/ std::vector<EpochCriterion>& epochEvalErrors,
-                         CudaProfilerTimer& cudaProfilerTimer,
                          const std::string& prefixMsg = "");
 
     void InitDistGradAgg(int numEvalNodes, int traceLevel);
@@ -571,6 +565,8 @@ protected:
     std::shared_ptr<struct DistGradHeader> m_gradHeader;
 
     shared_ptr<IMASGD<ElemType>> m_pMASGDHelper;
+
+    CudaProfilerTimer* m_pCudaProfilerTimer;
 
 private:
     void MarkDropoutNodesEvalTimeStampAsOutdated(const ComputationNetworkPtr& net, const ComputationNodeBasePtr& criterionNode);
