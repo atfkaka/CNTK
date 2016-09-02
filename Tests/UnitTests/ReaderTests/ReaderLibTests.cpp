@@ -238,38 +238,16 @@ BOOST_AUTO_TEST_CASE(RandRollbackToEarlierEpochInTheSweepHUGE)
 {
     size_t chunkSizeInSamples = 90640;
     size_t sweepNumberOfSamples = 215040000;
-    uint32_t maxSequenceLength = 7;
+    uint32_t maxSequenceLength = 700;
     size_t randomizationWindow = 86400000;
     auto deserializer = make_shared<SequentialDeserializer>(0, chunkSizeInSamples, sweepNumberOfSamples, maxSequenceLength);
 
     // Let's randomize complete sweep, so that we have a baseline.
     auto randomizer = make_shared<BlockRandomizer>(0, randomizationWindow, deserializer, true, BlockRandomizer::DecimationMode::chunk, false);
 
-    // Ok, now let's run smaller epochs and check whether they are the same as full sweeps.
     size_t epochSize = 10240000;
-    auto firstEpoch = ReadFullEpoch(randomizer, epochSize, 18);
-    auto secondEpoch = ReadFullEpoch(randomizer, epochSize, 19);
-    auto thirdEpoch = ReadFullEpoch(randomizer, epochSize, 20);
-
-    auto anotherFirstEpoch = ReadFullEpoch(randomizer, epochSize, 18);
-
-    // Check that it is the same.
-    BOOST_CHECK_EQUAL_COLLECTIONS(firstEpoch.begin(), firstEpoch.end(), anotherFirstEpoch.begin(), anotherFirstEpoch.end());
-
-    auto anotherthirdEpoch = ReadFullEpoch(randomizer, epochSize, 20);
-    BOOST_CHECK_EQUAL_COLLECTIONS(thirdEpoch.begin(), thirdEpoch.end(), anotherthirdEpoch.begin(), anotherthirdEpoch.end());
-
-    auto anothersecond = ReadFullEpoch(randomizer, epochSize, 19);
-    BOOST_CHECK_EQUAL_COLLECTIONS(secondEpoch.begin(), secondEpoch.end(), anothersecond.begin(), anothersecond.end());
-
-/*    anothersecond = ReadFullEpoch(randomizer, epochSize, 19);
-    BOOST_CHECK_EQUAL_COLLECTIONS(secondEpoch.begin(), secondEpoch.end(), anothersecond.begin(), anothersecond.end());
-
-    anotherthirdEpoch = ReadFullEpoch(randomizer, epochSize, 20);
-    BOOST_CHECK_EQUAL_COLLECTIONS(thirdEpoch.begin(), thirdEpoch.end(), anotherthirdEpoch.begin(), anotherthirdEpoch.end());
-
-    anotherFirstEpoch = ReadFullEpoch(randomizer, epochSize, 18);
-    BOOST_CHECK_EQUAL_COLLECTIONS(firstEpoch.begin(), firstEpoch.end(), anotherFirstEpoch.begin(), anotherFirstEpoch.end());*/
+    ReadFullEpoch(randomizer, epochSize, 19);
+    ReadFullEpoch(randomizer, epochSize, 19);
 }
 
 BOOST_AUTO_TEST_CASE(RandRollbackToSameEpochInTheSweep)
