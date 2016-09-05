@@ -243,11 +243,11 @@ BOOST_AUTO_TEST_CASE(RandRollbackToEarlierEpochInTheSweepHUGE)
     auto deserializer = make_shared<SequentialDeserializer>(0, chunkSizeInSamples, sweepNumberOfSamples, maxSequenceLength);
 
     // Let's randomize complete sweep, so that we have a baseline.
-    auto randomizer = make_shared<BlockRandomizer>(0, randomizationWindow, deserializer, true, BlockRandomizer::DecimationMode::chunk, false);
+    auto randomizer = make_shared<BlockRandomizer>(3, randomizationWindow, deserializer, false, BlockRandomizer::DecimationMode::chunk, false);
 
     size_t epochSize = 10240000;
-    ReadFullEpoch(randomizer, epochSize, 19);
-    ReadFullEpoch(randomizer, epochSize, 19);
+    ReadFullEpoch(randomizer, epochSize, 14);
+    ReadFullEpoch(randomizer, epochSize, 14);
 }
 
 BOOST_AUTO_TEST_CASE(RandRollbackToSameEpochInTheSweep)

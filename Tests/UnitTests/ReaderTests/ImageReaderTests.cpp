@@ -1,4 +1,4 @@
-//
+ //
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 //
@@ -147,9 +147,19 @@ BOOST_AUTO_TEST_CASE(ImageReaderZip)
         1);
 }
 
+struct A {
+  ~A() { 
+      if (std::uncaught_exception())
+          printf("uncaught exception\n");
+      else
+          printf("no uncaught exception\n");
+  }
+};
+
 BOOST_AUTO_TEST_CASE(ImageReaderZipMissingFile)
 {
-    BOOST_REQUIRE_EXCEPTION(
+   auto helper = [&]() { 
+        A a;
         HelperRunReaderTest<float>(
             testDataPath() + "/Config/ImageReaderZipMissing_Config.cntk",
             testDataPath() + "/Control/ImageReaderZip_Control.txt",
@@ -162,7 +172,10 @@ BOOST_AUTO_TEST_CASE(ImageReaderZipMissingFile)
             1,
             0,
             0,
-            1),
+            1); };
+
+    BOOST_REQUIRE_EXCEPTION(
+            helper(),
             std::runtime_error,
             [](std::runtime_error const& ex) { return string("Cannot retrieve image data for some sequences. For more detail, please see the log file.") == ex.what(); });
 }

@@ -141,7 +141,7 @@ private:
     };
 
     // A rolling window of sample start positions and length for chunks that had their
-    // sequenced randomized.
+    // sequences randomized.
     std::deque<ChunkInfo> m_randomizedChunkInfo;
 
     // TODO consider to change to ChunkIdType where appropriate

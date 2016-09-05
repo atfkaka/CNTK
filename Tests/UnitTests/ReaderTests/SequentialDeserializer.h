@@ -144,7 +144,7 @@ namespace Microsoft { namespace MSR { namespace CNTK { namespace Test {
         {
             // We cannot simply give a chunk, otherwise we do not test the case when the chunk gets released.
             // Let's create a new one.
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(10));
             return std::make_shared<SequentialChunk>(*m_chunks[chunkId]);
         }
 
