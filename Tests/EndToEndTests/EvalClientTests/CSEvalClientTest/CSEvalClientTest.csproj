@@ -13,7 +13,7 @@
     <RootNamespace>Microsoft.MSR.CNTK.Extensibility.Managed.CSEvalClientTest</RootNamespace>
     <AssemblyName>CSEvalClientTest</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>   
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -61,6 +61,7 @@
     <Compile Include="..\..\..\..\Examples\Evaluation\CSEvalClient\CntkBitmapExtensions.cs" />
     <Compile Include="..\..\..\..\Examples\Evaluation\CSEvalClient\ModelEvaluator.cs" />
     <Compile Include="..\..\..\..\Examples\Evaluation\CSEvalClient\Program.cs" />
+    <Compile Include="LuisProgram.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -71,6 +72,6 @@
       <Project>{ef766cae-9cb1-494c-9153-0030631a6340}</Project>
       <Name>EvalWrapper</Name>
     </ProjectReference>
-  </ItemGroup>  
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

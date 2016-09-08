@@ -18,6 +18,9 @@ using Microsoft.MSR.CNTK.Extensibility.Managed;
 
 namespace Microsoft.MSR.CNTK.Extensibility.Managed.CSEvalClient
 {
+
+#if MAIN
+
     /// <summary>
     /// Program for demonstrating how to run model evaluations using the CLIWrapper
     /// </summary>
@@ -576,4 +579,7 @@ namespace Microsoft.MSR.CNTK.Extensibility.Managed.CSEvalClient
             return list;
         }
     }
+
+#endif 
+
 }
