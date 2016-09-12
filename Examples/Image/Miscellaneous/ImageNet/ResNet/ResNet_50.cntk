@@ -1,0 +1,207 @@
+# Node: This ResNet-50 sample uses the BrainScriptBuilder
+#
+
+command = train:pbn:createEval:test
+
+precision = "float"; traceLevel = 1 ; deviceId = "auto"
+
+rootDir = "." ; configDir = "$RootDir$" ; dataDir = "C:\\Data\\Data\\ImageNet_2012_CNTK" ;
+outputDir = "$rootDir$/Output" ;
+
+modelPath = "$outputDir$/Models/ResNet_50"
+stderr = "$outputDir$/ResNet_50_BS_out"
+
+parallelTrain = "true"
+
+# TRAINING CONFIG
+train = {
+    action = "train"
+
+    BrainScriptNetworkBuilder = {
+        include "$configDir$/Macros.bs"
+
+        imageShape = 224 : 224 : 3          # image dimensions
+        labelDim = 1000                     # number of distinct labels
+
+        cMap1 = 64
+        cMap2 = 128
+        cMap3 = 256
+        cMap4 = 512
+        cMap5 = 1024
+        cMap6 = 2048
+
+        model (features) = {
+            # conv1 and max pooling
+            conv1 = ConvBNReLULayer (features, cMap1, 7, 2)
+            pool1 = MaxPoolingLayer {(3: 3), stride = 2, pad = true} (conv1)
+
+            # conv2_x
+            conv2_1 = ResNetBottleneckInc (cMap3, cMap1, pool1, stride = 1, strideA = 1, strideB = 1)
+            conv2_2 = ResNetBottleneck (cMap3, cMap1, conv2_1)
+            conv2_3 = ResNetBottleneck (cMap3, cMap1, conv2_2)
+
+            # conv3_x
+            conv3_1 = ResNetBottleneckInc (cMap4, cMap2, conv2_3)
+            conv3_2 = ResNetBottleneck (cMap4, cMap2, conv3_1)
+            conv3_3 = ResNetBottleneck (cMap4, cMap2, conv3_2)
+            conv3_4 = ResNetBottleneck (cMap4, cMap2, conv3_3)
+
+            # conv4_x
+            conv4_1 = ResNetBottleneckInc (cMap5, cMap3, conv3_4)
+            conv4_2 = ResNetBottleneck (cMap5, cMap3, conv4_1)
+            conv4_3 = ResNetBottleneck (cMap5, cMap3, conv4_2)
+            conv4_4 = ResNetBottleneck (cMap5, cMap3, conv4_3)
+            conv4_5 = ResNetBottleneck (cMap5, cMap3, conv4_4)
+            conv4_6 = ResNetBottleneck (cMap5, cMap3, conv4_5)
+
+            # conv5_x
+            conv5_1 = ResNetBottleneckInc (cMap6, cMap4, conv4_6)
+            conv5_2 = ResNetBottleneck (cMap6, cMap4, conv5_1)
+            conv5_3 = ResNetBottleneck (cMap6, cMap4, conv5_2)
+
+            # avg pooling
+            pool2 = AveragePoolingLayer {(7: 7), stride = 1} (conv5_3)
+
+            # FC
+            ol = FCLayer (cMap6, labelDim, pool2)
+        }.ol
+
+        # inputs
+        features = Input {imageShape}
+        labels = Input {labelDim}
+
+        # apply model to features
+        ol = model (features)
+
+        # loss and error computation
+        ce = CrossEntropyWithSoftmax (labels, ol)
+        errs = ClassificationError (labels, ol)
+
+        # declare special nodes
+        featureNodes    = (features)
+        labelNodes      = (labels)
+        criterionNodes  = (ce)
+        evaluationNodes = (errs)
+        outputNodes     = (ol)
+    }
+
+    SGD = {
+        epochSize = 0
+        minibatchSize = 256
+        maxEpochs = 125
+        learningRatesPerMB = 1*30:0.1*30:0.01*30:0.001
+        momentumPerMB = 0.9
+        gradUpdateType = "None"
+        L2RegWeight = 0.0001
+        dropoutRate = 0
+        numMBsToShowResult = 500
+
+        disableWkInBatchNormal = true
+
+        ParallelTrain = {
+            parallelizationMethod = "DataParallelSGD"
+            distributedMBReading = "true"
+            parallelizationStartEpoch = 1
+            DataParallelSGD = {
+                gradientBits=32
+            }
+        }
+    }
+
+    reader={
+        readerType="ImageReader"
+        file="$DataDir$/train_map.txt"
+        randomize="Auto"
+        features={
+            # Below are the required parameters.
+            width=224
+            height=224
+            channels=3
+            # Below are the optional parameters.
+            # Possible values: Center, Random. Default: Center
+            cropType="Random"
+            # Horizontal random flip, will be enabled by default if cropType=Random
+            hflip="true"
+            # Crop scale ratio. Examples: cropRatio=0.9, cropRatio=0.7:0.9. Default: 1.
+            cropRatio=0.46666:0.875
+            # Crop scale ratio jitter type.
+            # Possible values: None, UniRatio, UniLength, UniArea. Default: UniRatio
+            jitterType="UniRatio"
+            # The file stores mean values for each pixel in OpenCV matrix XML format.
+            meanFile="$ConfigDir$/ImageNet1K_mean.xml"
+        }
+        labels={
+            labelDim=1000
+        }
+    }
+}
+
+pbn={
+    action="pbn"
+    modelPath="$modelPath$"
+    # Set minibatch size for testing.
+    minibatchSize=256
+    iters=30
+
+    useDistributedMBReading=true
+
+    reader={
+        readerType="ImageReader"
+        file="$DataDir$/train_map.txt"
+        randomize="Auto"
+        features={
+            # Below are the required parameters.
+            width=224
+            height=224
+            channels=3
+            # Below are the optional parameters.
+            # Possible values: Center, Random. Default: Center
+            cropType="Random"
+            # Horizontal random flip, will be enabled by default if cropType=Random
+            hflip="true"
+            # Crop scale ratio. Examples: cropRatio=0.9, cropRatio=0.7:0.9. Default: 1.
+            cropRatio=0.46666:0.875
+            # Crop scale ratio jitter type.
+            # Possible values: None, UniRatio, UniLength, UniArea. Default: UniRatio
+            jitterType="UniRatio"
+            # The file stores mean values for each pixel in OpenCV matrix XML format.
+            meanFile="$ConfigDir$/ImageNet1K_mean.xml"
+        }
+        labels={
+            labelDim=1000
+        }
+    }
+}
+
+createEval={   
+    action="edit"
+    CurModel="$modelPath$.PBN"
+    NewModel="$modelPath$.Eval"
+    editPath="$ConfigDir$/CreateBSEvalModel.mel"
+}
+
+test={
+    action="test"
+    modelPath="$modelPath$.Eval"
+    # Set minibatch size for testing.
+    minibatchSize=100
+
+    useDistributedMBReading=true
+
+    reader={
+        readerType="ImageReader"
+        file="$DataDir$/val_map.txt"
+        randomize="None"
+        features={
+            width=224
+            height=224
+            channels=3
+            cropType="Center"
+            cropRatio=0.875
+            meanFile="$ConfigDir$/ImageNet1K_mean.xml"
+        }
+        labels={
+            labelDim=1000
+        }
+    }    
+}
