@@ -152,6 +152,11 @@ namespace CNTK
         ///
         CNTK_API static void SetDefaultDevice(const DeviceDescriptor& newDefaultDevice);
 
+        ///
+        /// Static method to get the descriptor of the best available device.
+        ///
+        CNTK_API static DeviceDescriptor BestDevice();
+
     private:
         DeviceDescriptor(unsigned int deviceId, DeviceKind deviceType)
             : m_deviceId(deviceId), m_deviceType(deviceType)

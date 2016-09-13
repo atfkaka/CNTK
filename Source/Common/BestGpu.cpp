@@ -117,10 +117,14 @@ public:
     static const int MininumCCMajorForGpu = 3;                                                // cntk supports GPUs with Compute Capability > 3.0
     std::vector<int> GetDevices(int number = AllDevices, BestGpuFlags flags = bestGpuNormal); // get multiple devices
     std::vector<ProcessorData *> GetProcessorData();
+    void UnlockDevice(int deviceId);
 
 private:
     bool LockDevice(int deviceId, bool trial = true);
 };
+
+static DEVICEID_TYPE g_bestDeviceId = DEVICEID_NOTYETDETERMINED;
+static BestGpu* g_bestGpu = nullptr;
 
 // DeviceFromConfig - Parse 'deviceId' config parameter to determine what type of behavior is desired
 //Symbol - Meaning
@@ -139,12 +143,10 @@ static DEVICEID_TYPE SelectDevice(DEVICEID_TYPE deviceId, bool bLockGPU, const i
 
     if (deviceId == DEVICEID_AUTO)
     {
-        static DEVICEID_TYPE bestDeviceId = DEVICEID_NOTYETDETERMINED;
         // set bestDeviceId once if not set yet
-        if (bestDeviceId == DEVICEID_NOTYETDETERMINED)
+        if (g_bestDeviceId == DEVICEID_NOTYETDETERMINED)
         {
             // GPU device to be auto-selected, so init our class
-            static BestGpu* g_bestGpu = nullptr;
             if (g_bestGpu == nullptr)
             {
                 g_bestGpu = new BestGpu();
@@ -156,15 +158,32 @@ static DEVICEID_TYPE SelectDevice(DEVICEID_TYPE deviceId, bool bLockGPU, const i
                 g_bestGpu->DisallowUnsupportedDevices();
             }
 
-            bestDeviceId = (DEVICEID_TYPE)g_bestGpu->GetDevice(BestGpuFlags(bLockGPU ? (bestGpuAvoidSharing | bestGpuExclusiveLock) : bestGpuAvoidSharing));
+            g_bestDeviceId = (DEVICEID_TYPE)g_bestGpu->GetDevice(BestGpuFlags(bLockGPU ? (bestGpuAvoidSharing | bestGpuExclusiveLock) : bestGpuAvoidSharing));
             // TODO: Do we need to hold this pointer at all? We will only query it once. Or is it used to hold lock to a GPU?
         }
         // already chosen
-        deviceId = bestDeviceId;
+        deviceId = g_bestDeviceId;
     }
 
     return deviceId;
 }
+
+DEVICEID_TYPE GetBestDevice()
+{
+     return SelectDevice(DEVICEID_AUTO, true, intargvector());
+}
+
+void OnDeviceSelected(DEVICEID_TYPE deviceId)
+{
+    if (g_bestDeviceId != DEVICEID_NOTYETDETERMINED && g_bestDeviceId != deviceId && g_bestDeviceId >= 0)
+    {
+        // In case when the selected device id is different from the best device id, 
+        // need to release the lock corresponding to the best device, so that other processes
+        // can auto-select and use it.
+        g_bestGpu->UnlockDevice(g_bestDeviceId);
+    }
+}
+
 //#ifdef MATH_EXPORTS
 //__declspec(dllexport)
 //#endif
@@ -694,6 +713,11 @@ void BestGpu::QueryNvmlData()
     }
     m_nvmlData = true;
     return;
+}
+
+void BestGpu::UnlockDevice(int deviceId)
+{
+    delete m_GPUMutex[deviceId].release();
 }
 
 bool BestGpu::LockDevice(int deviceId, bool trial)

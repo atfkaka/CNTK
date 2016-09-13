@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "CNTKLibrary.h"
+#include "BestGpu.h"
 
 namespace CNTK
 {
@@ -18,7 +19,7 @@ namespace CNTK
     }
 
     /*static*/ std::atomic<bool> DeviceDescriptor::s_defaultDeviceFrozen(false);
-    /*static*/ std::shared_ptr<DeviceDescriptor> DeviceDescriptor::s_defaultDevice(new DeviceDescriptor(DeviceDescriptor::CPUDevice()));
+    /*static*/ std::shared_ptr<DeviceDescriptor> DeviceDescriptor::s_defaultDevice(new DeviceDescriptor(DeviceDescriptor::BestDevice()));
 
     /*static*/ DeviceDescriptor DeviceDescriptor::DefaultDevice()
     {
@@ -27,8 +28,13 @@ namespace CNTK
 
     /*static*/ DeviceDescriptor DeviceDescriptor::UseDefaultDevice()
     {
-        s_defaultDeviceFrozen.store(true);
-        return DefaultDevice();
+        bool alreadyFrozen = s_defaultDeviceFrozen.exchange(true);
+        auto selectedDevice = DefaultDevice();
+        if (!alreadyFrozen)
+        {
+            Microsoft::MSR::CNTK::OnDeviceSelected(selectedDevice.Id());
+        }
+        return selectedDevice;
     }
 
     /*static*/ void DeviceDescriptor::SetDefaultDevice(const DeviceDescriptor& newDefaultDevice)
@@ -38,6 +44,14 @@ namespace CNTK
 
         s_defaultDevice.reset(new DeviceDescriptor(newDefaultDevice));
     }
+    
+    /*static*/ DeviceDescriptor DeviceDescriptor::BestDevice()
+    {
+        // TODO: add unit tests for this.
+        auto id = Microsoft::MSR::CNTK::GetBestDevice();
+        return id >= 0 ? DeviceDescriptor::GPUDevice(id) : DeviceDescriptor::CPUDevice();
+    }
+
 
     /*static*/ const std::wstring Axis::StaticAxisNamePrefix = L"staticAxis_";
 
