@@ -23,7 +23,18 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             return m_forceDeterministicAlgorithms;
         }
 
+        static void SetCudnnTimingMargin(double margin)
+        {
+            m_cudnnTimingMargin = margin;
+        }
+
+        static double GetCudnnTimingMargin()
+        {
+            return m_cudnnTimingMargin;
+        }
+
     private:
         static std::atomic<bool> m_forceDeterministicAlgorithms;
+        static double m_cudnnTimingMargin;
     };
 }}}
