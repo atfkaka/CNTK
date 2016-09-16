@@ -507,6 +507,8 @@ int wmainWithBS(int argc, wchar_t* argv[]) // called from wmain which is a wrapp
     if (config(L"forceDeterministicAlgorithms", false))
         Globals::ForceDeterministicAlgorithms();
 
+    Globals::SetCudnnTimingMargin(config(L"cudnnTimingMargin", 0.0));
+
 #ifndef CPUONLY
     auto valpp = config.Find(L"deviceId");
     if (valpp)
@@ -655,6 +657,8 @@ int wmainOldCNTKConfig(int argc, wchar_t* argv[])
 
     if (config(L"forceDeterministicAlgorithms", false))
         Globals::ForceDeterministicAlgorithms();
+
+    Globals::SetCudnnTimingMargin(config(L"cudnnTimingMargin", 0.0));
 
     // get the command param set they want
     wstring logpath = config(L"stderr", L"");

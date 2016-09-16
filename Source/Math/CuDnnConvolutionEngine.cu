@@ -173,13 +173,14 @@ public:
 
 public:
     CuDnnConvolutionEngine(ConvolveGeometryPtr geometry, DEVICEID_TYPE deviceId, ImageLayoutKind imageLayout,
-                           size_t maxTempMemSizeInSamples, PoolKind poolKind, bool forceDeterministicAlgorithms)
+                           size_t maxTempMemSizeInSamples, PoolKind poolKind, bool forceDeterministicAlgorithms, double cudnnTimingMargin)
                            : Base(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind),
                            m_cudnn(CuDnn::Instance()),
                            m_dataType(CuDnnTensor::GetDataType<ElemType>()),
                            m_inT(geometry->InputShape(), m_dataType),
                            m_outT(geometry->OutputShape(), m_dataType),
-                           m_forceDeterministicAlgorithms(forceDeterministicAlgorithms)
+                           m_forceDeterministicAlgorithms(forceDeterministicAlgorithms),
+                           m_timeMargin(cudnnTimingMargin)
     {
     }
 
@@ -382,12 +383,26 @@ private:
         assert(calgo > 0);
         size_t inputSampleSize = m_geometry->InputShape().GetNumElements();
         size_t maxMem = m_maxTempMemSizeInSamples == 0 ? (std::numeric_limits<size_t>::max)() : inputSampleSize * m_maxTempMemSizeInSamples * sizeof(ElemType);
-        // Find best (fastest) algorithm which satisfies workspace requirements.
-        auto res = std::find_if(algoPerf, algoPerf + calgo,
-            [=](const CuDnnAlgoT& cur) { return cur.status == CUDNN_STATUS_SUCCESS && cur.memory <= maxMem; });
 
+        auto valid = [maxMem](const CuDnnAlgoT& cur) { return cur.status == CUDNN_STATUS_SUCCESS && cur.memory <= maxMem; };
+        // Find best (fastest) algorithm which satisfies workspace requirements.
+        auto res = std::find_if(algoPerf, algoPerf + calgo, valid);
         if (res == algoPerf + calgo)
             RuntimeError("cuDNN could not find suitable algorithm for the current convolution configuration.");
+
+        // Now find the most memory efficient algorithm that's close to the fastest
+        if (m_timeMargin > 0)
+        {
+            auto bestTime = res->time;
+            auto next = std::find_if(res + 1, algoPerf + calgo, valid);
+            while (next != algoPerf + calgo)
+            {
+                if (next->time - m_timeMargin < bestTime && next->memory < res->memory)
+                    res = next;
+                next = std::find_if(next + 1, algoPerf + calgo, valid);
+            }
+        }
+
         algo.MaxAllowedMBSizeForCurrentAlgo = batchSize;
         algo.Algo = *res;
 
@@ -463,15 +478,17 @@ private:
 
     // Flag indicating whether only deterministic algorithms should be used.
     bool m_forceDeterministicAlgorithms;
+
+    double m_timeMargin;
 };
 
 template <class ElemType>
 std::unique_ptr<ConvolutionEngine<ElemType>> CuDnnConvolutionEngineFactory<ElemType>::Create(ConvolveGeometryPtr geometry,
                                                                                              DEVICEID_TYPE deviceId, ImageLayoutKind imageLayout,
                                                                                              size_t maxTempMemSizeInSamples, PoolKind poolKind,
-                                                                                             bool forceDeterministicAlgorithms)
+                                                                                             bool forceDeterministicAlgorithms, double cudnnTimingMargin)
 {
-    return std::make_unique<CuDnnConvolutionEngine<ElemType>>(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind, forceDeterministicAlgorithms);
+    return std::make_unique<CuDnnConvolutionEngine<ElemType>>(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind, forceDeterministicAlgorithms, cudnnTimingMargin);
 }
 
 template <class ElemType>
