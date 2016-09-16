@@ -9,6 +9,8 @@
 #include <typeinfo>
 #include <typeindex>
 #include "CuDnnCommon.h"
+#include "Globals.h"
+
 
 template <>
 const char* CudaErrString<cudnnStatus_t>(cudnnStatus_t x)
@@ -173,13 +175,14 @@ public:
 
 public:
     CuDnnConvolutionEngine(ConvolveGeometryPtr geometry, DEVICEID_TYPE deviceId, ImageLayoutKind imageLayout,
-                           size_t maxTempMemSizeInSamples, PoolKind poolKind, bool forceDeterministicAlgorithms)
+        size_t maxTempMemSizeInSamples, PoolKind poolKind, bool forceDeterministicAlgorithms, int cudnnAutotunePolicy)
                            : Base(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind),
                            m_cudnn(CuDnn::Instance()),
                            m_dataType(CuDnnTensor::GetDataType<ElemType>()),
                            m_inT(geometry->InputShape(), m_dataType),
                            m_outT(geometry->OutputShape(), m_dataType),
-                           m_forceDeterministicAlgorithms(forceDeterministicAlgorithms)
+                           m_forceDeterministicAlgorithms(forceDeterministicAlgorithms),
+                           m_autotunePolicy(cudnnAutotunePolicy)
     {
     }
 
@@ -357,7 +360,7 @@ private:
             return;
 
         using CuDnnAlgoT = decltype(TAlgo::Algo);
-        CuDnnAlgoT algoPerf[MaxAlgoCount];
+        CuDnnAlgoT algoPerf[2 * MaxAlgoCount];
         int calgo = 0;
         cudnnStatus_t err = finder(calgo, algoPerf);
         // Alloc failed - usually means cuDNN runtime auto-tuner could not allocate workspace.
@@ -382,12 +385,55 @@ private:
         assert(calgo > 0);
         size_t inputSampleSize = m_geometry->InputShape().GetNumElements();
         size_t maxMem = m_maxTempMemSizeInSamples == 0 ? (std::numeric_limits<size_t>::max)() : inputSampleSize * m_maxTempMemSizeInSamples * sizeof(ElemType);
-        // Find best (fastest) algorithm which satisfies workspace requirements.
-        auto res = std::find_if(algoPerf, algoPerf + calgo,
-            [=](const CuDnnAlgoT& cur) { return cur.status == CUDNN_STATUS_SUCCESS && cur.memory <= maxMem; });
+        auto invalid = [maxMem](const CuDnnAlgoT& cur) { return cur.status != CUDNN_STATUS_SUCCESS || cur.memory > maxMem; };
+        auto algoEnd = std::remove_if(algoPerf, algoPerf + calgo, invalid);
+        calgo = static_cast<int>(algoEnd - algoPerf);
+        if (m_autotunePolicy != Globals::cudnnAutotunePolicy::OPTIMISTIC && calgo > 1)
+        {
+            auto algoNext = algoEnd;
+            int calgo1 = 0;
+            cudnnStatus_t err1 = finder(calgo1, algoNext);
+            if (err1 == CUDNN_STATUS_SUCCESS)
+            {
+                algoEnd = std::remove_if(algoNext, algoNext + calgo1, invalid);
+                auto byTime = [](const CuDnnAlgoT& a, const CuDnnAlgoT& b) { return a.time < b.time; };
+                std::inplace_merge(algoPerf, algoNext, algoEnd, byTime);
+                calgo = static_cast<int>(algoEnd - algoPerf);
+            }
+        }
 
+        // Start with the fastest algorithm
+        auto res = &algoPerf[0];
         if (res == algoPerf + calgo)
             RuntimeError("cuDNN could not find suitable algorithm for the current convolution configuration.");
+
+        switch (m_autotunePolicy)
+        {
+            case Globals::cudnnAutotunePolicy::PESSIMISTIC:
+            {
+                //find the first algorithm that's seen twice
+                int i, seen[MaxAlgoCount] = { 0 };
+                for (i = 0; i < calgo && !seen[algoPerf[i].algo]; ++i)
+                    seen[algoPerf[i].algo] = 1;
+                if (i < calgo)
+                    res = algoPerf + i;
+            }
+            break;
+            case Globals::cudnnAutotunePolicy::MEMORY_AWARE:
+            {
+                //find the most memory efficient algorithm that's inside the interval of the fastest
+                auto bestAlgo = res->algo;
+                auto searchEnd = std::find_if(algoPerf + 1, algoPerf + calgo, [bestAlgo](const CuDnnAlgoT& cur) { return cur.algo == bestAlgo; });
+                if (searchEnd != algoPerf + 1 && searchEnd != algoPerf + calgo)
+                    res = std::min_element(algoPerf, searchEnd, [](const CuDnnAlgoT& a, const CuDnnAlgoT& b) { return a.memory < b.memory; });
+            }
+            break;
+            case Globals::cudnnAutotunePolicy::OPTIMISTIC:
+                break;
+            default:
+                break;
+        }
+
         algo.MaxAllowedMBSizeForCurrentAlgo = batchSize;
         algo.Algo = *res;
 
@@ -463,15 +509,17 @@ private:
 
     // Flag indicating whether only deterministic algorithms should be used.
     bool m_forceDeterministicAlgorithms;
+
+    int m_autotunePolicy;
 };
 
 template <class ElemType>
 std::unique_ptr<ConvolutionEngine<ElemType>> CuDnnConvolutionEngineFactory<ElemType>::Create(ConvolveGeometryPtr geometry,
                                                                                              DEVICEID_TYPE deviceId, ImageLayoutKind imageLayout,
                                                                                              size_t maxTempMemSizeInSamples, PoolKind poolKind,
-                                                                                             bool forceDeterministicAlgorithms)
+                                                                                             bool forceDeterministicAlgorithms, int cudnnAutotunePolicy)
 {
-    return std::make_unique<CuDnnConvolutionEngine<ElemType>>(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind, forceDeterministicAlgorithms);
+    return std::make_unique<CuDnnConvolutionEngine<ElemType>>(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind, forceDeterministicAlgorithms, cudnnAutotunePolicy);
 }
 
 template <class ElemType>
