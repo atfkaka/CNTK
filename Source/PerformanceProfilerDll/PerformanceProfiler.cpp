@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 //
-// Real-time thread-safe profiler that generats a summary report and a detail profile log.
-// The profiler is highly performant and light weight and meant to be left on all the time.
+// Real-time thread-safe profiler that generates a summary report and a detail profile log.
+// The profiler is highly performant and lightweight.
 //
 
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -16,6 +16,7 @@
 #include "fileutil.h"
 #include <stdio.h>
 #include <time.h>
+#include <wchar.h>
 #ifndef CPUONLY
 #include <cuda_runtime_api.h>
 #endif
@@ -58,10 +59,10 @@ static const FixedEventDesc c_fixedEvtDesc[profilerEvtMax] = {
     { "Epoch", profilerEvtTime, false },                            // profilerEvtMainEpoch
     { "_Minibatch Iteration", profilerEvtTime, false },             // profilerEvtMainMinibatch
     { "__Get Minibatch", profilerEvtTime, true },                   // profilerEvtMainGetMinibatch
-    { "__Forward + Backward", profilerEvtTime, true },              // profilerEvtMainFB
-    { "__Gradient Aggregation", profilerEvtTime, true },            // profilerEvtMainGradient
-    { "__Weight Update", profilerEvtTime, true },                   // profilerEvtMainWeights
-    { "__Post Processing", profilerEvtTime, true },                 // profilerEvtMainPost
+    { "__Forward + Backward", profilerEvtTime, true },              // profilerEvtMainForwardBackward
+    { "__Gradient Aggregation", profilerEvtTime, true },            // profilerEvtMainGradientAggr
+    { "__Weight Update", profilerEvtTime, true },                   // profilerEvtMainWeightUpdate
+    { "__Post Processing", profilerEvtTime, true },                 // profilerEvtMainPostProcessing
 
     { "", profilerEvtSeparator, false },                            // profilerSepSpace3
     { "Data Reader", profilerEvtSeparator, false },                 // profilerSepDataReader
@@ -74,12 +75,12 @@ static const FixedEventDesc c_fixedEvtDesc[profilerEvtMax] = {
 
 struct FixedEventRecord
 {
-    int             cnt;
-    long long       sum;
-    double          sumsq;
-    long long       min;
-    long long       max;
-    long long       totalBytes;
+    int        cnt;
+    long long  sum;
+    double     sumsq;
+    long long  min;
+    long long  max;
+    size_t     totalBytes;
 };
 
 //
@@ -88,9 +89,9 @@ struct FixedEventRecord
 //
 struct CustomEventRecord
 {
-    long long               beginClock;
-    long long               endClock;
-    unsigned int            threadId;
+    long long     beginClock;
+    long long     endClock;
+    unsigned int  threadId;
 };
 
 
@@ -99,18 +100,18 @@ struct CustomEventRecord
 //
 struct ProfilerState
 {
-    bool                    init = false;               // Profiler initialized
-    bool                    initWarning = true;         // Initilize warning flag so that it prints once
-    bool                    enabled;                    // Profiler enabled (active)
-    bool                    syncGpu;                    // Sync GPU per each profiling event
-    char                    profilerDir[256];           // Directory where reports/logs are saved
-    char                    logSuffix[64];              // Suffix to append to report/log file names
-    long long               clockFrequency;             // Timer frequency
+    bool                    init = false;                // Profiler initialized
+    bool                    initWarning = true;          // Initilize warning flag so that it prints once
+    bool                    enabled;                     // Profiler enabled (active)
+    bool                    syncGpu;                     // Sync GPU per each profiling event
+    wstring                 profilerDir;                 // Directory where reports/logs are saved
+    wstring                 logSuffix;                   // Suffix to append to report/log file names
+    long long               clockFrequency;              // Timer frequency
     FixedEventRecord        fixedEvents[profilerEvtMax]; // Profiling data for each fixed event
-    bool                    customEventBufferFull;      // Is custom event buffer full?
-    unsigned long long      customEventBufferBytes;     // Number of bytes allocated for the custom event buffer
-    unsigned long long      customEventPtr;             // Pointer to current place in buffer
-    char*                   customEventBuffer;          // Pointer to custom event buffer
+    bool                    customEventBufferFull;       // Is custom event buffer full?
+    size_t                  customEventBufferBytes;      // Number of bytes allocated for the custom event buffer
+    unsigned long long      customEventPtr;              // Pointer to current place in buffer
+    char*                   customEventBuffer;           // Pointer to custom event buffer
 };
 
 
@@ -128,11 +129,11 @@ inline void LockEnter();
 inline void LockLeave();
 void LockClose();
 
-void ProfilerGenerateReport(const char* fileName, struct tm* timeInfo);
+void ProfilerGenerateReport(const wstring& fileName, struct tm* timeInfo);
 void FormatTimeStr(char* str, size_t strLen, double value);
 void FormatThroughputStr(char* str, size_t strLen, double value);
 void FormatBytesStr(char* str, size_t strLen, long long bytes);
-void ProfilerGenerateDetailFile(const char* fileName);
+void ProfilerGenerateDetailFile(const wstring& fileName);
 
 //
 // Convenience scope lock.
@@ -142,7 +143,6 @@ struct ScopeLock
     ScopeLock() { LockEnter(); }
     ~ScopeLock() { LockLeave(); }
 };
-#define LOCK    ScopeLock sl;
 
 #define INIT_GUARD_CHECK    if (!g_profilerState.init) \
                             { \
@@ -161,25 +161,16 @@ struct ScopeLock
 // logSuffix: Suffix string to append to log files.
 // syncGpu: Wait for GPU to complete processing for each profiling event.
 //
-void PERF_PROFILER_API ProfilerInit(const char* profilerDir, const unsigned long long customEventBufferBytes,
-    const char* logSuffix, const bool syncGpu)
+void PERF_PROFILER_API ProfilerInit(const wstring& profilerDir, const size_t customEventBufferBytes,
+    const wstring& logSuffix, const bool syncGpu)
 {
     memset(&g_profilerState, 0, sizeof(g_profilerState));
 
     LockInit();
 
-    if (profilerDir)
-    {
-        strncpy(g_profilerState.profilerDir, profilerDir, sizeof(g_profilerState.profilerDir) - 1);
-    }
-    else
-    {
-        strncpy(g_profilerState.profilerDir, PROFILER_DIR, sizeof(g_profilerState.profilerDir) - 1);
-    }
-    g_profilerState.profilerDir[sizeof(g_profilerState.profilerDir) - 1] = 0;
+    g_profilerState.profilerDir = profilerDir;
 
-    strncpy(g_profilerState.logSuffix, logSuffix, sizeof(g_profilerState.logSuffix) - 1);
-    g_profilerState.logSuffix[sizeof(g_profilerState.logSuffix) - 1] = 0;
+    g_profilerState.logSuffix = logSuffix;
 
     g_profilerState.customEventBufferFull = false;
     g_profilerState.customEventBufferBytes = customEventBufferBytes;
@@ -213,7 +204,7 @@ void ProfilerTimeEndInt(const int eventId, const long long beginClock, const lon
     if (!g_profilerState.enabled)
         return;
 
-    LOCK
+    ScopeLock sl;
 
     long long delta = endClock - beginClock;
     if (g_profilerState.fixedEvents[eventId].cnt == 0)
@@ -233,10 +224,10 @@ void ProfilerTimeEndInt(const char* eventDescription, const long long beginClock
     if (!g_profilerState.enabled)
         return;
 
-    LOCK
+    ScopeLock sl;
 
-    auto eventDescriptionBytes = strlen(eventDescription) + 1;
-    auto requiredBufferBytes = eventDescriptionBytes + sizeof(CustomEventRecord);
+    size_t eventDescriptionBytes = strlen(eventDescription) + 1;
+    size_t requiredBufferBytes = eventDescriptionBytes + sizeof(CustomEventRecord);
     if ((g_profilerState.customEventPtr + requiredBufferBytes) > g_profilerState.customEventBufferBytes)
     {
         if (!g_profilerState.customEventBufferFull)
@@ -274,7 +265,10 @@ long long PERF_PROFILER_API ProfilerTimeBegin()
 void PERF_PROFILER_API ProfilerTimeEnd(const long long stateId, const int eventId)
 {
     INIT_GUARD_CHECK
-    if (c_fixedEvtDesc[eventId].syncGpu) ProfilerSyncGpu();
+    if (c_fixedEvtDesc[eventId].syncGpu)
+    {
+        ProfilerSyncGpu();
+    }
     long long endClock = GetClock();
     ProfilerTimeEndInt(eventId, stateId, endClock);
     ProfilerTimeEndInt(c_fixedEvtDesc[eventId].eventDescription, stateId, endClock);
@@ -314,30 +308,30 @@ long long PERF_PROFILER_API ProfilerThroughputBegin()
 }
 
 
-void PERF_PROFILER_API ProfilerThroughputEnd(const long long stateId, const int eventId, const long long bytes)
+void PERF_PROFILER_API ProfilerThroughputEnd(const long long stateId, const int eventId, const size_t bytes)
 {
     long long endClock = GetClock();
     INIT_GUARD_CHECK
     if (!g_profilerState.enabled)
         return;
 
-    LOCK
+    ScopeLock sl;
 
     auto beginClock = stateId;
     if (endClock == beginClock)
         return;
 
-    // Use KB rather than bytes to prevent overflow
-    long long KBytesPerSec = ((bytes * g_profilerState.clockFrequency) / 1000) / (endClock - beginClock);
+    // Use kB rather than bytes to prevent overflow
+    long long kBytesPerSec = ((bytes * g_profilerState.clockFrequency) / 1000) / (endClock - beginClock);
     if (g_profilerState.fixedEvents[eventId].cnt == 0)
     {
-        g_profilerState.fixedEvents[eventId].min = KBytesPerSec;
-        g_profilerState.fixedEvents[eventId].max = KBytesPerSec;
+        g_profilerState.fixedEvents[eventId].min = kBytesPerSec;
+        g_profilerState.fixedEvents[eventId].max = kBytesPerSec;
     }
-    g_profilerState.fixedEvents[eventId].min = min(KBytesPerSec, g_profilerState.fixedEvents[eventId].min);
-    g_profilerState.fixedEvents[eventId].max = max(KBytesPerSec, g_profilerState.fixedEvents[eventId].max);
-    g_profilerState.fixedEvents[eventId].sum += KBytesPerSec;
-    g_profilerState.fixedEvents[eventId].sumsq += (double)KBytesPerSec * (double)KBytesPerSec;
+    g_profilerState.fixedEvents[eventId].min = min(kBytesPerSec, g_profilerState.fixedEvents[eventId].min);
+    g_profilerState.fixedEvents[eventId].max = max(kBytesPerSec, g_profilerState.fixedEvents[eventId].max);
+    g_profilerState.fixedEvents[eventId].sum += kBytesPerSec;
+    g_profilerState.fixedEvents[eventId].sumsq += (double)kBytesPerSec * (double)kBytesPerSec;
     g_profilerState.fixedEvents[eventId].totalBytes += bytes;
     g_profilerState.fixedEvents[eventId].cnt++;
 }
@@ -353,26 +347,25 @@ void PERF_PROFILER_API ProfilerClose()
 
     LockClose();
 
-    // Generate summary report
-    if (_wmkdir(s2ws(g_profilerState.profilerDir).c_str()) == ENOENT)
+    if (_wmkdir(g_profilerState.profilerDir.c_str()) == -1)
     {
-        fprintf(stderr, "Error: ProfilerClose: Cannot create directory <%s>.\n", g_profilerState.profilerDir);
-        return;
+        RuntimeError("Error: ProfilerClose: Cannot create directory %ls", g_profilerState.profilerDir.c_str());
     }
 
     time_t currentTime;
     time(&currentTime);
     struct tm* timeInfo = localtime(&currentTime);
 
-    char timeStr[32];
-    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d_%H-%M-%S", timeInfo);
+    wchar_t timeStr[32];
+    wcsftime(timeStr, 32, L"%Y-%m-%d_%H-%M-%S", timeInfo);
 
-    char fileName[256];
-    sprintf_s(fileName, sizeof(fileName)-1, "%s/%s_summary_%s.txt", g_profilerState.profilerDir, timeStr, g_profilerState.logSuffix);
+    // Generate summary report
+    wchar_t fileName[256];
+    swprintf(fileName, 256, L"%s/%s_summary_%s.txt", g_profilerState.profilerDir.c_str(), timeStr, g_profilerState.logSuffix.c_str());
     ProfilerGenerateReport(fileName, timeInfo);
 
     // Generate detailed event file
-    sprintf_s(fileName, sizeof(fileName) - 1, "%s/%s_detail_%s.csv", g_profilerState.profilerDir, timeStr, g_profilerState.logSuffix);
+    swprintf(fileName, 256, L"%s/%s_detail_%s.csv", g_profilerState.profilerDir.c_str(), timeStr, g_profilerState.logSuffix.c_str());
     ProfilerGenerateDetailFile(fileName);
 
     delete[] g_profilerState.customEventBuffer;
@@ -499,12 +492,12 @@ void LockClose()
 //
 // Generate summary report.
 //
-void ProfilerGenerateReport(const char* fileName, struct tm* timeInfo)
+void ProfilerGenerateReport(const wstring& fileName, struct tm* timeInfo)
 {
-    FILE* f = fopen(fileName, "wt");
+    FILE* f = _wfopen(fileName.c_str(), L"wt");
     if (f == NULL)
     {
-        fprintf(stderr, "Error: ProfilerGenerateReport: Cannot create file <%s>.\n", fileName);
+        fprintf(stderr, "Error: ProfilerGenerateReport: Cannot create file <%ls>.\n", fileName.c_str());
         return;
     }
 
@@ -594,6 +587,8 @@ void ProfilerGenerateReport(const char* fileName, struct tm* timeInfo)
         if(printLine) fprintfOrDie(f, "\n");
     }
 
+    fprintfOrDie(f, "\nNote: MB = 1024^2 bytes, MBps = 10^6 bytes per second\n");
+
     fclose(f);
 }
 
@@ -621,7 +616,7 @@ void FormatBytesStr(char* str, size_t strLen, long long bytes)
 {
     if (bytes < (1024ll * 1024ll))
     {
-        sprintf_s(str, strLen, "%13lld KB", bytes >> 10);
+        sprintf_s(str, strLen, "%13lld kB", bytes >> 10);
     }
     else
     {
@@ -633,12 +628,12 @@ void FormatBytesStr(char* str, size_t strLen, long long bytes)
 //
 // Generate detail event file.
 //
-void ProfilerGenerateDetailFile(const char* fileName)
+void ProfilerGenerateDetailFile(const wstring& fileName)
 {
-    FILE* f = fopen(fileName, "wt");
+    FILE* f = _wfopen(fileName.c_str(), L"wt");
     if (f == NULL)
     {
-        fprintf(stderr, "Error: ProfilerGenerateDetailFile: Cannot create file <%s>.\n", fileName);
+        fprintf(stderr, "Error: ProfilerGenerateDetailFile: Cannot create file <%ls>.\n", fileName.c_str());
         return;
     }
 
@@ -667,7 +662,7 @@ void ProfilerGenerateDetailFile(const char* fileName)
 // Scoped helpers.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ProfilerContext::Init(const char* profilerDir, const unsigned long long customEventBufferBytes, const char* logSuffix, const bool syncGpu)
+void ProfilerContext::Init(const wstring& profilerDir, const size_t customEventBufferBytes, const wstring& logSuffix, const bool syncGpu)
 {
     ProfilerInit(profilerDir, customEventBufferBytes, logSuffix, syncGpu);
 }
@@ -702,7 +697,7 @@ ScopeProfile::~ScopeProfile()
     }
 }
 
-ScopeThroughput::ScopeThroughput(int eventId, long long bytes)
+ScopeThroughput::ScopeThroughput(int eventId, size_t bytes)
 {
     m_bytes = bytes;
     m_eventId = eventId;

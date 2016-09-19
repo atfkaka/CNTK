@@ -79,11 +79,20 @@ void TestCn(const ConfigParameters& config);
 template <typename ConfigParamType>
 void SetupProfiling(ProfilerContext& profilerContext, const ConfigParamType& config, int nodeRank)
 {
+    const char* workDir = getenv("WORK_DIR");
+    if (workDir == NULL)
+    {
+        workDir = ".";
+    }
+    wstring defaultProfilerDir = s2ws(workDir);
+    defaultProfilerDir += L"/profiler";
+
     if (config(L"profilerEnabled", false))
     {
-        profilerContext.Init(config(L"profilerDirectory", "./profiler").c_str(),
-                             config(L"profilerBufferSize", static_cast<uint64_t>(32ull * 1024ull * 1024ull)),
-                             std::to_string(nodeRank).c_str(), config(L"profilerSyncGpu", false));
+        profilerContext.Init(config(L"profilerDirectory", defaultProfilerDir),
+                             config(L"profilerBufferSize", static_cast<uint64_t>(32 * 1024 * 1024)),
+                             std::to_wstring(nodeRank),
+                             config(L"profilerSyncGpu", true));
     }
 }
 

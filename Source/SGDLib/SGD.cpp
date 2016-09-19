@@ -1012,7 +1012,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
                 smbDispatcher.DoneWithCurrentMinibatch();
         } // if (actualMBSize > 0)
 
-        ProfilerTimeEnd(profilerState, profilerEvtMainFB);
+        ProfilerTimeEnd(profilerState, profilerEvtMainForwardBackward);
         profilerState = ProfilerTimeBegin();
 
         // for momentum/clipping/regularization/etc., as well as for progress and statistics, we should only count frames that are not gaps
@@ -1084,7 +1084,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
                 epochEvalErrors[i] += m_gradHeader->evalErrors[i];
         }
 
-        ProfilerTimeEnd(profilerState, profilerEvtMainGradient);
+        ProfilerTimeEnd(profilerState, profilerEvtMainGradientAggr);
         profilerState = ProfilerTimeBegin();
 
         // update model parameters
@@ -1143,7 +1143,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
             }
         }
 
-        ProfilerTimeEnd(profilerState, profilerEvtMainWeights);
+        ProfilerTimeEnd(profilerState, profilerEvtMainWeightUpdate);
         profilerState = ProfilerTimeBegin();
         
         timer.Stop();
@@ -1246,7 +1246,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 
         profiler.NextSample();
 
-        ProfilerTimeEnd(profilerState, profilerEvtMainPost);
+        ProfilerTimeEnd(profilerState, profilerEvtMainPostProcessing);
         ProfilerTimeEnd(minibatchProfilerState, profilerEvtMainMinibatch);
     }
 

@@ -13,7 +13,7 @@
 // time when the profiler is torn down, a summary report and a detailed log file is written to disk.
 //
 // When profiling code, two types of events can be used - fixed or custom. A fixed event is
-// predifined in the ProfilerEvents enum and by the FixedEventDesc struct. A custom event is
+// predefined in the ProfilerEvents enum and by the FixedEventDesc struct. A custom event is
 // simply a string.
 //
 // To profile a section of code, call ProfilerTimeBegin() and ProfilerTimeEnd(), or the scoped
@@ -56,10 +56,10 @@ enum ProfilerEvents
     profilerEvtMainEpoch,
     profilerEvtMainMinibatch,
     profilerEvtMainGetMinibatch,
-    profilerEvtMainFB,
-    profilerEvtMainGradient,
-    profilerEvtMainWeights,
-    profilerEvtMainPost,
+    profilerEvtMainForwardBackward,
+    profilerEvtMainGradientAggr,
+    profilerEvtMainWeightUpdate,
+    profilerEvtMainPostProcessing,
 
     // Data reader header (dummy events)
     profilerSepSpace3,
@@ -81,7 +81,7 @@ enum ProfilerEvents
 // logSuffix: Suffix string to append to log files.
 // syncGpu: Wait for GPU to complete processing for each profiling event.
 //
-void PERF_PROFILER_API ProfilerInit(const char* profilerDir, const unsigned long long customEventBufferBytes,
+void PERF_PROFILER_API ProfilerInit(const wstring& profilerDir, const unsigned long long customEventBufferBytes,
     const char* logSuffix, const bool syncGpu);
 
 
@@ -127,7 +127,7 @@ void PERF_PROFILER_API ProfilerClose();
 //
 struct PERF_PROFILER_API ProfilerContext
 {
-    void Init(const char* profilerDir = nullptr, const unsigned long long customEventBufferBytes = (32 * 1024 * 1024), const char* logSuffix = "", const bool syncGpu = false);
+    void Init(const wstring& profilerDir, const size_t customEventBufferBytes, const wstring& logSuffix, const bool syncGpu);
     ~ProfilerContext();
 };
 
@@ -157,13 +157,13 @@ private:
 //
 struct PERF_PROFILER_API ScopeThroughput
 {
-    ScopeThroughput(int eventId, long long bytes);
+    ScopeThroughput(int eventId, size_t bytes);
     ~ScopeThroughput();
 
 private:
-    unsigned long long              m_stateId;
-    int                             m_eventId;
-    long long                       m_bytes;
+    unsigned long long  m_stateId;
+    int                 m_eventId;
+    size_t              m_bytes;
 };
 
 #define THROUGHPUT_SCOPE(eventId, bytes)    ScopeThroughput __st##eventId(eventId, bytes);
