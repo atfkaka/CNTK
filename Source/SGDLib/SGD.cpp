@@ -1123,7 +1123,6 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
 #endif
                 }
             }
-            
         }
 
         // aggregation by model averaging or block momentum 
@@ -1246,7 +1245,7 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
         AttemptUtteranceDerivativeFeatures(net, trainSetDataReader, featureNodes, inputMatrices);
 
         profiler.NextSample();
-    
+
         ProfilerTimeEnd(profilerState, profilerEvtMainPost);
         ProfilerTimeEnd(minibatchProfilerState, profilerEvtMainMinibatch);
     }

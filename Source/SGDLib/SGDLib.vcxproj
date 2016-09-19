@@ -45,11 +45,6 @@
       <PreprocessorDefinitions Condition="'$(CNTK_ENABLE_1BitSGD)'=='true'">QUANTIZED_GRADIENT_AGGREGATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(MSMPI_LIB64);$(OutDir);$(NvmlLibPath)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ComputationNetworkLib.lib; Math.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>Math.dll</DelayLoadDLLs>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(DebugBuild)">
     <ClCompile>
@@ -57,12 +52,6 @@
       <PreprocessorDefinitions Condition="'$(CNTK_ENABLE_1BitSGD)'=='true'">CNTK_PARALLEL_TRAINING_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ComputationNetworkLib.lib; Math.lib; kernel32.lib; user32.lib; shell32.lib; PerformanceProfilerDll.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>Math.dll; nvml.dll; PerformanceProfilerDll.dll; $(CudaRuntimeDll)</DelayLoadDLLs>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(ReleaseBuild)">
     <ClCompile>
@@ -78,13 +67,6 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalOptions>/d2Zi+ %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>ComputationNetworkLib.lib; Math.lib; kernel32.lib; user32.lib; shell32.lib; PerformanceProfilerDll.lib; %(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>Math.dll; nvml.dll; PerformanceProfilerDll.dll; $(CudaRuntimeDll)</DelayLoadDLLs>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(CpuOnlyBuild)">
     <ClCompile>
