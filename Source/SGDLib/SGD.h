@@ -19,8 +19,6 @@
 #include <random>
 #include "Profiler.h"
 #include "MASGD.h"
-#include "GPUMatrix.h"
-#include "PerformanceProfiler.h"
 
 using namespace std; // ugh! TODO: get rid of this from .h files!!!
 
@@ -326,8 +324,7 @@ public:
           m_prevChosenMinibatchSize(0),
           m_lastFinishedEpochTrainLoss(0.0),
           m_distGradAgg(nullptr),
-          m_gradHeader(nullptr),
-          m_pCudaProfilerTimer(nullptr)
+          m_gradHeader(nullptr)
     {
         msra::files::make_intermediate_dirs(m_modelPath);
     }
@@ -349,14 +346,11 @@ public:
 
     void Train(shared_ptr<ComputationNetwork> net, DEVICEID_TYPE deviceId,
                IDataReader* trainSetDataReader,
-               IDataReader* validationSetDataReader, int startEpoch, bool loadNetworkFromCheckpoint,
-               CudaProfilerTimer& cudaProfilerTimer);
+               IDataReader* validationSetDataReader, int startEpoch, bool loadNetworkFromCheckpoint);
     void Adapt(wstring origModelFileName, wstring refNodeName,
                IDataReader* trainSetDataReader,
                IDataReader* validationSetDataReader,
-               const DEVICEID_TYPE deviceID,
-               CudaProfilerTimer& cudaProfilerTimer,
-               const bool makeMode = true);
+               const DEVICEID_TYPE deviceID, const bool makeMode = true);
 
 protected:
 
@@ -565,8 +559,6 @@ protected:
     std::shared_ptr<struct DistGradHeader> m_gradHeader;
 
     shared_ptr<IMASGD<ElemType>> m_pMASGDHelper;
-
-    CudaProfilerTimer* m_pCudaProfilerTimer;
 
 private:
     void MarkDropoutNodesEvalTimeStampAsOutdated(const ComputationNetworkPtr& net, const ComputationNodeBasePtr& criterionNode);

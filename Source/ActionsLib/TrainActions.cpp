@@ -26,7 +26,6 @@
 #include "ScriptableObjects.h"
 #include "BrainScriptEvaluator.h"
 #include "BrainScriptParser.h"
-#include "GPUMatrix.h"
 
 #include <string>
 #include <chrono>
@@ -115,12 +114,8 @@ void DoTrain(const ConfigRecordType& config)
     if (config.Exists(L"cvReader"))
         cvDataReader = CreateObject<DataReader>(config, L"cvReader");
 
-    CudaProfilerTimer cudaProfilerTimer(config(L"cudaProfilerEnabled", false),
-                                        config(L"cudaProfilerIterations", (int)1000),
-                                        config(L"cudaProfilerMaxIterations", (int)-1));
-
     optimizer->InitMPI(MPIWrapper::GetInstance());
-    optimizer->Train(net, deviceId, dataReader.get(), cvDataReader.get(), startEpoch, loadNetworkFromCheckpoint, cudaProfilerTimer);
+    optimizer->Train(net, deviceId, dataReader.get(), cvDataReader.get(), startEpoch, loadNetworkFromCheckpoint);
 }
 
 namespace Microsoft { namespace MSR { namespace ScriptableObjects {
@@ -189,12 +184,8 @@ void DoAdapt(const ConfigParameters& config)
 
     SGD<ElemType> sgd(configSGD);
 
-    CudaProfilerTimer cudaProfilerTimer(config(L"cudaProfilerEnabled", false),
-                                        config(L"cudaProfilerIterations", (int)1000),
-                                        config(L"cudaProfilerMaxIterations", (int)-1));
-
     sgd.InitMPI(MPIWrapper::GetInstance());
-    sgd.Adapt(origModelFileName, refNodeName, dataReader.get(), cvDataReader.get(), deviceId, cudaProfilerTimer, makeMode);
+    sgd.Adapt(origModelFileName, refNodeName, dataReader.get(), cvDataReader.get(), deviceId, makeMode);
 }
 
 template void DoAdapt<float>(const ConfigParameters& config);

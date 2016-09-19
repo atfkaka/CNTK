@@ -18,7 +18,6 @@
 #include <time.h>
 #ifndef CPUONLY
 #include <cuda_runtime_api.h>
-#include <cuda.h>
 #endif
 
 #ifdef _WIN32
@@ -64,26 +63,6 @@ static const FixedEventDesc c_fixedEvtDesc[profilerEvtMax] = {
     { "__Weight Update", profilerEvtTime, true },                   // profilerEvtMainWeights
     { "__Post Processing", profilerEvtTime, true },                 // profilerEvtMainPost
 
-    { "", profilerEvtSeparator, false },                            // profilerSepSpace1
-    { "Gradient Aggregation Thread & MPI", profilerEvtSeparator, false }, // profilerSepMPI
-    { "", profilerEvtSeparator, false },                            // profilerSepSpace2
-
-    { "Gradient Aggregation (1b)", profilerEvtTime, false },        // profilerEvtGradient1
-    { "_Async Communcation 1", profilerEvtTime, false },            // profilerEvtGradientAsyncComm11
-    { "_Wait for Gradients", profilerEvtTime, false },              // profilerEvtGradientWaitGradients1
-    { "_Wait for Headers", profilerEvtTime, false },                // profilerEvtGradientWaitHeaders1
-    { "_Async Communication 2", profilerEvtTime, false },           // profilerEvtGradientAsyncComm21
-    { "_Wait for Agg. Gradients", profilerEvtTime, false },         // profilerEvtGradientWaitAggGradients1
-    { "_Wait for Agg. Headers", profilerEvtTime, false },           // profilerEvtGradientWaitAggHeaders1
-    { "_Wait for Completion", profilerEvtTime, false },             // profilerEvtGradientWaitCompletion1
-
-    { "Gradient Aggregation (32b)", profilerEvtTime, false },       // profilerEvtGradient32
-    { "_Async Communication 1", profilerEvtTime, false },           // profilerEvtGradientAsyncComm132
-    { "_Wait for Headers", profilerEvtTime, false },                // profilerEvtGradientWaitHeaders32
-    { "_Async Communication 2", profilerEvtTime, false },           // profilerEvtGradientAsyncComm232
-    { "_Wait for Gradients", profilerEvtTime, false },              // profilerEvtGradientWaitGradients32
-    { "_Wait for Completion", profilerEvtTime, false },             // profilerEvtGradientWaitCompletion32
-
     { "", profilerEvtSeparator, false },                            // profilerSepSpace3
     { "Data Reader", profilerEvtSeparator, false },                 // profilerSepDataReader
     { "", profilerEvtSeparator, false },                            // profilerSepSpace4
@@ -124,9 +103,6 @@ struct ProfilerState
     bool                    initWarning = true;         // Initilize warning flag so that it prints once
     bool                    enabled;                    // Profiler enabled (active)
     bool                    syncGpu;                    // Sync GPU per each profiling event
-    bool                    syncCudaKernels;            // Sync GPU for each CUDA kernel
-    bool                    cudaSyncEnabled;            // Runtime state of CUDA kernel sync
-    bool                    cudaProfilingEnabled;       // Runtime state of profiling CUDA kernels
     char                    profilerDir[256];           // Directory where reports/logs are saved
     char                    logSuffix[64];              // Suffix to append to report/log file names
     long long               clockFrequency;             // Timer frequency
@@ -184,10 +160,9 @@ struct ScopeLock
 // customEventBufferBytes: Bytes to allocate for the custom event buffer.
 // logSuffix: Suffix string to append to log files.
 // syncGpu: Wait for GPU to complete processing for each profiling event.
-// syncCudaKernels: Synchronize every cuda kernel.
 //
 void PERF_PROFILER_API ProfilerInit(const char* profilerDir, const unsigned long long customEventBufferBytes,
-    const char* logSuffix, const bool syncGpu, const bool syncCudaKernels)
+    const char* logSuffix, const bool syncGpu)
 {
     memset(&g_profilerState, 0, sizeof(g_profilerState));
 
@@ -214,9 +189,6 @@ void PERF_PROFILER_API ProfilerInit(const char* profilerDir, const unsigned long
     g_profilerState.clockFrequency = GetClockFrequency();
 
     g_profilerState.syncGpu = syncGpu;
-    g_profilerState.syncCudaKernels = syncCudaKernels;
-    if (g_profilerState.syncCudaKernels) g_profilerState.cudaSyncEnabled = true;
-    g_profilerState.cudaProfilingEnabled = false;
     g_profilerState.enabled = false;
     g_profilerState.initWarning = true;
     g_profilerState.init = true;
@@ -332,17 +304,6 @@ void PERF_PROFILER_API ProfilerSyncGpu()
 
 
 //
-// CUDA kernel profiling.
-// CUDA kernels are profiled using a single call to this function.
-//
-void PERF_PROFILER_API ProfilerCudaTimeEnd(const float deltaSeconds, const char* eventDescription)
-{
-    INIT_GUARD_CHECK
-    ProfilerTimeEndInt(eventDescription, 0ll, (long long)((double)deltaSeconds * (double)g_profilerState.clockFrequency));
-}
-
-
-//
 // Measure throughput given the number of bytes.
 // ProfilerThroughputBegin() returns a stateId that is passed to ProfilerThroughputEnd().
 // If ProfilerThroughputEnd() is not called, the event is not recorded.
@@ -415,26 +376,6 @@ void PERF_PROFILER_API ProfilerClose()
     ProfilerGenerateDetailFile(fileName);
 
     delete[] g_profilerState.customEventBuffer;
-}
-
-
-//
-// Helpers for CUDA call profiling.
-//
-
-// Helper functions to set/get Sync flags.
-void PERF_PROFILER_API SyncCudaScopeSetFlags(bool syncEnabled, bool profilingEnabled)
-{
-    g_profilerState.cudaSyncEnabled = syncEnabled;
-    if (g_profilerState.syncCudaKernels) g_profilerState.cudaSyncEnabled = true;
-    g_profilerState.cudaProfilingEnabled = profilingEnabled;
-}
-
-void PERF_PROFILER_API SyncCudaScopeGetFlags(bool& syncEnabled, bool& profilingEnabled)
-{
-    syncEnabled = g_profilerState.cudaSyncEnabled;
-    if (g_profilerState.syncCudaKernels) syncEnabled = true;
-    profilingEnabled = g_profilerState.cudaProfilingEnabled;
 }
 
 
@@ -689,7 +630,6 @@ void FormatBytesStr(char* str, size_t strLen, long long bytes)
 }
 
 
-
 //
 // Generate detail event file.
 //
@@ -727,16 +667,15 @@ void ProfilerGenerateDetailFile(const char* fileName)
 // Scoped helpers.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ProfilerContext::Init(const char* profilerDir, const unsigned long long customEventBufferBytes, const char* logSuffix, const bool syncGpu, const bool syncCudaKernels)
+void ProfilerContext::Init(const char* profilerDir, const unsigned long long customEventBufferBytes, const char* logSuffix, const bool syncGpu)
 {
-    ProfilerInit(profilerDir, customEventBufferBytes, logSuffix, syncGpu, syncCudaKernels);
+    ProfilerInit(profilerDir, customEventBufferBytes, logSuffix, syncGpu);
 }
 
 ProfilerContext::~ProfilerContext()
 {
     ProfilerClose();
 }
-
 
 ScopeProfile::ScopeProfile(int eventId)
 {
@@ -763,7 +702,6 @@ ScopeProfile::~ScopeProfile()
     }
 }
 
-
 ScopeThroughput::ScopeThroughput(int eventId, long long bytes)
 {
     m_bytes = bytes;
@@ -774,39 +712,6 @@ ScopeThroughput::ScopeThroughput(int eventId, long long bytes)
 ScopeThroughput::~ScopeThroughput()
 {
     ProfilerThroughputEnd(m_stateId, m_eventId, m_bytes);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Cuda profiling helper.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-CudaProfilerTimer::CudaProfilerTimer(bool enable, int syncIterations, int maxIterations)
-{
-    m_enable = enable;
-    m_syncIterations = syncIterations;
-    m_maxIterations = maxIterations;
-    m_iterationCnt = 0;
-    m_iterationCntTotal = 0;
-    SyncCudaScopeSetFlags(false, false);
-}
-
-void CudaProfilerTimer::Update()
-{
-    if (!m_enable) return;
-
-    if (m_iterationCnt == m_syncIterations && (m_iterationCntTotal < m_maxIterations || m_maxIterations == -1))
-    {
-        SyncCudaScopeSetFlags(true, true);
-        m_iterationCnt = 0;
-    }
-    else
-    {
-        SyncCudaScopeSetFlags(false, false);
-    }
-
-    m_iterationCnt++;
-    m_iterationCntTotal++;
 }
 
 }}}

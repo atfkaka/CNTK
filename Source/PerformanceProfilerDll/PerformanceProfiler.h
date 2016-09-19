@@ -21,9 +21,6 @@
 // the GPU will be synced at the time ProfilerTimeEnd() is called, for fixed events only. For
 // custom events, ProfilerSyncGpu() can be called to sync the GPU.
 //
-// When profiling CUDA kernels, use the CUDA APIs to measure elapsed kernel time and call
-// ProfilerCudaTimeEnd() to record the event.
-//
 // When there is a need to profile I/O bandwidth (or throughput), the ProfilerThroughputBegin()
 // and ProfilerThroughputBegin() calls should be used. The throughput APIs can only be used
 // with fixed events.
@@ -64,28 +61,6 @@ enum ProfilerEvents
     profilerEvtMainWeights,
     profilerEvtMainPost,
 
-    // MPI/Gradient header (dummy events)
-    profilerSepSpace1,
-    profilerSepMPI,
-    profilerSepSpace2,
-
-    // MPI/Gradient aggregation multithreaded events
-    profilerEvtGradient1,
-    profilerEvtGradientAsyncComm11,
-    profilerEvtGradientWaitGradients1,
-    profilerEvtGradientWaitHeaders1,
-    profilerEvtGradientAsyncComm21,
-    profilerEvtGradientWaitAggGradients1,
-    profilerEvtGradientWaitAggHeaders1,
-    profilerEvtGradientWaitCompletion1,
-    
-    profilerEvtGradient32,
-    profilerEvtGradientAsyncComm132,
-    profilerEvtGradientWaitHeaders32,
-    profilerEvtGradientAsyncComm232,
-    profilerEvtGradientWaitGradients32,
-    profilerEvtGradientWaitCompletion32,
-
     // Data reader header (dummy events)
     profilerSepSpace3,
     profilerSepDataReader,
@@ -105,10 +80,9 @@ enum ProfilerEvents
 // customEventBufferBytes: Bytes to allocate for the custom event buffer.
 // logSuffix: Suffix string to append to log files.
 // syncGpu: Wait for GPU to complete processing for each profiling event.
-// syncCudaKernels: Synchronize every cuda kernel.
 //
 void PERF_PROFILER_API ProfilerInit(const char* profilerDir, const unsigned long long customEventBufferBytes,
-    const char* logSuffix, const bool syncGpu, const bool syncCudaKernels);
+    const char* logSuffix, const bool syncGpu);
 
 
 //
@@ -133,12 +107,6 @@ void PERF_PROFILER_API ProfilerTimeEnd(const long long stateId, const char* even
 //
 void PERF_PROFILER_API ProfilerSyncGpu();
 
-//
-// CUDA kernel profiling.
-// CUDA kernels are profiled using a single call to this function.
-//
-void PERF_PROFILER_API ProfilerCudaTimeEnd(const float deltaSeconds, const char* eventDescription);
-
 
 //
 // Measure throughput given the number of bytes.
@@ -159,7 +127,7 @@ void PERF_PROFILER_API ProfilerClose();
 //
 struct PERF_PROFILER_API ProfilerContext
 {
-    void Init(const char* profilerDir = nullptr, const unsigned long long customEventBufferBytes = (32 * 1024 * 1024), const char* logSuffix = "", const bool syncGpu = false, const bool syncCudaKernels = false);
+    void Init(const char* profilerDir = nullptr, const unsigned long long customEventBufferBytes = (32 * 1024 * 1024), const char* logSuffix = "", const bool syncGpu = false);
     ~ProfilerContext();
 };
 
@@ -199,37 +167,5 @@ private:
 };
 
 #define THROUGHPUT_SCOPE(eventId, bytes)    ScopeThroughput __st##eventId(eventId, bytes);
-
-
-//
-// CUDA profiling helpers.
-//
-
-void PERF_PROFILER_API SyncCudaScopeSetFlags(bool syncEnabled, bool profilingEnabled);
-void PERF_PROFILER_API SyncCudaScopeGetFlags(bool& syncEnabled, bool& profilingEnabled);
-
-struct PERF_PROFILER_API CudaProfilerTimer
-{
-    //
-    // Setup the CUDA profiler.
-    // enable: flag indicating if profiler is enabled
-    // syncIterations: Number of iterations between profiling & sync (ex: 100 means that we profile every 100 iterations)
-    // maxIterations: Stop syncing & profiling after this many iterations. -1 indicates to never stop.
-    //                (ex: 1000 means that we stop after 1000 iterations)
-    //
-    CudaProfilerTimer(bool enable, int syncIterations, int maxIterations);
-
-    //
-    // Main function that enables profiling, to be called at the beggining of each iteration.
-    //
-    void Update();
-
-private:
-    bool    m_enable;
-    int     m_syncIterations;
-    int     m_maxIterations;
-    int     m_iterationCnt;
-    int     m_iterationCntTotal;
-};
 
 }}}
