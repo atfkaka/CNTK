@@ -455,7 +455,7 @@ public:
                                                                 m_maxTempMemSizeInSamples, m_poolKind,
                                                                 ConvolutionEngineKind::All, NodeName(), 
                                                                 Globals::ShouldForceDeterministicAlgorithms(), 
-                                                                Globals::GetCudnnTimingMargin());
+                                                                Globals::GetCudnnAutotunePolicy());
             }
 
             if (Input(0)->GetSampleLayout().GetNumElements() != m_kernelShape.GetNumElements() * m_convEng->Geometry()->KernelCount())

@@ -6,6 +6,8 @@
 #pragma once
 
 #include <atomic>
+#include <string>
+#include "Basics.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -23,18 +25,37 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             return m_forceDeterministicAlgorithms;
         }
 
-        static void SetCudnnTimingMargin(double margin)
+        enum cudnnAutotunePolicy : int {
+            OPTIMISTIC = 0,
+            PESSIMISTIC,
+            MEMORY_AWARE
+        };
+
+        static void SetCudnnAutotunePolicy(std::string cudnnAutotunePolicy)
         {
-            m_cudnnTimingMargin = margin;
+            if (cudnnAutotunePolicy == "optimistic")
+            {
+                m_cudnnAutotunePolicy = OPTIMISTIC;
+            }
+            else if (cudnnAutotunePolicy == "pessimistic")
+            {
+                m_cudnnAutotunePolicy = PESSIMISTIC;
+            }
+            else if (cudnnAutotunePolicy == "memoryAware")
+            {
+                m_cudnnAutotunePolicy = MEMORY_AWARE;
+            }
+            else
+                RuntimeError("Unknown cudnnAutotunePolicy: %s\n", cudnnAutotunePolicy);
         }
 
-        static double GetCudnnTimingMargin()
+        static int GetCudnnAutotunePolicy()
         {
-            return m_cudnnTimingMargin;
+            return m_cudnnAutotunePolicy;
         }
 
     private:
         static std::atomic<bool> m_forceDeterministicAlgorithms;
-        static double m_cudnnTimingMargin;
+        static int m_cudnnAutotunePolicy;
     };
 }}}

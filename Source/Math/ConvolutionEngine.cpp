@@ -852,7 +852,7 @@ template <class ElemType>
 std::unique_ptr<ConvolutionEngine<ElemType>> ConvolutionEngine<ElemType>::Create(ConvolveGeometryPtr geometry, DEVICEID_TYPE deviceId,
                                                                                  ImageLayoutKind imageLayout, size_t maxTempMemSizeInSamples, PoolKind poolKind,
                                                                                  ConvolutionEngineKind enabledEngines, std::wstring logPrefix, bool forceDeterministicAlgorithms,
-                                                                                 double cudnnTimingMargin)
+                                                                                 int cudnnAutotunePolicy)
 {
     if (!logPrefix.empty())
         logPrefix += L": ";
@@ -877,7 +877,7 @@ std::unique_ptr<ConvolutionEngine<ElemType>> ConvolutionEngine<ElemType>::Create
         CuDnnConvolutionEngineFactory<ElemType>::IsSupported(deviceId, geometry, poolKind))
     {
         fprintf(stderr, "%lsusing cuDNN convolution engine for geometry: %s.\n", logPrefix.c_str(), engStr.c_str());
-        return CuDnnConvolutionEngineFactory<ElemType>::Create(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind, forceDeterministicAlgorithms, cudnnTimingMargin);
+        return CuDnnConvolutionEngineFactory<ElemType>::Create(geometry, deviceId, imageLayout, maxTempMemSizeInSamples, poolKind, forceDeterministicAlgorithms, cudnnAutotunePolicy);
     }
 
     if (isEnabled(ConvolutionEngineKind::Gemm) && GemmConvolutionEngine<ElemType>::IsSupported(deviceId, geometry))
