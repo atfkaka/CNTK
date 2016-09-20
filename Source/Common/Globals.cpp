@@ -10,6 +10,6 @@ using namespace std;
 namespace Microsoft { namespace MSR { namespace CNTK {
 
     std::atomic<bool> Globals::m_forceDeterministicAlgorithms(false);
-    double Globals::m_cudnnTimingMargin = 0;
+    int Globals::m_cudnnAutotunePolicy(Globals::cudnnAutotunePolicy::OPTIMISTIC);
 
 }}}
