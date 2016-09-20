@@ -402,7 +402,7 @@ private:
             }
         }
 
-        // Start with the best (fastest) valid algorithm
+        // Start with the fastest algorithm
         auto res = &algoPerf[0];
         if (res == algoPerf + calgo)
             RuntimeError("cuDNN could not find suitable algorithm for the current convolution configuration.");
@@ -421,7 +421,7 @@ private:
             break;
             case Globals::cudnnAutotunePolicy::MEMORY_AWARE:
             {
-                //find the most memory efficient algorithm that's close to the fastest
+                //find the most memory efficient algorithm that's inside the interval of the fastest
                 auto bestAlgo = res->algo;
                 auto searchEnd = std::find_if(algoPerf + 1, algoPerf + calgo, [bestAlgo](const CuDnnAlgoT& cur) { return cur.algo == bestAlgo; });
                 if (searchEnd != algoPerf + 1 && searchEnd != algoPerf + calgo)
