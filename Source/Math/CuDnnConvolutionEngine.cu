@@ -11,7 +11,6 @@
 #include "CuDnnCommon.h"
 #include "Globals.h"
 
-
 template <>
 const char* CudaErrString<cudnnStatus_t>(cudnnStatus_t x)
 {
