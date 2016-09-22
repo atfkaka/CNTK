@@ -24,10 +24,10 @@ ResNetBottleneckInc (outChannels, interOutChannels, input, stride = 2, strideA =
     b = Sequential (
         ConvBNReLULayer {interOutChannels, (1: 1), (strideA: strideA)} :
         ConvBNReLULayer {interOutChannels, (3: 3), (strideB: strideB)} :
-        ConvBNReLULayer {outChannels, (1: 1), (1: 1)}) (input)
+        ConvBNLayer {outChannels, (1: 1), (1: 1)}) (input)
 
     # Shortcut
-    s = ConvBNReLULayer {outChannels, (1: 1), (stride: stride)} (input)
+    s = ConvBNLayer {outChannels, (1: 1), (stride: stride)} (input)
 
     p = Plus(b, s)
     y = ReLU(p)
@@ -38,7 +38,7 @@ ResNetBottleneck (outChannels, interOutChannels, input) = {
     b = Sequential (
         ConvBNReLULayer {interOutChannels, (1: 1), (1: 1)} :
         ConvBNReLULayer {interOutChannels, (3: 3), (1: 1)} :
-        ConvBNReLULayer {outChannels, (1: 1), (1: 1)}) (input)
+        ConvBNLayer {outChannels, (1: 1), (1: 1)}) (input)
 
     p = Plus(b, input)
     y = ReLU(p)
