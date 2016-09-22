@@ -1,0 +1,216 @@
+# Node: This ResNet-200 sample uses the BrainScriptBuilder
+#
+
+command = train:pbn:createEval:test
+
+precision = "float"; traceLevel = 1 ; deviceId = "auto"
+
+rootDir = "." ; configDir = "$RootDir$" ; dataDir = "$RootDir$" ;
+outputDir = "$rootDir$/Output" ;
+
+modelPath = "$outputDir$/Models/ResNet_50"
+stderr = "$outputDir$/ResNet_50_BS_out"
+
+parallelTrain = "true"
+
+# TRAINING CONFIG
+train = {
+    action = "train"
+
+    BrainScriptNetworkBuilder = {
+        include "$configDir$/Macros.bs"
+
+        imageShape = 224: 224: 3          # image dimensions
+        labelDim = 1000                   # number of distinct labels
+
+        cMap = 64: 128: 256: 512: 1024: 2048
+
+        model (features) = {
+            # conv1 and max pooling
+            conv1 = ConvBNReLULayer {cMap[0], (7: 7), (2: 2)} (features)
+            pool1 = MaxPoolingLayer {(3: 3), stride = 2, pad = true} (conv1)
+
+            # conv2_x
+            conv2_1 = ResNetIdentityMapInc (cMap[2], cMap[0], pool1, stride = 1, strideA = 1, strideB = 1)
+            conv2_x_define (input) = ResNetIdentityMap (cMap[2], cMap[0], input)
+            conv2_x = Sequential (
+            	conv2_x_define: conv2_x_define) (conv2_1)
+
+            # conv3_x
+            conv3_1 = ResNetIdentityMapInc (cMap[3], cMap[1], conv2_x)
+            conv3_x_define (input) = ResNetIdentityMap (cMap[3], cMap[1], input)
+            conv3_x = Sequential (
+            	conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define:
+            	conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define:
+            	conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define:
+            	conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define: conv3_x_define:
+            	conv3_x_define: conv3_x_define: conv3_x_define) (conv3_1)
+
+            # conv4_x
+            conv4_1 = ResNetIdentityMapInc (cMap[4], cMap[2], conv3_x)
+            conv4_x_define (input) = ResNetIdentityMap (cMap[4], cMap[2], input)
+            conv4_x = Sequential (
+            	conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define:
+            	conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define:
+            	conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define:
+            	conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define:
+            	conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define:
+            	conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define:
+            	conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define: conv4_x_define) 
+            	(conv4_1)
+
+            # conv5_x
+            conv5_1 = ResNetIdentityMapInc (cMap[5], cMap[3], conv4_x)           
+            conv5_x_define (input) = ResNetIdentityMap (cMap[5], cMap[3], input)
+            conv5_x = Sequential (
+            	conv5_x_define: conv5_x_define) (conv5_1)
+
+            # BN-RELu
+            br = Sequential (BNLayer {} : ReLU) (conv5_x)
+
+            # avg pooling
+            pool2 = AveragePoolingLayer {(7: 7), stride = 1} (br)
+
+            # FC
+            ol = LinearLayer {labelDim, init= 'uniform'} (pool2)
+        }.ol
+
+        # inputs
+        features = Input {imageShape}
+        labels = Input {labelDim}
+
+        # apply model to features
+        ol = model (features)
+
+        # loss and error computation
+        ce = CrossEntropyWithSoftmax (labels, ol)
+        errs = ClassificationError (labels, ol)
+
+        # declare special nodes
+        featureNodes    = (features)
+        labelNodes      = (labels)
+        criterionNodes  = (ce)
+        evaluationNodes = (errs)
+        outputNodes     = (ol)
+    }
+
+    SGD = {
+        epochSize = 0
+        minibatchSize = 256
+        maxEpochs = 125
+        learningRatesPerMB = 1*30: 0.1*30: 0.01*30: 0.001
+        momentumPerMB = 0.9
+        gradUpdateType = "None"
+        L2RegWeight = 0.0001
+        dropoutRate = 0
+        numMBsToShowResult = 500
+
+        disableWkInBatchNormal = true
+
+        ParallelTrain = {
+            parallelizationMethod = "DataParallelSGD"
+            distributedMBReading = "true"
+            parallelizationStartEpoch = 1
+            DataParallelSGD = {
+                gradientBits=32
+            }
+        }
+    }
+
+    reader={
+        readerType="ImageReader"
+        file="$DataDir$/train_map.txt"
+        randomize="Auto"
+        features={
+            # Below are the required parameters.
+            width=224
+            height=224
+            channels=3
+            # Below are the optional parameters.
+            # Possible values: Center, Random. Default: Center
+            cropType="Random"
+            # Horizontal random flip, will be enabled by default if cropType=Random
+            hflip="true"
+            # Crop scale ratio. Examples: cropRatio=0.9, cropRatio=0.7:0.9. Default: 1.
+            cropRatio=0.46666:0.875
+            # Crop scale ratio jitter type.
+            # Possible values: None, UniRatio, UniLength, UniArea. Default: UniRatio
+            jitterType="UniRatio"
+            # The file stores mean values for each pixel in OpenCV matrix XML format.
+            meanFile="$ConfigDir$/ImageNet1K_mean.xml"
+        }
+        labels={
+            labelDim=1000
+        }
+    }
+}
+
+pbn={
+    action="pbn"
+    modelPath="$modelPath$"
+    # Set minibatch size for testing.
+    minibatchSize=256
+    iters=30
+
+    useDistributedMBReading=true
+
+    reader={
+        readerType="ImageReader"
+        file="$DataDir$/train_map.txt"
+        randomize="Auto"
+        features={
+            # Below are the required parameters.
+            width=224
+            height=224
+            channels=3
+            # Below are the optional parameters.
+            # Possible values: Center, Random. Default: Center
+            cropType="Random"
+            # Horizontal random flip, will be enabled by default if cropType=Random
+            hflip="true"
+            # Crop scale ratio. Examples: cropRatio=0.9, cropRatio=0.7:0.9. Default: 1.
+            cropRatio=0.46666:0.875
+            # Crop scale ratio jitter type.
+            # Possible values: None, UniRatio, UniLength, UniArea. Default: UniRatio
+            jitterType="UniRatio"
+            # The file stores mean values for each pixel in OpenCV matrix XML format.
+            meanFile="$ConfigDir$/ImageNet1K_mean.xml"
+        }
+        labels={
+            labelDim=1000
+        }
+    }
+}
+
+createEval={   
+    action="edit"
+    CurModel="$modelPath$.PBN"
+    NewModel="$modelPath$.Eval"
+    editPath="$ConfigDir$/CreateBSEvalModel.mel"
+}
+
+test={
+    action="test"
+    modelPath="$modelPath$.Eval"
+    # Set minibatch size for testing.
+    minibatchSize=200
+
+    useDistributedMBReading=true
+
+    reader={
+        readerType="ImageReader"
+        file="$DataDir$/val_map.txt"
+        randomize="None"
+        features={
+            width=320
+            height=320
+            channels=3
+            cropType="Center"
+            cropRatio=0.875
+            meanFile="$ConfigDir$/ImageNet1K_mean.xml"
+        }
+        labels={
+            labelDim=1000
+        }
+    }    
+}
