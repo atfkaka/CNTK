@@ -18,6 +18,13 @@ ConvBNReLULayer {outChannels, kernelSize, strideSize} = Sequential(
     ReLU
 )
 
+## Batch Normalization + Rectifier Linear + Convolution
+BNReLUConvLayer {outChannels, kernelSize, strideSize} = Sequential(
+    BNLayer{} :
+    ReLU :
+    ConvBNLayer {outChannels, kernelSize, strideSize}
+)
+
 # ResNet components
 ResNetBottleneckInc (outChannels, interOutChannels, input, stride = 2, strideA = 2, strideB = 1) = {
     # Convolution
@@ -43,3 +50,29 @@ ResNetBottleneck (outChannels, interOutChannels, input) = {
     p = Plus(b, input)
     y = ReLU(p)
 }.y
+
+ResNetIdentityMapInc (outChannels, interOutChannels, input, stride = 2, strideA = 2, strideB = 1) = {
+    # pre-active
+    t = Sequential (BNLayer {} : ReLU) (input)
+
+    # convolution
+    b = Sequential (
+        ConvLayer {interOutChannels, (1: 1), (strideA: strideA)} :
+        BNReLUConvLayer {interOutChannels, (3: 3), (strideB: strideB)} :
+        BNReLUConvLayer {outChannels, (1: 1), (1: 1)}) (t)
+
+    # shortcut
+    s = ConvLayer {outChannels, (1: 1), (1: 1)} (t)
+
+    p = Plus(b, t) 
+}.p
+
+ResNetIdentityMap (outChannels, interOutChannels, input) = {
+    # convolution
+    b = Sequential (
+        BNReLUConvLayer {interOutChannels, (1: 1), (1: 1)} :
+        BNReLUConvLayer {interOutChannels, (3: 3), (1: 1)} :
+        BNReLUConvLayer {outChannels, (1: 1), (1: 1)}) (input)
+
+    p = Plus(b, input)
+}.p

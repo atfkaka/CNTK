@@ -18,6 +18,9 @@ The following table contains results as well as links to pre-trained models that
 | ResNet-34     | 27.31       | 8.97        | [Download](https://www.cntk.ai/resnet/ResNet_34.model)
 | ResNet-50     | 24.56       | 7.47        |
 | ResNet-152    | 22.57       | 6.44        | [Download](https://www.cntk.ai/resnet/ResNet_152.model)
+| ResNet-200*   |             |             |
 
 ## Notes
 This work is an implementation of ResNets in CNTK. If you are interested in the original implementation of ResNet, follow [this link](https://github.com/KaimingHe/deep-residual-networks).
+
+ResNet-200 is based on [Identity Mapping in Deep Residual Networks](https://arxiv.org/pdf/1603.05027v1.pdf)
