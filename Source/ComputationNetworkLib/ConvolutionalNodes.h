@@ -453,8 +453,8 @@ public:
                                                                    m_sharing, m_autoPad, m_lowerPad, m_upperPad);
                 m_convEng = ConvolutionEngine<ElemType>::Create(geometry, m_deviceId, m_imageLayout,
                                                                 m_maxTempMemSizeInSamples, m_poolKind,
-                                                                ConvolutionEngineKind::All, NodeName(), 
-                                                                Globals::ShouldForceDeterministicAlgorithms(), 
+                                                                ConvolutionEngineKind::All, NodeName(),
+                                                                Globals::ShouldForceDeterministicAlgorithms(),
                                                                 Globals::GetCudnnAutotunePolicy());
             }
 
