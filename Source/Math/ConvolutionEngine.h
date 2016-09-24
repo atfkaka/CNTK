@@ -9,6 +9,7 @@
 #include "TensorShape.h" // for ImageLayoutKind
 #include "ConvolveGeometry.h"
 #include "StringUtil.h"
+#include "Globals.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -62,7 +63,8 @@ public:
     static std::unique_ptr<ConvolutionEngine<ElemType>> Create(ConvolveGeometryPtr geometry, DEVICEID_TYPE deviceId, 
                                                                ImageLayoutKind imageLayout, size_t maxTempMemSizeInSamples, PoolKind poolKind = PoolKind::None,
                                                                ConvolutionEngineKind enabledEngines = ConvolutionEngineKind::All,
-                                                               std::wstring logPrefix = L"", bool forceDeterministicAlgorithms = false, int cudnnAutotunePolicy = 0);
+                                                               std::wstring logPrefix = L"", bool forceDeterministicAlgorithms = false,
+                                                               int policy = Globals::cudnnAutotunePolicy::OPTIMISTIC);
 
     DISABLE_COPY_AND_MOVE(ConvolutionEngine);
 

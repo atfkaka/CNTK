@@ -25,7 +25,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             return m_forceDeterministicAlgorithms;
         }
 
-        enum cudnnAutotunePolicy : int {
+        enum cudnnAutotunePolicy : int
+        {
             OPTIMISTIC = 0,
             PESSIMISTIC,
             MEMORY_AWARE

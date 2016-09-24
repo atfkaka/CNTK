@@ -507,7 +507,7 @@ int wmainWithBS(int argc, wchar_t* argv[]) // called from wmain which is a wrapp
     if (config(L"forceDeterministicAlgorithms", false))
         Globals::ForceDeterministicAlgorithms();
 
-    Globals::SetCudnnAutotunePolicy(config(L"cudnnAutotunePolicy","optimistic"));
+    Globals::SetCudnnAutotunePolicy(config(L"cudnnAutotunePolicy", "optimistic"));
 
 #ifndef CPUONLY
     auto valpp = config.Find(L"deviceId");

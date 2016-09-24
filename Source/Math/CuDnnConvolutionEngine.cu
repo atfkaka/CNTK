@@ -359,6 +359,7 @@ private:
             return;
 
         using CuDnnAlgoT = decltype(TAlgo::Algo);
+        // Some of our tuning policies require running cudnn autotuning twice
         CuDnnAlgoT algoPerf[2 * MaxAlgoCount];
         int calgo = 0;
         cudnnStatus_t err = finder(calgo, algoPerf);
@@ -401,7 +402,8 @@ private:
             }
         }
 
-        // Start with the fastest algorithm
+        // Selecting an algorithm according to our policy is not always feasible (e.g. forceDeterministicAlgorithms=true)
+        // The following is always a safe initialization.
         auto res = &algoPerf[0];
         if (res == algoPerf + calgo)
             RuntimeError("cuDNN could not find suitable algorithm for the current convolution configuration.");
@@ -410,7 +412,8 @@ private:
         {
             case Globals::cudnnAutotunePolicy::PESSIMISTIC:
             {
-                //find the first algorithm that's seen twice
+                // Find the algorithm whose maximum time (out of two runs) is minimum.
+                // We do this by finding the first algorithm that's seen twice.
                 int i, seen[MaxAlgoCount] = { 0 };
                 for (i = 0; i < calgo && !seen[algoPerf[i].algo]; ++i)
                     seen[algoPerf[i].algo] = 1;
@@ -420,7 +423,8 @@ private:
             break;
             case Globals::cudnnAutotunePolicy::MEMORY_AWARE:
             {
-                //find the most memory efficient algorithm that's inside the interval of the fastest
+                // Find the most memory efficient algorithm whose time is less than tmax.
+                // tmax is the maximum time (out of two runs) of the fastest algorithm.
                 auto bestAlgo = res->algo;
                 auto searchEnd = std::find_if(algoPerf + 1, algoPerf + calgo, [bestAlgo](const CuDnnAlgoT& cur) { return cur.algo == bestAlgo; });
                 if (searchEnd != algoPerf + 1 && searchEnd != algoPerf + calgo)
@@ -430,6 +434,7 @@ private:
             case Globals::cudnnAutotunePolicy::OPTIMISTIC:
                 break;
             default:
+                RuntimeError("Uknown cudnnAutotunePolicy code %d\n", m_autotunePolicy);
                 break;
         }
 
