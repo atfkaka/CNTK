@@ -33,6 +33,10 @@ namespace CNTK
 
         virtual void RestoreFromCheckpoint(const Dictionary& checkpoint) override final;
 
+        virtual void ResetLearningRate(double learningRate) override;
+
+        virtual double LearningRate() const override;
+
     protected:
         LearnerBase(const std::vector<Parameter>& parameters, 
                     const LearningRatesPerSample& learningRates,

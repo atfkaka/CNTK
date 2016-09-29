@@ -527,6 +527,17 @@ namespace CNTK
         return (m_dictionaryData->find(key) != m_dictionaryData->end());
     }
 
+    std::vector<std::wstring> Dictionary::Keys() const
+    {
+        std::vector<std::wstring> keys;
+        keys.reserve(m_dictionaryData->size());
+        for (const auto&it : *m_dictionaryData)
+        {
+            keys.push_back(it.first);
+        }
+        return keys;
+    }
+
     bool Dictionary::operator==(const Dictionary& other) const
     {
         if (this == &other)
@@ -600,6 +611,34 @@ namespace CNTK
         return it->second;
     }
 
+    template <typename T>
+    Dictionary TrainingParameterSchedule<T>::Save() const 
+    {
+        Dictionary schedule;
+        for (const auto& it : m_schedule)
+        {
+            schedule[std::to_wstring(it.first)] = DictionaryValue(it.second);
+        }
+        Dictionary dict;
+        dict[L"unit"] = m_unit;
+        dict[L"schedule"] = schedule;
+        return dict;
+    }
+
+    template <typename T>
+    /*static*/ TrainingParameterSchedule<T>  TrainingParameterSchedule<T>::Load(const Dictionary& dictionary)
+    {
+        size_t unit = dictionary[L"unit"].Value<size_t>();
+        Dictionary schedule = dictionary[L"schedule"].Value<Dictionary>();
+        vector<std::wstring> keys = schedule.Keys();
+        std::map<size_t, T> map;
+        for (const auto& key : keys)
+        {
+            map[std::stoll(key)] = schedule[key].Value<T>();
+        }
+        return TrainingParameterSchedule<T>(map, unit);
+    }
+
     template void DictionaryValue::AllocateDataPtr<NDShape>(const NDShape& value);
     template void DictionaryValue::AllocateDataPtr<Axis>(const Axis& value);
     template void DictionaryValue::AllocateDataPtr<vector<DictionaryValue>>(const vector<DictionaryValue>& value);
@@ -615,4 +654,6 @@ namespace CNTK
     template void DictionaryValue::FreePtrAsType<NDArrayView>();
 
     template const double& TrainingParameterSchedule<double>::operator[](size_t key) const;
+    template Dictionary TrainingParameterSchedule<double>::Save() const;
+    template TrainingParameterSchedule<double> TrainingParameterSchedule<double>::Load(const Dictionary&);
 }

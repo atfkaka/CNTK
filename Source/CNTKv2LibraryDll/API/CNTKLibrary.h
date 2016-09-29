@@ -1282,6 +1282,8 @@ namespace CNTK
             return Contains(key.c_str());
         }
 
+        CNTK_API std::vector<std::wstring> Keys() const;
+
         CNTK_API bool operator==(const Dictionary& other) const;
         CNTK_API bool operator!=(const Dictionary& other) const;
 
@@ -2564,6 +2566,16 @@ namespace CNTK
         ///
         virtual ~Learner() {}
 
+        ///
+        /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
+        ///
+        CNTK_API virtual void ResetLearningRate(double learningRate) = 0;
+
+        ///
+        /// Returns current learning rate.
+        ///
+        CNTK_API virtual double LearningRate() const = 0;
+
     protected:
         Learner(const std::vector<Parameter>& parameters)
             : m_parameters(parameters.begin(), parameters.end())
@@ -2645,9 +2657,19 @@ namespace CNTK
         ///
         /// Returns a value corresponding to the absolute sample count from the beginning of training.
         ///
-        CNTK_API const T& operator[](size_t samleCount) const;
+        CNTK_API const T& operator[](size_t sampleCount) const;
+
+        CNTK_API Dictionary Save() const;
+
+        CNTK_API static TrainingParameterSchedule<T> Load(const Dictionary& dictionary);
 
     private:
+
+        explicit TrainingParameterSchedule(const std::map<size_t, T>& schedule, size_t unit)
+            : m_schedule(schedule), m_unit(unit)
+        {
+        }
+
         std::map<size_t, T> m_schedule;
         size_t m_unit;
     };

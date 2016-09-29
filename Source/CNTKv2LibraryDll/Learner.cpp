@@ -141,7 +141,7 @@ namespace CNTK
         // L1 regularizer with proximal gradient descent method
         if (m_additionalOptions.l1RegularizationWeight > 0)
         {
-            auto learningRate = ElementType(m_learningRates[m_sampleCount]);
+            auto learningRate = ElementType(LearningRate());
             // multiply by actualMBSize so that it's invariant to minibatch size since learning rate is per sample
             auto weight = ElementType(learningRate * m_additionalOptions.l1RegularizationWeight * actualMBSize);
             parameterValue->GetWritableMatrix<ElementType>()->InplaceSoftThreshold(weight);
@@ -280,6 +280,8 @@ namespace CNTK
         checkpoint[L"sampleCount"] = m_sampleCount;
         checkpoint[L"minibatchCount"] = m_minibatchCount;
 
+         checkpoint[L"learningRates"] = m_learningRates.Save();
+
         // TODO: should we also save learning rate schedule into the checkpoint?
         // If that is the case, need to be able to override this method in subclasses
         // and save momentum schedule as well.
@@ -301,6 +303,8 @@ namespace CNTK
     {
         m_sampleCount = checkpoint[L"sampleCount"].Value<size_t>();
         m_minibatchCount = checkpoint[L"minibatchCount"].Value<size_t>();
+
+        m_learningRates = TrainingParameterSchedule<double>::Load(checkpoint[L"learningRates"].Value<Dictionary>());
 
         size_t version = checkpoint[L"checkpointVersion"].Value<size_t>();
         if (checkpointVersion != version)
@@ -335,6 +339,17 @@ namespace CNTK
         }
     }
 
+    /*virtual*/ void LearnerBase::ResetLearningRate(double learningRate)
+    {
+        m_learningRates = { { m_sampleCount, learningRate } };
+    }
+
+
+    /*virtual*/ double LearnerBase::LearningRate() const
+    {
+        return m_learningRates[m_sampleCount];
+    }
+
     /*virtual*/ void LearnerSGD::Update(const Parameter& parameter, const NDArrayViewPtr& gradientValue, const NDArrayViewPtr& smoothedGradientValue, size_t trainingSampleCount) const /*override*/
     {
         UPDATE_FUNCTION;
@@ -348,7 +363,7 @@ namespace CNTK
         const auto& gradientMatrix = GetWritableMatrix<ElementType>(gradientValue);
         const auto& parameterMatrix = GetWritableMatrix<ElementType>(parameterValue);
 
-        auto learningRate = ElementType(m_learningRates[m_sampleCount]);
+        auto learningRate = ElementType(LearningRate());
         auto momentum = ElementType(MomentumPerMB(m_momentums[m_sampleCount], trainingSampleCount));
 
         // TODO: break up the NormalGrad into 3 different functions, each with its own set of parameters
@@ -382,7 +397,7 @@ namespace CNTK
         const auto& gradientMatrix = GetWritableMatrix<ElementType>(gradientValue);
         const auto& parameterMatrix = GetWritableMatrix<ElementType>(parameterValue);
 
-        auto learningRate = ElementType(m_learningRates[m_sampleCount]);
+        auto learningRate = ElementType(LearningRate());
 
         auto aveMultiplier = smoothedGradientMatrix->Adagrad(*gradientMatrix, m_needAveMultiplier);
         Matrix<ElementType>::ScaleAndAdd(ElementType(-learningRate / aveMultiplier), *gradientMatrix, *parameterMatrix);
@@ -418,7 +433,7 @@ namespace CNTK
         const auto& gradientMatrix = GetWritableMatrix<ElementType>(gradientValue);
         const auto& parameterMatrix = GetWritableMatrix<ElementType>(parameterValue);
         
-        auto learningRate = m_learningRates[m_sampleCount];
+        auto learningRate = LearningRate();
         auto momentum = MomentumPerMB(m_momentums[m_sampleCount], trainingSampleCount);
 
         const double targetAdagradAvDenom = 0.0025; // 1/400 magic constant
@@ -469,7 +484,7 @@ namespace CNTK
         const auto& gradientMatrix = GetWritableMatrix<ElementType>(gradientValue);
         const auto& parameterMatrix = GetWritableMatrix<ElementType>(parameterValue);
 
-        auto learningRate = ElementType(m_learningRates[m_sampleCount]);
+        auto learningRate = ElementType(LearningRate());
 
         auto aveMultiplier = smoothedGradientMatrix->RmsProp(*gradientMatrix,
                                                              ElementType(m_gamma), ElementType(m_inc),
