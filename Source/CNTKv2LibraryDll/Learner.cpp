@@ -159,9 +159,7 @@ namespace CNTK
                              bool allocateSmoothGradients /* = true */,
                              double clippingThresholdPerSample /*= std::numeric_limits<double>::infinity()*/,
                              bool gradientClippingWithTruncation /*= true*/)
-        : Learner(parameters),
-        m_learningRates(learningRates),
-        m_sampleCount(0),
+        : Learner(parameters, learningRates),
         m_minibatchCount(0)
     {
         m_additionalOptions.gradientClippingThresholdPerSample = clippingThresholdPerSample;
@@ -280,7 +278,7 @@ namespace CNTK
         checkpoint[L"sampleCount"] = m_sampleCount;
         checkpoint[L"minibatchCount"] = m_minibatchCount;
 
-         checkpoint[L"learningRates"] = m_learningRates.Save();
+         checkpoint[L"learningRates"] = m_learningRateSchedule.Save();
 
         // TODO: should we also save learning rate schedule into the checkpoint?
         // If that is the case, need to be able to override this method in subclasses
@@ -304,7 +302,7 @@ namespace CNTK
         m_sampleCount = checkpoint[L"sampleCount"].Value<size_t>();
         m_minibatchCount = checkpoint[L"minibatchCount"].Value<size_t>();
 
-        m_learningRates = TrainingParameterSchedule<double>::Load(checkpoint[L"learningRates"].Value<Dictionary>());
+        m_learningRateSchedule = TrainingParameterSchedule<double>::Load(checkpoint[L"learningRates"].Value<Dictionary>());
 
         size_t version = checkpoint[L"checkpointVersion"].Value<size_t>();
         if (checkpointVersion != version)
@@ -337,17 +335,6 @@ namespace CNTK
 
             smoothedGradientValue->CopyFrom(checkpointedValue);
         }
-    }
-
-    /*virtual*/ void LearnerBase::ResetLearningRate(double learningRate)
-    {
-        m_learningRates = { { m_sampleCount, learningRate } };
-    }
-
-
-    /*virtual*/ double LearnerBase::LearningRate() const
-    {
-        return m_learningRates[m_sampleCount];
     }
 
     /*virtual*/ void LearnerSGD::Update(const Parameter& parameter, const NDArrayViewPtr& gradientValue, const NDArrayViewPtr& smoothedGradientValue, size_t trainingSampleCount) const /*override*/

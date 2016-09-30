@@ -628,15 +628,20 @@ namespace CNTK
     template <typename T>
     /*static*/ TrainingParameterSchedule<T>  TrainingParameterSchedule<T>::Load(const Dictionary& dictionary)
     {
-        size_t unit = dictionary[L"unit"].Value<size_t>();
+        return TrainingParameterSchedule<T>(dictionary);
+    }
+
+    template <typename T>
+    TrainingParameterSchedule<T>::TrainingParameterSchedule(const Dictionary& dictionary)
+    {
+        m_unit = dictionary[L"unit"].Value<size_t>();
         Dictionary schedule = dictionary[L"schedule"].Value<Dictionary>();
         vector<std::wstring> keys = schedule.Keys();
         std::map<size_t, T> map;
         for (const auto& key : keys)
         {
-            map[std::stoll(key)] = schedule[key].Value<T>();
+            m_schedule[std::stoll(key)] = schedule[key].Value<T>();
         }
-        return TrainingParameterSchedule<T>(map, unit);
     }
 
     template void DictionaryValue::AllocateDataPtr<NDShape>(const NDShape& value);

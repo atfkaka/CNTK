@@ -2531,61 +2531,6 @@ namespace CNTK
     CNTK_API void SaveAsLegacyModel(const FunctionPtr& rootFunction, const std::wstring& modelFile);
 
     ///
-    /// Abstraction for learning a subset of parameters of a learnable function using first order gradient values
-    /// For e.g momentum, AdaGrad, RMSProp etc. are different types of learners with their own algorithms for
-    /// learning parameter values using first order gradients.
-    ///
-    class Learner : public std::enable_shared_from_this<Learner>
-    {
-    public:
-        //
-        // Method to update the parameters associated with this learner. By returning false, this method indicates that
-        // learning has stopped for all of the parameters associated with this learner
-        //
-        CNTK_API virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) = 0;
-
-        ///
-        /// Returns the set of parameters associated with this learner.
-        ///
-        const std::unordered_set<Parameter>& Parameters() const { return m_parameters; }
-
-        ///
-        /// Optionally overridable method to checkpoint the learner's state.
-        ///
-        // TODO: move the following two methods into ISerializable interface, make 
-        // Learner (and all other entities that need checkpointing capability) implement it.
-        CNTK_API virtual Dictionary GetCheckpointState() const { return Dictionary(); }
-
-        ///
-        /// Optionally overridable method to restore the learner's state from a previous checkpoint.
-        ///
-        CNTK_API virtual void RestoreFromCheckpoint(const Dictionary& /*checkpoint*/) {}
-
-        ///
-        /// Destruct this Learner.
-        ///
-        virtual ~Learner() {}
-
-        ///
-        /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
-        ///
-        CNTK_API virtual void ResetLearningRate(double learningRate) = 0;
-
-        ///
-        /// Returns current learning rate.
-        ///
-        CNTK_API virtual double LearningRate() const = 0;
-
-    protected:
-        Learner(const std::vector<Parameter>& parameters)
-            : m_parameters(parameters.begin(), parameters.end())
-        {}
-
-        std::unordered_set<Parameter> m_parameters;
-
-    };
-
-    ///
     /// A collection of key-value pairs that represents training parameter schedule in 
     /// terms of the number of processed samples. 
     /// This class provides a number of convenience constructors to allow easy conversion 
@@ -2665,10 +2610,7 @@ namespace CNTK
 
     private:
 
-        explicit TrainingParameterSchedule(const std::map<size_t, T>& schedule, size_t unit)
-            : m_schedule(schedule), m_unit(unit)
-        {
-        }
+        CNTK_API TrainingParameterSchedule(const Dictionary& dictionary);
 
         std::map<size_t, T> m_schedule;
         size_t m_unit;
@@ -2676,6 +2618,70 @@ namespace CNTK
 
     typedef TrainingParameterSchedule<double> LearningRatesPerSample;
     typedef TrainingParameterSchedule<double> MomentumsPerSample;
+
+    ///
+    /// Abstraction for learning a subset of parameters of a learnable function using first order gradient values
+    /// For e.g momentum, AdaGrad, RMSProp etc. are different types of learners with their own algorithms for
+    /// learning parameter values using first order gradients.
+    ///
+    class Learner : public std::enable_shared_from_this<Learner>
+    {
+    public:
+        //
+        // Method to update the parameters associated with this learner. By returning false, this method indicates that
+        // learning has stopped for all of the parameters associated with this learner
+        //
+        CNTK_API virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) = 0;
+
+        ///
+        /// Returns the set of parameters associated with this learner.
+        ///
+        const std::unordered_set<Parameter>& Parameters() const { return m_parameters; }
+
+        ///
+        /// Optionally overridable method to checkpoint the learner's state.
+        ///
+        // TODO: move the following two methods into ISerializable interface, make 
+        // Learner (and all other entities that need checkpointing capability) implement it.
+        CNTK_API virtual Dictionary GetCheckpointState() const { return Dictionary(); }
+
+        ///
+        /// Optionally overridable method to restore the learner's state from a previous checkpoint.
+        ///
+        CNTK_API virtual void RestoreFromCheckpoint(const Dictionary& /*checkpoint*/) {}
+
+        ///
+        /// Destruct this Learner.
+        ///
+        virtual ~Learner() {}
+
+        ///
+        /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
+        ///
+        void ResetLearningRate(const LearningRatesPerSample& learningRateSchedule)
+        {
+            m_learningRateSchedule = learningRateSchedule;
+        }
+
+        ///
+        /// Returns current learning rate.
+        ///
+        double LearningRate() const
+        {
+            return m_learningRateSchedule[m_sampleCount];
+        }
+
+    protected:
+        Learner(const std::vector<Parameter>& parameters, const LearningRatesPerSample& learningRateSchedule)
+            : m_parameters(parameters.begin(), parameters.end()),
+            m_learningRateSchedule(learningRateSchedule),
+            m_sampleCount(0)
+        {}
+
+        std::unordered_set<Parameter> m_parameters;
+        LearningRatesPerSample m_learningRateSchedule;
+        size_t m_sampleCount;
+    };
 
     ///
     /// Create an instance of the CNTK built-in SGD learner.

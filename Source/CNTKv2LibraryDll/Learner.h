@@ -33,10 +33,6 @@ namespace CNTK
 
         virtual void RestoreFromCheckpoint(const Dictionary& checkpoint) override final;
 
-        virtual void ResetLearningRate(double learningRate) override;
-
-        virtual double LearningRate() const override;
-
     protected:
         LearnerBase(const std::vector<Parameter>& parameters, 
                     const LearningRatesPerSample& learningRates,
@@ -47,8 +43,6 @@ namespace CNTK
         virtual void Update(const Parameter& parameter, const NDArrayViewPtr& gradientValue, const NDArrayViewPtr& smoothedGradientValue, size_t trainingSampleCount) const = 0;
 
         std::string LearnerType() const;
-
-        LearningRatesPerSample m_learningRates;
 
         AdditionalLearningOptions m_additionalOptions;
 
@@ -88,7 +82,6 @@ namespace CNTK
         // Retrieves the shape of the matrix corresponding to the parameter value.
         static NDShape GetMatrixShape(const Parameter& parameter);
 
-        size_t m_sampleCount;
         size_t m_minibatchCount;
 
     private:

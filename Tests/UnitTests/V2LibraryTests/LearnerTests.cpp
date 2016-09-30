@@ -48,6 +48,13 @@ void TestSGDLearner(size_t numParameters, size_t numMinibatches, const DeviceDes
     NDShape shape = CreateShape(rng() % maxNumAxes + 1, maxDimSize);
     auto parameters = CreateParameters<ElementType>(shape, numParameters, device);
     auto learner = SGDLearner(parameters, 0.4);
+    
+    assert(learner->LearningRate() == 0.4);
+
+    learner->ResetLearningRate(0.8);
+
+    assert(learner->LearningRate() == 0.8);
+
     TestUpdate<ElementType>(learner, shape, numMinibatches, device);
 }
 
@@ -58,6 +65,13 @@ void TestMomentumSGDLearner(size_t numParameters, size_t numMinibatches, const D
     auto parameters = CreateParameters<ElementType>(shape, numParameters, device);
     MomentumsPerSample momentums({ { 1, 1.0 }, { 3, 0.1 }, { 10, 0.01 } }, 2);
     auto learner = MomentumSGDLearner(parameters, vector<double>{0.3, 0.2, 0.1}, momentums);
+
+    assert(learner->LearningRate() == 0.3);
+
+    learner->ResetLearningRate({ { 0.1, 0.2, 0.3 } });
+
+    assert(learner->LearningRate() == 0.1);
+
     TestUpdate<ElementType>(learner, shape, numMinibatches, device);
 }
 
