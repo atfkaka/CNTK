@@ -88,6 +88,9 @@
     <ClInclude Include="TransformBase.h">
       <Filter>Transformers</Filter>
     </ClInclude>
+    <ClInclude Include="Indexer.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NoRandomizer.cpp">
@@ -124,6 +127,9 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="ReaderBase.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Indexer.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>

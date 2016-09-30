@@ -10,6 +10,7 @@
 #include "ByteReader.h"
 #include <unordered_map>
 #include "CorpusDescriptor.h"
+#include "ImageUtil.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -54,8 +55,6 @@ private:
     class ImageChunk;
 
     // A helper class for generation of type specific labels (currently float/double only).
-    class LabelGenerator;
-    typedef std::shared_ptr<LabelGenerator> LabelGeneratorPtr;
     LabelGeneratorPtr m_labelGenerator;
 
     // Sequence descriptions for all input data.

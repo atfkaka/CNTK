@@ -20,46 +20,6 @@
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
-class ImageDataDeserializer::LabelGenerator
-{
-public:
-    virtual void CreateLabelFor(size_t classId, CategorySequenceData& data) = 0;
-    virtual ~LabelGenerator() { }
-};
-
-// A helper class to generate a typed label in a sparse format.
-// A label is just a category/class the image belongs to.
-// It is represented as a array indexed by the category with zero values for all categories the image does not belong to, 
-// and a single one for a category it belongs to: [ 0, .. 0.. 1 .. 0 ]
-// The class is parameterized because the representation of 1 is type specific.
-template <class TElement>
-class TypedLabelGenerator : public ImageDataDeserializer::LabelGenerator
-{
-public:
-    TypedLabelGenerator(size_t labelDimension) : m_value(1), m_indices(labelDimension)
-    {
-        if (labelDimension > numeric_limits<IndexType>::max())
-        {
-            RuntimeError("Label dimension (%" PRIu64 ") exceeds the maximum allowed "
-                "value (%" PRIu64 ")\n", labelDimension, (size_t)numeric_limits<IndexType>::max());
-        }
-        iota(m_indices.begin(), m_indices.end(), 0);
-    }
-
-    virtual void CreateLabelFor(size_t classId, CategorySequenceData& data) override
-    {
-        data.m_nnzCounts.resize(1);
-        data.m_nnzCounts[0] = 1;
-        data.m_totalNnzCount = 1;
-        data.m_data = &m_value;
-        data.m_indices = &(m_indices[classId]);
-    }
-
-private:
-    TElement m_value;
-    vector<IndexType> m_indices;
-};
-
 // For image, chunks correspond to a single image.
 class ImageDataDeserializer::ImageChunk : public Chunk, public std::enable_shared_from_this<ImageChunk>
 {
