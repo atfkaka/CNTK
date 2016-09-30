@@ -111,10 +111,12 @@ public:
         }
         else
         {
-            AggregateGradientsImpl(gradients, headerCPU, showSyncPerfStats);
+            AggregateGradientsImpl(gradients, headerCPU, true);
             return (headerCPU->numSamples != 0);
         }
     }
+
+    std::vector<std::pair<double, std::string>> GetMpiPerfRecorder() override { return m_mpiPerfRecorder; }
 
 private:
     std::shared_ptr<ElemType> AllocateIntermediateBuffer(int deviceID, size_t numElements)
@@ -187,6 +189,14 @@ private:
     void AggregateGradientsImpl(const std::vector<Matrix<ElemType>*>& gradients, DistGradHeader* headerCPU, bool showSyncPerfStats)
     {
         Timer aggregationTimer;
+        Timer executeTimer;
+        Timer waitingTimer;
+        double dToMCost = 0;
+        double dToMWaiting = 0;
+        double syncCost = 0;
+        double syncWaiting = 0;
+        double mToDCost = 0;
+
         int deviceId = gradients[0]->GetDeviceId();
         if (showSyncPerfStats)
         {
@@ -215,6 +225,11 @@ private:
             }
         }
 
+        if (showSyncPerfStats)
+        {
+            executeTimer.Start();
+        }
+
         // Initiate transfer of the gradient matrices to the CPU if needed
         if (deviceId >= 0)
         {
@@ -239,6 +254,13 @@ private:
         if (!m_mpi->IsMainNode())
             MPI_Isend(headerCPU, headerCPU->Size(), MPI_CHAR, m_mpi->MainNodeRank(), numGradMatrices, m_mpi->Communicator(), &sendHeaderRequest) || MpiFail("MPI_Isend");
 
+        if (showSyncPerfStats)
+        {
+            executeTimer.Stop();
+            dToMCost = executeTimer.ElapsedSeconds();
+            executeTimer.Restart();
+        }
+
         // Perform MPI async allreduce on the gradient data
         std::vector<MPI_Request> allReduceRequests(numGradMatrices);
         for (size_t i = 0; i < numGradMatrices; ++i)
@@ -246,8 +268,14 @@ private:
             ElemType* reductionBuffer = gradients[i]->Data();
             if (deviceId >= 0)
             {
+                if (showSyncPerfStats) waitingTimer.Restart();
                 m_gpuDataTransferers[i]->WaitForCopyGPUToCPUAsync();
                 reductionBuffer = m_intermediateCPUBuffers[i].get();
+                if (showSyncPerfStats)
+                {
+                    waitingTimer.Stop();
+                    dToMWaiting += waitingTimer.ElapsedSeconds();
+                }
             }
 
             // On Windows this async MPI_Iallreduce call requires MS MPI v7 or higher to be installed
@@ -292,10 +320,23 @@ private:
             }
         }
 
+        if (showSyncPerfStats)
+        {
+            executeTimer.Stop();
+            syncCost = executeTimer.ElapsedSeconds();
+            executeTimer.Restart();
+        }
+
         // Wait for the allreduce operations to finish and initiate transfer back to the GPU if needed
         for (size_t i = 0; i < numGradMatrices; ++i)
         {
+            if (showSyncPerfStats) waitingTimer.Restart();
             MPI_Wait(&allReduceRequests[i], MPI_STATUSES_IGNORE) || MpiFail("MPI_Wait");
+            if (showSyncPerfStats)
+            {
+                waitingTimer.Stop();
+                syncWaiting += waitingTimer.ElapsedSeconds();
+            }
             if (deviceId >= 0)
                 m_gpuDataTransferers[i]->CopyCPUToGPUAsync(m_intermediateCPUBuffers[i].get(), gradients[i]->GetNumElements(), gradients[i]->Data());
         }
@@ -311,6 +352,13 @@ private:
                 m_gpuDataTransferers[i]->WaitForCopyCPUToGPUAsync();
         }
 
+        if (showSyncPerfStats)
+        {
+            executeTimer.Stop();
+            mToDCost = executeTimer.ElapsedSeconds();
+            executeTimer.Restart();
+        }
+
         // Wait for completion of the async send requests
         if (!m_mpi->IsMainNode())
             MPI_Wait(&sendHeaderRequest, MPI_STATUSES_IGNORE) || MpiFail("MPI_Wait");
@@ -320,8 +368,18 @@ private:
         if (showSyncPerfStats)
         {
             aggregationTimer.Stop();
-            double gradientAggregationTime = aggregationTimer.ElapsedSeconds();
-            fprintf(stderr, "Actual gradient aggregation time: %.6g\n", gradientAggregationTime);
+
+            executeTimer.Stop();
+            syncCost += executeTimer.ElapsedSeconds();
+            dToMCost += dToMWaiting;
+            syncCost -= dToMWaiting;
+            syncCost += syncWaiting;
+            mToDCost -= syncWaiting;
+
+            m_mpiPerfRecorder.clear();
+            m_mpiPerfRecorder.push_back(std::make_pair(dToMCost, "MemcpyDToM"));
+            m_mpiPerfRecorder.push_back(std::make_pair(syncCost, "Sync"));
+            m_mpiPerfRecorder.push_back(std::make_pair(mToDCost, "MemcpyMToD"));
         }
     }
 
@@ -332,6 +390,8 @@ private:
     std::vector<std::unique_ptr<GPUDataTransferer<ElemType>>> m_gpuDataTransferers;
 
     std::vector<DistGradHeader*> m_recvHeaders;
+
+    std::vector<std::pair<double, std::string>> m_mpiPerfRecorder;
 
     // Perform aysnchronous gradient aggregation using double buffering of the gradient matrices
     bool m_useAsyncAggregation;

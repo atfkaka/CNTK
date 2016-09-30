@@ -19,6 +19,8 @@ public:
     // Returns a boolean indicating if any samples were processed
     virtual bool AggregateGradients(const std::vector<Matrix<ElemType>*>& gradients, DistGradHeader* headerCPU, bool resetState) = 0;
 
+    virtual std::vector<std::pair<double, std::string>> GetMpiPerfRecorder() { return std::vector<std::pair<double, std::string>>(); }
+
     size_t NumProc()
     {
         return m_mpi->NumNodesInUse();
