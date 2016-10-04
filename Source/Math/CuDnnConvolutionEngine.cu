@@ -10,6 +10,7 @@
 #include <typeindex>
 #include "CuDnnCommon.h"
 #include "Globals.h"
+#include <typeinfo>
 
 template <>
 const char* CudaErrString<cudnnStatus_t>(cudnnStatus_t x)
@@ -213,19 +214,36 @@ protected:
     {
         size_t batchSize = in.GetNumCols();
         // Find best algo and allocate temp buffer, if needed.
-        auto finder = [this](int& calgo, cudnnConvolutionFwdAlgoPerf_t algoPerf[MaxAlgoCount]) -> cudnnStatus_t
+        auto finder = [this](int& calgo, cudnnConvolutionFwdAlgoPerf_t algoPerf[MaxAlgoCount], size_t maxMem) -> cudnnStatus_t
         {
-            auto result = cudnnFindConvolutionForwardAlgorithm(*m_cudnn, m_inT, *m_kernelT, *m_conv, m_outT, MaxAlgoCount, &calgo, algoPerf);
-            if (m_forceDeterministicAlgorithms)
+            if (m_autotunePolicy == Globals::cudnnAutotunePolicy::HEURISTIC)
             {
-                auto found = std::find_if(algoPerf, algoPerf + calgo,
-                    [](const cudnnConvolutionFwdAlgoPerf_t& a)  { return a.algo == CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM && a.status == CUDNN_STATUS_SUCCESS; });
-                if (found == algoPerf + calgo)
-                    RuntimeError("cuDNN could not find a deterministic algorithm. Set 'forceDeterministicAlgorithms=false' in your configuration.");
-                calgo = 1;
-                algoPerf[0] = *found;
+                size_t mem = 0;
+                algoPerf[0].status = cudnnGetConvolutionForwardAlgorithm(*m_cudnn, m_inT, *m_kernelT, *m_conv, m_outT, CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, maxMem, &algoPerf[0].algo);
+                CUDNN_CALL(cudnnGetConvolutionForwardWorkspaceSize(*m_cudnn, m_inT, *m_kernelT, *m_conv, m_outT, algoPerf[0].algo, &mem));
+                algoPerf[0].memory = mem;
+                algoPerf[0].time = 0; 
+                //Need to add a no memory algorithm as a backup
+                algoPerf[1].status = cudnnGetConvolutionForwardAlgorithm(*m_cudnn, m_inT, *m_kernelT, *m_conv, m_outT, CUDNN_CONVOLUTION_FWD_NO_WORKSPACE, 0, &algoPerf[1].algo);
+                algoPerf[1].memory = 0;
+                algoPerf[1].time = 1;
+                calgo = 2;
+                return algoPerf[0].status;
             }
-            return result;
+            else
+            {
+                auto result = cudnnFindConvolutionForwardAlgorithm(*m_cudnn, m_inT, *m_kernelT, *m_conv, m_outT, MaxAlgoCount, &calgo, algoPerf);
+                if (m_forceDeterministicAlgorithms)
+                {
+                    auto found = std::find_if(algoPerf, algoPerf + calgo,
+                        [](const cudnnConvolutionFwdAlgoPerf_t& a)  { return a.algo == CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM && a.status == CUDNN_STATUS_SUCCESS; });
+                    if (found == algoPerf + calgo)
+                        RuntimeError("cuDNN could not find a deterministic algorithm. Set 'forceDeterministicAlgorithms=false' in your configuration.");
+                    calgo = 1;
+                    algoPerf[0] = *found;
+                }
+                return result;
+            }
         };
         auto staticFinder = [this](cudnnConvolutionFwdAlgo_t& algo) -> cudnnStatus_t
         {
@@ -256,19 +274,36 @@ protected:
     {
         size_t batchSize = srcGrad.GetNumCols();
         // Find best algo and allocate temp buffer, if needed.
-        auto finder = [this](int& calgo, cudnnConvolutionBwdDataAlgoPerf_t algoPerf[MaxAlgoCount]) -> cudnnStatus_t
+        auto finder = [this](int& calgo, cudnnConvolutionBwdDataAlgoPerf_t algoPerf[MaxAlgoCount], size_t maxMem) -> cudnnStatus_t
         {
-            auto result = cudnnFindConvolutionBackwardDataAlgorithm(*m_cudnn, *m_kernelT, m_outT, *m_conv, m_inT, MaxAlgoCount, &calgo, algoPerf);
-            if (m_forceDeterministicAlgorithms)
+            if (m_autotunePolicy == Globals::cudnnAutotunePolicy::HEURISTIC)
             {
-                auto found = std::find_if(algoPerf, algoPerf + calgo,
-                    [](const cudnnConvolutionBwdDataAlgoPerf_t& a)  { return a.algo == CUDNN_CONVOLUTION_BWD_DATA_ALGO_1 && a.status == CUDNN_STATUS_SUCCESS; });
-                if (found == algoPerf + calgo)
-                    RuntimeError("cuDNN could not find a deterministic algorithm. Set 'forceDeterministicAlgorithms=false' in your configuration.");
-                calgo = 1;
-                algoPerf[0] = *found;
+                size_t mem = 0;
+                algoPerf[0].status = cudnnGetConvolutionBackwardDataAlgorithm(*m_cudnn, *m_kernelT, m_outT, *m_conv, m_inT, CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST, maxMem, &algoPerf[0].algo);
+                CUDNN_CALL(cudnnGetConvolutionBackwardDataWorkspaceSize(*m_cudnn, *m_kernelT, m_outT, *m_conv, m_inT, algoPerf[0].algo, &mem));
+                algoPerf[0].memory = mem;
+                algoPerf[0].time = 0;
+                //Need to add a no memory algorithm as a backup
+                algoPerf[1].status = cudnnGetConvolutionBackwardDataAlgorithm(*m_cudnn, *m_kernelT, m_outT, *m_conv, m_inT, CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE, 0, &algoPerf[1].algo);
+                algoPerf[1].memory = 0;
+                algoPerf[1].time = 1;
+                calgo = 2;
+                return algoPerf[0].status;
             }
-            return result;
+            else
+            {
+                auto result = cudnnFindConvolutionBackwardDataAlgorithm(*m_cudnn, *m_kernelT, m_outT, *m_conv, m_inT, MaxAlgoCount, &calgo, algoPerf);
+                if (m_forceDeterministicAlgorithms)
+                {
+                    auto found = std::find_if(algoPerf, algoPerf + calgo,
+                        [](const cudnnConvolutionBwdDataAlgoPerf_t& a)  { return a.algo == CUDNN_CONVOLUTION_BWD_DATA_ALGO_1 && a.status == CUDNN_STATUS_SUCCESS; });
+                    if (found == algoPerf + calgo)
+                        RuntimeError("cuDNN could not find a deterministic algorithm. Set 'forceDeterministicAlgorithms=false' in your configuration.");
+                    calgo = 1;
+                    algoPerf[0] = *found;
+                }
+                return result;
+            }
         };
         auto staticFinder = [this](cudnnConvolutionBwdDataAlgo_t& algo) -> cudnnStatus_t
         {
@@ -286,19 +321,36 @@ protected:
     {
         size_t batchSize = in.GetNumCols();
         // Find best algo and allocate temp buffer, if needed.
-        auto finder = [this](int& calgo, cudnnConvolutionBwdFilterAlgoPerf_t algoPerf[MaxAlgoCount]) -> cudnnStatus_t
+        auto finder = [this](int& calgo, cudnnConvolutionBwdFilterAlgoPerf_t algoPerf[MaxAlgoCount], size_t maxMem) -> cudnnStatus_t
         {
-            auto result = cudnnFindConvolutionBackwardFilterAlgorithm(*m_cudnn, m_inT, m_outT, *m_conv, *m_kernelT, MaxAlgoCount, &calgo, algoPerf);
-            if (m_forceDeterministicAlgorithms)
+            if (m_autotunePolicy == Globals::cudnnAutotunePolicy::HEURISTIC)
             {
-                auto found = std::find_if(algoPerf, algoPerf + calgo,
-                    [](const cudnnConvolutionBwdFilterAlgoPerf_t& a)  { return a.algo == CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1 && a.status == CUDNN_STATUS_SUCCESS; });
-                if (found == algoPerf + calgo)
-                    RuntimeError("cuDNN could not find a deterministic algorithm. Set 'forceDeterministicAlgorithms=false' in your configuration.");
-                calgo = 1;
-                algoPerf[0] = *found;
+                size_t mem = 0;
+                algoPerf[0].status = cudnnGetConvolutionBackwardFilterAlgorithm(*m_cudnn, m_inT, m_outT, *m_conv, *m_kernelT, CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, maxMem, &algoPerf[0].algo);
+                CUDNN_CALL(cudnnGetConvolutionBackwardFilterWorkspaceSize(*m_cudnn, m_inT, m_outT, *m_conv, *m_kernelT, algoPerf[0].algo, &mem));
+                algoPerf[0].memory = mem;
+                algoPerf[0].time = 0;
+                //Need to add a no memory algorithm as a backup
+                algoPerf[1].status = cudnnGetConvolutionBackwardFilterAlgorithm(*m_cudnn, m_inT, m_outT, *m_conv, *m_kernelT, CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE, 0, &algoPerf[1].algo);
+                algoPerf[1].memory = 0;
+                algoPerf[1].time = 1;
+                calgo = 2;
+                return algoPerf[0].status;
             }
-            return result;
+            else
+            {
+                auto result = cudnnFindConvolutionBackwardFilterAlgorithm(*m_cudnn, m_inT, m_outT, *m_conv, *m_kernelT, MaxAlgoCount, &calgo, algoPerf);
+                if (m_forceDeterministicAlgorithms)
+                {
+                    auto found = std::find_if(algoPerf, algoPerf + calgo,
+                        [](const cudnnConvolutionBwdFilterAlgoPerf_t& a)  { return a.algo == CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1 && a.status == CUDNN_STATUS_SUCCESS; });
+                    if (found == algoPerf + calgo)
+                        RuntimeError("cuDNN could not find a deterministic algorithm. Set 'forceDeterministicAlgorithms=false' in your configuration.");
+                    calgo = 1;
+                    algoPerf[0] = *found;
+                }
+                return result;
+            }
         };
         auto staticFinder = [this](cudnnConvolutionBwdFilterAlgo_t& algo) -> cudnnStatus_t
         {
@@ -352,6 +404,7 @@ private:
     template <typename TAlgo, typename TFinder, typename TStaticFinder>
     void FindBestAlgo(size_t batchSize, TAlgo& algo, TFinder finder, TStaticFinder staticFinder)
     {
+        static size_t total = 0;
         m_inT.UpdateBatchSize(batchSize);
         m_outT.UpdateBatchSize(batchSize);
 
@@ -362,7 +415,9 @@ private:
         // Some of our tuning policies require running cudnn autotuning twice
         CuDnnAlgoT algoPerf[2 * MaxAlgoCount];
         int calgo = 0;
-        cudnnStatus_t err = finder(calgo, algoPerf);
+        size_t inputSampleSize = m_geometry->InputShape().GetNumElements();
+        size_t maxMem = m_maxTempMemSizeInSamples == 0 ? (std::numeric_limits<size_t>::max)() : inputSampleSize * m_maxTempMemSizeInSamples * sizeof(ElemType);
+        cudnnStatus_t err = finder(calgo, algoPerf, maxMem);
         // Alloc failed - usually means cuDNN runtime auto-tuner could not allocate workspace.
         // In such case, use static auto-tuner with no workspace.
         // This should never happen in the deterministic mode because we pick up algorithms with 0 memory workspace.
@@ -383,8 +438,6 @@ private:
         }
         CUDNN_CALL(err);
         assert(calgo > 0);
-        size_t inputSampleSize = m_geometry->InputShape().GetNumElements();
-        size_t maxMem = m_maxTempMemSizeInSamples == 0 ? (std::numeric_limits<size_t>::max)() : inputSampleSize * m_maxTempMemSizeInSamples * sizeof(ElemType);
         auto invalid = [maxMem](const CuDnnAlgoT& cur) { return cur.status != CUDNN_STATUS_SUCCESS || cur.memory > maxMem; };
         auto algoEnd = std::remove_if(algoPerf, algoPerf + calgo, invalid);
         calgo = static_cast<int>(algoEnd - algoPerf);
@@ -392,7 +445,7 @@ private:
         {
             auto algoNext = algoEnd;
             int calgo1 = 0;
-            cudnnStatus_t err1 = finder(calgo1, algoNext);
+            cudnnStatus_t err1 = finder(calgo1, algoNext, maxMem);
             if (err1 == CUDNN_STATUS_SUCCESS)
             {
                 algoEnd = std::remove_if(algoNext, algoNext + calgo1, invalid);
@@ -410,6 +463,7 @@ private:
 
         switch (m_autotunePolicy)
         {
+            /*
             case Globals::cudnnAutotunePolicy::PESSIMISTIC:
             {
                 // Find the algorithm whose maximum time (out of two runs) is minimum.
@@ -421,6 +475,7 @@ private:
                     res = algoPerf + i;
             }
             break;
+            */
             case Globals::cudnnAutotunePolicy::MEMORY_AWARE:
             {
                 // Find the most memory efficient algorithm whose time is less than tmax.
@@ -431,6 +486,7 @@ private:
                     res = std::min_element(algoPerf, searchEnd, [](const CuDnnAlgoT& a, const CuDnnAlgoT& b) { return a.memory < b.memory; });
             }
             break;
+            case Globals::cudnnAutotunePolicy::HEURISTIC:
             case Globals::cudnnAutotunePolicy::OPTIMISTIC:
                 break;
             default:
@@ -440,6 +496,10 @@ private:
 
         algo.MaxAllowedMBSizeForCurrentAlgo = batchSize;
         algo.Algo = *res;
+        if (res->memory > 0){
+            total += res->memory;
+            fprintf(stderr, "%s %d\n", typeid(TAlgo).name(), total);
+        }
 
         if (m_forceDeterministicAlgorithms) // does not allow fallback.
             return;

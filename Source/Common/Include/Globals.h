@@ -28,7 +28,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         enum cudnnAutotunePolicy : int
         {
             OPTIMISTIC = 0,
-            PESSIMISTIC,
+            HEURISTIC,
             MEMORY_AWARE
         };
 
@@ -38,9 +38,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             {
                 m_cudnnAutotunePolicy = OPTIMISTIC;
             }
-            else if (cudnnAutotunePolicy == "pessimistic")
+            else if (cudnnAutotunePolicy == "heuristic")
             {
-                m_cudnnAutotunePolicy = PESSIMISTIC;
+                m_cudnnAutotunePolicy = HEURISTIC;
             }
             else if (cudnnAutotunePolicy == "memoryAware")
             {
