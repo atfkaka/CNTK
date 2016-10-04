@@ -107,7 +107,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     {
         size_t length = end - begin;
         if (length % 4 != 0)
-            RuntimeError("Invalid base64 data, length '%d' is not % 4.", (int)length);
+            RuntimeError("Invalid base64 data, length '%d' is not devisible by 4.", (int)length);
         std::vector<char> result;
         result.resize((length * 3) / 4); // Upper bound on the max number of decoded symbols.
         size_t currentDecodedIndex = 0;
