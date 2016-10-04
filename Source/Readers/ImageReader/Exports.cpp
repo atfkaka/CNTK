@@ -14,6 +14,7 @@
 #include "ImageDataDeserializer.h"
 #include "ImageTransformers.h"
 #include "CorpusDescriptor.h"
+#include "Base64ImageDeserializer.h"
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -42,6 +43,8 @@ extern "C" DATAREADER_API bool CreateDeserializer(IDataDeserializer** deserializ
 {
     if (type == L"ImageDeserializer")
         *deserializer = new ImageDataDeserializer(corpus, deserializerConfig);
+    else if (type == L"Base64ImageDeserializer")
+        *deserializer = new Base64ImageDeserializer(corpus, deserializerConfig);
     else
         // Unknown type.
         return false;

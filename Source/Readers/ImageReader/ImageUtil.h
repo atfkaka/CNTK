@@ -84,15 +84,15 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         indexTable.resize(std::numeric_limits<char>().max());
         char value = 0;
         for (char i = 'A'; i <= 'Z'; i++)
-            indexTable[i] = value;
+            indexTable[i] = value++;
         assert(value == 26);
 
-        for (char i = 'a'; i <= 'z'; i++, value++)
-            indexTable[i] = value;
+        for (char i = 'a'; i <= 'z'; i++)
+            indexTable[i] = value++;
         assert(value == 52);
 
-        for (char i = '0'; i <= '9'; i++, value++)
-            indexTable[i] = value;
+        for (char i = '0'; i <= '9'; i++)
+            indexTable[i] = value++;
         assert(value == 62);
         indexTable['+'] = value++;
         indexTable['/'] = value++;
