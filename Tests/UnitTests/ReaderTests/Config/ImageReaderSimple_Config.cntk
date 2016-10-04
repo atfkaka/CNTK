@@ -40,6 +40,7 @@ Simple_Test = [
 ]
 
 DeserializerType = "ImageDeserializer"
+MapFile="$RootDir$/ImageReaderSimple_map.txt"
 
 Composite_Test= {
     reader = {
@@ -48,7 +49,7 @@ Composite_Test= {
         deserializers = ({
             type = $DeserializerType$
             module = "ImageReader"
-            file = "$RootDir$/ImageReaderSimple_map.txt"
+            file = "$MapFile$"
 
             input = {
                 features = {

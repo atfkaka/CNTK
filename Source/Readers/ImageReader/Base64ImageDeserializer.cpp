@@ -47,9 +47,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             if (rc)
                 RuntimeError("Error seeking to position %" PRId64 " in the input file (%ls), error %d", m_chunkOffset, m_parent.m_fileName.c_str(), rc);
 
-            size_t bytesRead = fread(m_buffer.data(), descriptor.m_byteSize, 1, m_parent.m_dataFile.get());
-            if (bytesRead != descriptor.m_byteSize)
-                RuntimeError("Expected to read '%d', but read only '%d' bytes", descriptor.m_byteSize, bytesRead);
+            freadOrDie(m_buffer.data(), descriptor.m_byteSize, 1, m_parent.m_dataFile.get());
         }
 
         virtual void GetSequence(size_t sequenceId, std::vector<SequenceDataPtr>& result) override
@@ -66,6 +64,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 token = strtok_s(nullptr, "\t\n", &next_token);
 
             // Let's get the label.
+            if (!token)
+                RuntimeError("Empty label value for sequence %" PRIu64, sequence.m_key.m_sequence);
+
             char* eptr = nullptr;
             errno = 0;
             size_t classId = strtoull(token, &eptr, 10);
@@ -79,7 +80,17 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
             // Let's get the image.
             token = strtok_s(nullptr, "\t\n", &next_token);
-            char* endToken = strtok_s(nullptr, "\t\n", &next_token);
+            if (!token)
+                RuntimeError("Empty image for sequence %" PRIu64, sequence.m_key.m_sequence);
+
+            // Find line end or end of buffer.
+            char* endToken = strtok_s(nullptr, "\n", &next_token);
+            if (!endToken) // End of buffer reached.
+                endToken = m_buffer.data() + m_buffer.size();
+
+            // Remove non Base64 characters at the end of the string (tabs/spaces/)
+            while (endToken > token &&  !IsBase64Char(*(endToken - 1)))
+                endToken--;
 
             std::vector<char> decodedImage = Decode64BitImage(token, endToken);
             cv::Mat img = cv::imdecode(decodedImage, m_parent.m_grayscale ? cv::IMREAD_GRAYSCALE : cv::IMREAD_COLOR);

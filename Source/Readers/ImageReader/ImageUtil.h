@@ -78,20 +78,20 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         vector<IndexType> m_indices;
     };
 
-    static std::vector<char> FillIndexTable()
+    static std::vector<unsigned char> FillIndexTable()
     {
-        std::vector<char> indexTable;
-        indexTable.resize(std::numeric_limits<char>().max());
+        std::vector<unsigned char> indexTable;
+        indexTable.resize(std::numeric_limits<unsigned char>().max());
         char value = 0;
-        for (char i = 'A'; i <= 'Z'; i++)
+        for (unsigned char i = 'A'; i <= 'Z'; i++)
             indexTable[i] = value++;
         assert(value == 26);
 
-        for (char i = 'a'; i <= 'z'; i++)
+        for (unsigned char i = 'a'; i <= 'z'; i++)
             indexTable[i] = value++;
         assert(value == 52);
 
-        for (char i = '0'; i <= '9'; i++)
+        for (unsigned char i = '0'; i <= '9'; i++)
             indexTable[i] = value++;
         assert(value == 62);
         indexTable['+'] = value++;
@@ -101,23 +101,32 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     }
 
     const static char* base64IndexTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    static std::vector<char> base64DecodeTable = FillIndexTable();
+    static std::vector<unsigned char> base64DecodeTable = FillIndexTable();
 
     inline std::vector<char> Decode64BitImage(const char* begin, const char* end)
     {
         size_t length = end - begin;
-        if ((end - begin) % 4 != 0)
+        if (length % 4 != 0)
             RuntimeError("Invalid base64 data");
         std::vector<char> result;
-        result.resize((length * 3) / 4 - (*(end - 2) == '=') ? 2 : ((*(end - 1) == '=') ? 1 : 0));
+        result.resize((length * 3) / 4); // Upper bound on the max number of decoded symbols.
         size_t currentDecodedIndex = 0;
-        for (size_t i = 0; i < length; i += 4)
+        while(begin < end)
         {
             result[currentDecodedIndex++] = base64DecodeTable[*begin] << 2 | base64DecodeTable[*(begin + 1)] >> 4;
-            result[currentDecodedIndex++] = base64DecodeTable[*begin + 1] << 4 | base64DecodeTable[*(begin + 2)] >> 2;
-            result[currentDecodedIndex++] = base64DecodeTable[*begin + 2] << 6 | base64DecodeTable[*(begin + 3)];
+            result[currentDecodedIndex++] = base64DecodeTable[*(begin + 1)] << 4 | base64DecodeTable[*(begin + 2)] >> 2;
+            result[currentDecodedIndex++] = base64DecodeTable[*(begin + 2)] << 6 | base64DecodeTable[*(begin + 3)];
+            begin += 4;
         }
+
+        // In Base 64 each 3 characteds are encoded with 4 bytes. Plus there could be padding (last two bytes)
+        size_t resultingLength = (length * 3) / 4 - (*(end - 2) == '=' ? 2 : (*(end - 1) == '=' ? 1 : 0));
+        result.resize(resultingLength);
         return result;
     }
 
+    inline bool IsBase64Char(char c)
+    {
+        return isalnum(c) || c == '/' || c == '+' || c == '=';
+    }
 }}}
