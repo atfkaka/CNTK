@@ -58,10 +58,10 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
             // Let's parse the string
             char* next_token = nullptr;
-            char* token = strtok_s(&m_buffer[0] + offset, "\t\n", &next_token);
+            char* token = strtok_s(&m_buffer[0] + offset, "\t", &next_token);
             bool hasSequenceKey = m_parent.m_indexer->HasSequenceIds();
             if (hasSequenceKey) // Skip sequence key.
-                token = strtok_s(nullptr, "\t\n", &next_token);
+                token = strtok_s(nullptr, "\t", &next_token);
 
             // Let's get the label.
             if (!token)
@@ -79,14 +79,14 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                     sequence.m_key.m_sequence, classId, m_parent.m_labelDimension);
 
             // Let's get the image.
-            token = strtok_s(nullptr, "\t\n", &next_token);
+            token = strtok_s(nullptr, "\n", &next_token);
             if (!token)
                 RuntimeError("Empty image for sequence %" PRIu64, sequence.m_key.m_sequence);
 
             // Find line end or end of buffer.
-            char* endToken = strtok_s(nullptr, "\n", &next_token);
-            if (!endToken) // End of buffer reached.
-                endToken = m_buffer.data() + m_buffer.size();
+            char* endToken = strchr(token, 0);
+            if (!endToken)
+                RuntimeError("Cannot find the end of the image for sequence %" PRIu64, sequence.m_key.m_sequence);
 
             // Remove non Base64 characters at the end of the string (tabs/spaces/)
             while (endToken > token &&  !IsBase64Char(*(endToken - 1)))
