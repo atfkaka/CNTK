@@ -82,7 +82,6 @@ BOOST_AUTO_TEST_CASE(ImageSimpleCompositeAndBase64)
     test(
     {
         L"MapFile=\"$RootDir$/Base64ImageReaderSimple_map.txt\"",
-        L"Composite_Test=[reader=[file = \"$RootDir$/Base64ImageReaderSimple_map.txt\"]]",
         L"DeserializerType=\"Base64ImageDeserializer\"]]"
     });
 };
