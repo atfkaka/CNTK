@@ -28,7 +28,7 @@ int main()
     // which will have a silent performance degradation otherwise
     Internal::DisableAutomaticUnpackingOfPackedValues();
 
-    NDArrayViewTests();
+    /*NDArrayViewTests();
     TensorTests();
     FunctionTests();
 
@@ -43,12 +43,12 @@ int main()
     TrainLSTMSequenceClassifer();
 
     TrainSequenceToSequenceTranslator();
-    TrainTruncatedLSTMAcousticModelClassifer();
+    TrainTruncatedLSTMAcousticModelClassifer();*/
 
     MultiThreadsEvaluation();
 
-    fprintf(stderr, "Test device selection API\n");
-    DeviceSelectionTests();
+   /* fprintf(stderr, "Test device selection API\n");
+    DeviceSelectionTests();*/
 
     fprintf(stderr, "\nCNTKv2Library tests: Passed\n");
     fflush(stderr);
