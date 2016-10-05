@@ -11,6 +11,7 @@
 
 using namespace CNTK;
 
+void outputFunctionInfo(FunctionPtr);
 FunctionPtr FullyConnectedDNNLayerWithSharedParameters(Variable, const Parameter&, const Parameter&, const std::function<FunctionPtr(const FunctionPtr&)>&);
 void CreateFunctionAndEvaluateWithSharedParameters(size_t, size_t, size_t, const Parameter&, const Parameter&, const Parameter[], const Parameter[], const Parameter&, const DeviceDescriptor&);
 FunctionPtr SetupFullyConnectedLinearLayer(Variable, size_t, const DeviceDescriptor&, const std::wstring&);
@@ -102,6 +103,9 @@ void MultiThreadsEvaluationWithClone(const DeviceDescriptor& device, const int t
         throw std::runtime_error("MultiThreadsEvaluationWithClone: Function does not have expected Parameter count");
     }
 
+    outputFunctionInfo(classifierFunc);
+    fprintf(stderr, "MultiThreadsEvaluationWithClone on device=%d\n", device.Id());
+
     // Run evaluation in parallel
     std::vector<std::thread> threadList(threadCount);
     for (int th = 0; th < threadCount; ++th)
@@ -127,10 +131,14 @@ void MultiThreadsEvaluationWithClone(const DeviceDescriptor& device, const int t
 /// </description>
 void MultiThreadsEvaluationWithLoadModel(const DeviceDescriptor& device, const int threadCount)
 {
-    // The model file will be trained and copied to the current runtime directory first.    
+    // The model file will be trained and copied to the current runtime directory first.
     auto modelFuncPtr = CNTK::LoadLegacyModel(DataType::Float, L"01_OneHidden", device);
 
-    // Run evaluation in parallel
+
+    outputFunctionInfo(modelFuncPtr);
+    fprintf(stderr, "MultiThreadsEvaluationWithLoadModel on device=%d\n", device.Id());
+
+    // Run evaluation in parallel.
     std::vector<std::thread> threadList(threadCount);
     for (int th = 0; th < threadCount; ++th)
     {
@@ -317,16 +325,12 @@ inline bool GetOutputVaraiableByName(FunctionPtr evalFunc, std::wstring varName,
 void RunEvaluationClassifier(FunctionPtr evalFunc, const DeviceDescriptor& device)
 {
     const std::wstring inputNodeName = L"features";
-    auto inputVariables = evalFunc->Arguments();
-
-    outputFunctionInfo(evalFunc);
-    fprintf(stderr, "device=%d\n", device.Id());
 
     Variable inputVar;
     if (!GetInputVariableByName(evalFunc, inputNodeName, inputVar))
     {
-        fprintf(stderr, "No input variable %S is available.\n", inputNodeName.c_str());
-        return;
+        fprintf(stderr, "Input variable %S is not available.\n", inputNodeName.c_str());
+        throw("Input variable not found error.");
     }
 
     // Evaluate the network in several runs 
@@ -377,7 +381,11 @@ void RunEvaluationClassifier(FunctionPtr evalFunc, const DeviceDescriptor& devic
             {
                 fprintf(stderr, "%f ", outputData[dataIndex++]);
             }
-            fprintf(stderr, "...\n");
+            if (outputDim > 10)
+            {
+                fprintf(stderr, "...");
+            }
+            fprintf(stderr, "\n");
         }
     }
 }
@@ -387,21 +395,18 @@ void RunEvaluationOneHidden(FunctionPtr evalFunc, const DeviceDescriptor& device
     const std::wstring inputNodeName = L"features";
     const std::wstring outputNodeName = L"out.z_output";
 
-    outputFunctionInfo(evalFunc);
-    fprintf(stderr, "device=%d\n", device.Id());
-
     Variable inputVar;
     if (!GetInputVariableByName(evalFunc, inputNodeName, inputVar))
     {
-        fprintf(stderr, "No input variable %S is available.\n", inputNodeName.c_str());
-        return;
+        fprintf(stderr, "Input variable %S is not available.\n", inputNodeName.c_str());
+        throw("Input variable not found error.");
     }
 
     Variable outputVar;
     if (!GetOutputVaraiableByName(evalFunc, outputNodeName, outputVar))
     {
-        fprintf(stderr, "No output variable %S is available.\n", inputNodeName.c_str());
-        return;
+        fprintf(stderr, "Output variable %S is not available.\n", outputNodeName.c_str());
+        throw("Output variable not found error.");
     }
 
     // Evaluate the network in several runs 
