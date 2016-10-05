@@ -613,7 +613,7 @@ def runCommand(args):
          testsToRun.append(Test.allTestsIndexedByFullName[name.lower()])
        else:
          six.print_("ERROR: test not found", name, file=sys.stderr)
-         return 1
+         sys.exit(1)
   else:
      testsToRun = list(sorted(Test.allTestsIndexedByFullName.values(), key=lambda test: test.fullName))
 
