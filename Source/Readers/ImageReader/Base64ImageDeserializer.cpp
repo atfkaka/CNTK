@@ -52,6 +52,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
         virtual void GetSequence(size_t sequenceId, std::vector<SequenceDataPtr>& result) override
         {
+            auto resultingImage = std::make_shared<ImageSequenceData>();
+
             size_t innerSequenceId = m_parent.m_multiViewCrop ? sequenceId / 10 : sequenceId;
             const auto& sequence = m_descriptor.m_sequences[innerSequenceId];
             size_t offset = sequence.m_fileOffsetBytes - m_chunkOffset;
@@ -92,28 +94,40 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             while (endToken > token &&  !IsBase64Char(*(endToken - 1)))
                 endToken--;
 
-            std::vector<char> decodedImage = Decode64BitImage(token, endToken);
-            cv::Mat img = cv::imdecode(decodedImage, m_parent.m_grayscale ? cv::IMREAD_GRAYSCALE : cv::IMREAD_COLOR);
+            std::vector<char> decodedImage;
+            if (!Decode64BitImage(token, endToken, decodedImage))
+            {
+                fprintf(stderr, "Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
+                resultingImage->m_isValid = false;
+            }
+            else
+            {
+                cv::Mat img = cv::imdecode(decodedImage, m_parent.m_grayscale ? cv::IMREAD_GRAYSCALE : cv::IMREAD_COLOR);
+                resultingImage->m_image = std::move(img);
+                auto& cvImage = resultingImage->m_image;
+                if (!cvImage.data)
+                {
+                    fprintf(stderr, "Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
+                    resultingImage->m_isValid = false;
+                }
+                else
+                {
+                    // Convert element type.
+                    ElementType dataType = ConvertImageToSupportedDataType(cvImage);
+                    if (!cvImage.isContinuous())
+                        cvImage = cvImage.clone();
+                    assert(cvImage.isContinuous());
+                    resultingImage->m_elementType = dataType;
+                }
 
-            auto image = std::make_shared<ImageSequenceData>();
-            image->m_image = std::move(img);
-            auto& cvImage = image->m_image;
-            if (!cvImage.data)
-                RuntimeError("Cannot decode sequence sequence'%d'", (int)sequence.m_key.m_sequence);
+                ImageDimensions dimensions(cvImage.cols, cvImage.rows, cvImage.channels());
+                resultingImage->m_sampleLayout = std::make_shared<TensorShape>(dimensions.AsTensorShape(HWC));
+                resultingImage->m_id = sequenceId;
+                resultingImage->m_numberOfSamples = 1;
+                resultingImage->m_chunk = shared_from_this();
+            }
 
-            // Convert element type.
-            ElementType dataType = ConvertImageToSupportedDataType(cvImage);
-            if (!cvImage.isContinuous())
-                cvImage = cvImage.clone();
-            assert(cvImage.isContinuous());
-
-            ImageDimensions dimensions(cvImage.cols, cvImage.rows, cvImage.channels());
-            image->m_sampleLayout = std::make_shared<TensorShape>(dimensions.AsTensorShape(HWC));
-            image->m_id = sequenceId;
-            image->m_numberOfSamples = 1;
-            image->m_chunk = shared_from_this();
-            image->m_elementType = dataType;
-            result.push_back(image);
+            result.push_back(resultingImage);
 
             auto label = std::make_shared<CategorySequenceData>();
             label->m_chunk = shared_from_this();

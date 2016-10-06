@@ -5,7 +5,8 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #define _SCL_SECURE_NO_WARNINGS
-
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "PackerBase.h"
 #include "ElementTypeUtils.h"
 
@@ -58,12 +59,15 @@ void PackerBase::SetConfiguration(const ReaderConfiguration& config, const std::
 
 PackerBase::PackerBase(SequenceEnumeratorPtr sequenceEnumerator,
     const std::vector<StreamDescriptionPtr>& streams,
-    size_t numberOfBuffers) :
+    size_t numberOfBuffers,
+    size_t maxNumberOfInvalidSequences) :
     m_sequenceEnumerator(sequenceEnumerator),
     m_minibatchSize(0),
     m_outputStreamDescriptions(streams),
     m_numberOfBuffers(numberOfBuffers),
-    m_currentBufferIndex(0)
+    m_currentBufferIndex(0),
+    m_numberOfCleanedSequences(0),
+    m_maxNumberOfInvalidSequences(maxNumberOfInvalidSequences)
 {
     assert(m_numberOfBuffers >= 1);
     m_inputStreamDescriptions = sequenceEnumerator->GetStreamDescriptions();
@@ -116,6 +120,50 @@ size_t PackerBase::GetSampleSize(StreamDescriptionPtr stream)
     assert(stream != nullptr);
     size_t elementSize = GetSizeByType(stream->m_elementType);
     return stream->m_sampleLayout->GetNumElements() * elementSize;
+}
+
+void PackerBase::CleanSequences(Sequences& sequences)
+{
+    if (sequences.m_data.empty())
+        return;
+
+    size_t clean = 0;
+    for (size_t i = 0; i < sequences.m_data.front().size(); ++i)
+    {
+        bool invalid = false;
+        for (const auto& s : sequences.m_data)
+        {
+            if (!s[i]->m_isValid)
+            {
+                invalid = true;
+                break;
+            }
+        }
+
+        if (invalid)
+        {
+            m_numberOfCleanedSequences++;
+            continue;
+        }
+
+        // For all streams reassign the sequence.
+        for (auto& s : sequences.m_data)
+            s[clean] = s[i];
+        clean++;
+    }
+
+    if (clean == 0)
+    {
+        sequences.m_data.resize(0);
+        return;
+    }
+
+    // For all streams set new size.
+    for (auto& s : sequences.m_data)
+        s.resize(clean);
+
+    if (m_numberOfCleanedSequences > m_maxNumberOfInvalidSequences)
+        RuntimeError("Number of invalid sequences %" PRIu64 " in the input exceeded the specified maximum number", m_numberOfCleanedSequences);
 }
 
 }}}

@@ -16,8 +16,9 @@ public:
     FramePacker(
         SequenceEnumeratorPtr sequenceEnumerator,
         const std::vector<StreamDescriptionPtr>& streams,
-        size_t numberOfBuffers = 2) :
-        SequencePacker(sequenceEnumerator, streams, numberOfBuffers)
+        size_t numberOfBuffers = 2,
+        size_t maxNumberOfInvalidSequences = 0) :
+        SequencePacker(sequenceEnumerator, streams, numberOfBuffers, maxNumberOfInvalidSequences)
     {}
 
 private:

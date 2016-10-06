@@ -103,12 +103,11 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     const static char* base64IndexTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     static std::vector<unsigned char> base64DecodeTable = FillIndexTable();
 
-    inline std::vector<char> Decode64BitImage(const char* begin, const char* end)
+    inline bool Decode64BitImage(const char* begin, const char* end, std::vector<char>& result)
     {
         size_t length = end - begin;
         if (length % 4 != 0)
-            RuntimeError("Invalid base64 data, length '%d' is not devisible by 4.", (int)length);
-        std::vector<char> result;
+            return false;
         result.resize((length * 3) / 4); // Upper bound on the max number of decoded symbols.
         size_t currentDecodedIndex = 0;
         while(begin < end)
@@ -122,7 +121,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         // In Base 64 each 3 characteds are encoded with 4 bytes. Plus there could be padding (last two bytes)
         size_t resultingLength = (length * 3) / 4 - (*(end - 2) == '=' ? 2 : (*(end - 1) == '=' ? 1 : 0));
         result.resize(resultingLength);
-        return result;
+        return true;
     }
 
     inline bool IsBase64Char(char c)

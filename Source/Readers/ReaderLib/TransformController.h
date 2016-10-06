@@ -90,6 +90,8 @@ public:
             {
                 for (auto& t : m_transformations)
                 {
+                    if (!sequences.m_data[t.second][sequenceId]->m_isValid)
+                        break;
                     sequences.m_data[t.second][sequenceId] = t.first.m_transformer->Transform(sequences.m_data[t.second][sequenceId]);
                 }
             }, j);

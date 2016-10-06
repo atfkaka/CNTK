@@ -16,14 +16,15 @@ struct SequenceBuffer;
 typedef std::shared_ptr<SequenceBuffer> SequenceBufferPtr;
 
 // A bptt packer that densely packs samples in parallel for GPU consumptions.
-// TODO: Currently supports only packing of streams with sequences of equal length.
+// Currently supports only packing of streams with sequences of equal length.
 class TruncatedBPTTPacker : public PackerBase
 {
 public:
     TruncatedBPTTPacker(
         SequenceEnumeratorPtr sequenceEnumerator,
         const std::vector<StreamDescriptionPtr>& streams,
-        size_t numberOfBuffers = 2);
+        size_t numberOfBuffers = 2,
+        size_t maxNumberOfInvalidSequences = 0);
 
     virtual Minibatch ReadMinibatch() override;
 
