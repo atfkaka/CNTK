@@ -97,7 +97,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             std::vector<char> decodedImage;
             if (!Decode64BitImage(token, endToken, decodedImage))
             {
-                fprintf(stderr, "Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
+                fprintf(stderr, "WARNING: Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
                 resultingImage->m_isValid = false;
             }
             else
@@ -107,7 +107,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 auto& cvImage = resultingImage->m_image;
                 if (!cvImage.data)
                 {
-                    fprintf(stderr, "Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
+                    fprintf(stderr, "WARNING: Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
                     resultingImage->m_isValid = false;
                 }
                 else
