@@ -502,6 +502,48 @@ void RunEvaluation02OneConv(FunctionPtr evalFunc, const DeviceDescriptor& device
         throw("Output variable not found error.");
     }
 
+    std::wstring line;
+    size_t labelBegin = 0;
+    size_t pos = line.find_first_of('|');
+    if ((pos != labelBegin) || (pos == line.npos))
+    {
+        fprintf(stderr, "Wrong format.\n");
+        return;
+    }
+    labelBegin = pos + 1;
+    auto labelEnd = line.find('|', labelBegin);
+    if (labelEnd != line.npos)
+    {
+        auto labels = line.substr(labelBegin, labelEnd - labelBegin); 
+        auto features = line.substr(labelEnd + 1, line.end - labelEnd - 1);
+
+        auto 
+        for (std::string::iterator it = lables)
+
+    }
+#if 0
+    |labels 0 0 0 0 0 0 0 1 0 0	|features 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 84 185 159 151 60 36 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 222 254 254 254 254 241 198 198 198 198 198 198 198 198 170 52 0 0 0 0 0 0 0 0 0 0 0 0 67 114 72 114 163 227 254 225 254 254 254 250 229 254 254 140 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 66 14 67 67 67 59 21 236 254 106 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 83 253 209 18 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 22 233 255 83 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 129 254 238 44 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 59 249 254 62 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 133 254 187 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 9 205 248 58 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 126 254 182 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 75 251 240 57 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 19 221 254 166 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 203 254 219 35 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 38 254 254 77 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 31 224 254 115 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 133 254 254 52 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 61 242 254 254 52 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 121 254 254 219 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 121 254 207 18 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    // The file format correspond to the CNTK Text Format Reader format (https://github.com/Microsoft/CNTK/wiki/CNTKTextFormat-Reader)
+    var sets = line.Split('|');
+    var labels = sets[1].Trim().Split(' ').Skip(1);
+    var features = sets[2].Trim().Split(' ').Skip(1);
+
+    // Retrieve the 1-hot vector with the label index
+    var expected = labels.Select(float.Parse).Select((v, index) = > new { Value = v, Index = index })
+        .Aggregate((a, b) = > (a.Value > b.Value) ? a : b)
+        .Index;
+
+    // Retrieve the features
+    var inputs = features.Select(float.Parse).ToList();
+
+    // We can call the evaluate method and get back the results (single layer)...
+    var outputs = ModelEvaluator.Evaluate(inputs);
+
+    // Retrieve the outcome index (so we can compare it with the expected index)
+    var max = outputs.Select((v, index) = > new { Value = v, Index = index })
+        .Aggregate((a, b) = > (a.Value > b.Value) ? a : b)
+        .Index;
+#endif
     // Evaluate the network in several runs 
     size_t iterationCount = 4;
     size_t numSamples = 3;
