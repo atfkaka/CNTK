@@ -45,7 +45,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
             int rc = _fseeki64(m_parent.m_dataFile.get(), m_chunkOffset, SEEK_SET);
             if (rc)
-                RuntimeError("Error seeking to position %" PRId64 " in the input file (%ls), error %d", m_chunkOffset, m_parent.m_fileName.c_str(), rc);
+                RuntimeError("Error seeking to position '%" PRId64 "' in the input file '%ls', error code '%d'", m_chunkOffset, m_parent.m_fileName.c_str(), rc);
 
             freadOrDie(m_buffer.data(), descriptor.m_byteSize, 1, m_parent.m_dataFile.get());
         }
@@ -67,13 +67,13 @@ namespace Microsoft { namespace MSR { namespace CNTK {
 
             // Let's get the label.
             if (!token)
-                RuntimeError("Empty label value for sequence %" PRIu64, sequence.m_key.m_sequence);
+                RuntimeError("Empty label value for sequence %" PRIu64 " in the input file '%ls'", sequence.m_key.m_sequence, m_parent.m_fileName.c_str());
 
             char* eptr = nullptr;
             errno = 0;
             size_t classId = strtoull(token, &eptr, 10);
             if (token == eptr || errno == ERANGE)
-                RuntimeError("Cannot parse label value for sequence %" PRIu64, sequence.m_key.m_sequence);
+                RuntimeError("Cannot parse label value for sequence %" PRIu64 "in the input file '%ls'", sequence.m_key.m_sequence, m_parent.m_fileName.c_str());
 
             if (classId >= m_parent.m_labelDimension)
                 RuntimeError(
@@ -88,7 +88,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             // Find line end or end of buffer.
             char* endToken = strchr(token, 0);
             if (!endToken)
-                RuntimeError("Cannot find the end of the image for sequence %" PRIu64, sequence.m_key.m_sequence);
+                RuntimeError("Cannot find the end of the image for sequence %" PRIu64 " in the input file '%ls'", sequence.m_key.m_sequence, m_parent.m_fileName.c_str());
 
             // Remove non Base64 characters at the end of the string (tabs/spaces/)
             while (endToken > token &&  !IsBase64Char(*(endToken - 1)))
@@ -97,7 +97,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             std::vector<char> decodedImage;
             if (!Decode64BitImage(token, endToken, decodedImage))
             {
-                fprintf(stderr, "WARNING: Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
+                fprintf(stderr, "WARNING: Cannot decode sequence with id %" PRIu64 " in the input file '%ls'\n", sequence.m_key.m_sequence, m_parent.m_fileName.c_str());
                 resultingImage->m_isValid = false;
             }
             else
@@ -107,7 +107,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 auto& cvImage = resultingImage->m_image;
                 if (!cvImage.data)
                 {
-                    fprintf(stderr, "WARNING: Cannot decode sequence with id '%d'\n", (int)sequence.m_key.m_sequence);
+                    fprintf(stderr, "WARNING: Cannot decode sequence with id %" PRIu64 " in the input file '%ls'\n", sequence.m_key.m_sequence, m_parent.m_fileName.c_str());
                     resultingImage->m_isValid = false;
                 }
                 else
