@@ -13,20 +13,47 @@
 #define NDEBUG
 #endif
 
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#ifndef _MSC_VER // TODO: what is the correct trigger for gcc?
+__declspec_noreturn inline void ReportFailure(const char* format, ...) __attribute__((format(printf, 1, 2)));
+#endif
+
+__declspec_noreturn inline void ReportFailure(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    char buffer[1024] = { 0 }; // Note: pre-VS2015 vsnprintf() is not standards-compliant and may not add a terminator
+    vsnprintf(buffer, _countof(buffer) - 1, format, args); // -1 because pre-VS2015 vsnprintf() does not always write a 0-terminator
+    if (strlen(buffer)/*written*/ >= (int)_countof(buffer) - 2)
+        sprintf(buffer + _countof(buffer) - 4, "...");
+
+    throw std::runtime_error(buffer);
+}
+#pragma warning(pop)
+
 static const double relativeTolerance = 0.001f;
 static const double absoluteTolerance = 0.000001f;
 
+bool IsGPUAvailable();
+
 template <typename ElementType>
-inline void FloatingPointVectorCompare(const std::vector<ElementType>& first, const std::vector<ElementType>& second, const char* message)
+inline void FloatingPointCompare(ElementType actual, ElementType expected, const char* message)
 {
-    for (size_t i = 0; i < first.size(); ++i)
-    {
-        ElementType leftVal = first[i];
-        ElementType rightVal = second[i];
-        ElementType allowedTolerance = (std::max<ElementType>)((ElementType)absoluteTolerance, ((ElementType)relativeTolerance) * leftVal);
-        if (std::abs(leftVal - rightVal) > allowedTolerance)
-            throw std::runtime_error(message);
-    }
+    ElementType allowedTolerance = (std::max<ElementType>)((ElementType)absoluteTolerance, std::abs(((ElementType)relativeTolerance) * actual));
+    if (std::abs(actual - expected) > allowedTolerance)
+        ReportFailure((message + std::string("; Expected=%g, Actual=%g")).c_str(), expected, actual);
+}
+
+template <typename ElementType>
+inline void FloatingPointVectorCompare(const std::vector<ElementType>& actual, const std::vector<ElementType>& expected, const char* message)
+{
+    if (actual.size() != expected.size())
+        ReportFailure((message + std::string("; actual data vector size (%d) and expected data vector size (%d) are not equal")).c_str(), (int)actual.size(), (int)expected.size());
+
+    for (size_t i = 0; i < actual.size(); ++i)
+        FloatingPointCompare(actual[i], expected[i], message);
 }
 
 inline void VerifyException(const std::function<void()>& functionToTest, std::string errorMessage) {
@@ -123,10 +150,10 @@ inline CNTK::FunctionPtr FullyConnectedLinearLayer(CNTK::Variable input, size_t 
     assert(input.Shape().Rank() == 1);
     size_t inputDim = input.Shape()[0];
 
-    auto timesParam = CNTK::Parameter(CNTK::NDArrayView::RandomUniform<float>({ outputDim, inputDim }, -0.05, 0.05, 1, device));
+    auto timesParam = CNTK::Parameter({ outputDim, inputDim }, CNTK::DataType::Float, CNTK::GlorotUniformInitializer(), device);
     auto timesFunction = CNTK::Times(timesParam, input);
 
-    auto plusParam = CNTK::Parameter(CNTK::NDArrayView::RandomUniform<float>({ outputDim }, -0.05, 0.05, 1, device));
+    auto plusParam = CNTK::Parameter({ outputDim }, 0.0f, device);
     return CNTK::Plus(plusParam, timesFunction, outputName);
 }
 
@@ -159,11 +186,11 @@ std::pair<CNTK::FunctionPtr, CNTK::FunctionPtr> LSTMPCellWithSelfStabilization(C
 
     unsigned long seed = 1;
     auto createProjectionParam = [device, &seed](size_t outputDim, size_t inputDim) {
-        return CNTK::Parameter({ outputDim, inputDim }, CNTK::AsDataType<ElementType>(), CNTK::UniformInitializer(1, seed++), device);
+        return CNTK::Parameter({ outputDim, inputDim }, CNTK::AsDataType<ElementType>(), CNTK::GlorotUniformInitializer(1, 0, 1, seed++), device);
     };
 
     auto createDiagWeightParam = [device, &seed](size_t dim) {
-        return CNTK::Parameter({ dim }, CNTK::AsDataType<ElementType>(), CNTK::UniformInitializer(1, seed++), device);
+        return CNTK::Parameter({ dim }, CNTK::AsDataType<ElementType>(), CNTK::GlorotUniformInitializer(1, 0, 1, seed++), device);
     };
 
     auto stabilizedPrevOutput = Stabilize<ElementType>(prevOutput, device);
@@ -381,3 +408,23 @@ inline size_t FlattenedIndex(const CNTK::NDShape& shape, const std::vector<size_
 
     return flattenedIdx;
 };
+
+inline CNTK::FunctionPtr Embedding(const CNTK::Variable& input, size_t embeddingDim, const CNTK::DeviceDescriptor& device)
+{
+    assert(input.Shape().Rank() == 1);
+    size_t inputDim = input.Shape()[0];
+
+    auto embeddingParameters = CNTK::Parameter({ embeddingDim, inputDim }, CNTK::DataType::Float, CNTK::GlorotUniformInitializer(), device);
+    return Times(embeddingParameters, input);
+}
+
+inline CNTK::FunctionPtr LSTMSequenceClassiferNet(const CNTK::Variable& input, size_t numOutputClasses, size_t embeddingDim, size_t LSTMDim, size_t cellDim, const CNTK::DeviceDescriptor& device, const std::wstring& outputName)
+{
+    auto embeddingFunction = Embedding(input, embeddingDim, device);
+    auto pastValueRecurrenceHook = [](const CNTK::Variable& x) { return PastValue(x); };
+    auto LSTMFunction = LSTMPComponentWithSelfStabilization<float>(embeddingFunction, { LSTMDim }, { cellDim }, pastValueRecurrenceHook, pastValueRecurrenceHook, device).first;
+    auto thoughtVectorFunction = CNTK::Sequence::Last(LSTMFunction);
+
+    return FullyConnectedLinearLayer(thoughtVectorFunction, numOutputClasses, device, outputName);
+}
+

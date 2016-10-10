@@ -750,7 +750,7 @@ namespace CNTK
         ///
         /// Destruct 'this' Value object.
         ///
-        CNTK_API virtual ~Value();
+        virtual ~Value();
 
         ///
         /// Returns the descriptor of the device that 'this' Value resides on
@@ -796,28 +796,28 @@ namespace CNTK
         ///
         /// Returns the NDArrayView object corresponding to the data contents of 'this value object.
         ///
-        CNTK_API virtual NDArrayViewPtr Data() const;
+        virtual NDArrayViewPtr Data() const;
 
         ///
         /// Returns the NDMask object corresponding to the mask associated with 'this value object.
         ///
-        CNTK_API virtual NDMaskPtr Mask() const;
+        virtual NDMaskPtr Mask() const;
 
         ///
         /// Creates a new Value with newly allocated storage on the same device as 'this' Value and copies 'this' Value's contents into the newly allocated Value.
         ///
-        CNTK_API virtual ValuePtr DeepClone(bool readOnly = false) const;
+        virtual ValuePtr DeepClone(bool readOnly = false) const;
 
         ///
         /// Creates a new Value which is an alias of 'this' Value.
         ///
-        CNTK_API virtual ValuePtr Alias(bool readOnly = false) const;
+        virtual ValuePtr Alias(bool readOnly = false) const;
 
         ///
         /// Copies the contents of the 'source' Value to 'this' Value.
         /// The shapes of the 'source' Value's data and mask must be identical to 'this' Value's data and mask.
         ///
-        CNTK_API virtual void CopyFrom(const Value& source);
+        virtual void CopyFrom(const Value& source);
 
     private:
         // Disallow copy and move construction and assignment
@@ -1424,7 +1424,7 @@ namespace CNTK
     typedef Dictionary ParameterInitializer;
 
     // Forward declarations
-    inline Variable PlaceholderVariable(const NDShape& shape, const std::vector<Axis>& dynamicAxes = Axis::DefaultInputVariableDynamicAxes);
+    inline Variable PlaceholderVariable(const NDShape& shape, const std::wstring& name, const std::vector<Axis>& dynamicAxes = Axis::DefaultInputVariableDynamicAxes);
     inline Variable InputVariable(const NDShape& shape, bool isSparse, CNTK::DataType dataType, bool needsGradient, const std::wstring& name, const std::vector<Axis>& dynamicAxes = Axis::DefaultInputVariableDynamicAxes);
     inline Variable OutputVariable(const NDShape& shape, CNTK::DataType dataType, Function* ownerFunction, const std::vector<Axis>& dynamicAxes, const std::wstring& name = L"");
 
@@ -1451,7 +1451,7 @@ namespace CNTK
 
 #ifndef SWIG
     private:
-        friend inline Variable PlaceholderVariable(const NDShape& shape, const std::vector<Axis>& dynamicAxes /*= Axis::DefaultInputVariableDynamicAxes*/);
+        friend inline Variable PlaceholderVariable(const NDShape& shape, const std::wstring& name, const std::vector<Axis>& dynamicAxes /*= Axis::DefaultInputVariableDynamicAxes*/);
         friend inline Variable InputVariable(const NDShape& shape, bool isSparse, CNTK::DataType dataType, bool needsGradient, const std::wstring& name, const std::vector<Axis>& dynamicAxes /*= Axis::DefaultInputVariableDynamicAxes*/);
         friend inline Variable OutputVariable(const NDShape& shape, CNTK::DataType dataType, Function* ownerFunction, const std::vector<Axis>& dynamicAxes, const std::wstring& name /*= L""*/);
 #endif
@@ -1570,6 +1570,7 @@ namespace CNTK
             : m_dataFields(MakeSharedObject<VariableFields>(shape, varType, dataType, ownerFunction, value, needsGradient, dynamicAxes, isSparse, name, uid))
         {}
 
+private:
         Variable Clone() const
         {
             Variable clonedVariable;
@@ -1659,10 +1660,19 @@ namespace CNTK
     /// Create a Placeholder variable to be used as a temporary/placeholder input to a Function.
     /// All placeholder inputs of a Function must be replaced with non-placeholder Variables before Forward evaluation of the Function.
     ///
-    inline Variable PlaceholderVariable(const NDShape& shape, const std::vector<Axis>& dynamicAxes /*= Axis::DefaultInputVariableDynamicAxes*/)
+    inline Variable PlaceholderVariable(const NDShape& shape, const std::wstring& name, const std::vector<Axis>& dynamicAxes /*= Axis::DefaultInputVariableDynamicAxes*/)
     {
         auto varKind = VariableKind::Placeholder;
-        return Variable(shape, varKind, DataType::Unknown, nullptr, false, dynamicAxes, L"", Internal::GenerateUid(varKind));
+        return Variable(shape, varKind, DataType::Unknown, nullptr, false, dynamicAxes, name, Internal::GenerateUid(varKind));
+    }
+
+    ///
+    /// Create a Placeholder variable to be used as a temporary/placeholder input to a Function.
+    /// All placeholder inputs of a Function must be replaced with non-placeholder Variables before Forward evaluation of the Function.
+    ///
+    inline Variable PlaceholderVariable(const NDShape& shape, const std::vector<Axis>& dynamicAxes = Axis::DefaultInputVariableDynamicAxes)
+    {
+        return PlaceholderVariable(shape, L"", dynamicAxes);
     }
 
     ///
@@ -2025,10 +2035,10 @@ namespace CNTK
         /// and the user is responsible for ensuring that the contents of the inputs and outputs are unchanged until after any uses of the BackPropState instance
         /// for backpropagating gradients through this function.
         ///
-        CNTK_API virtual BackPropStatePtr Forward(const std::unordered_map<Variable, ValuePtr>& arguments,
-                                                  std::unordered_map<Variable, ValuePtr>& outputs,
-                                                  const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice(),
-                                                  const std::unordered_set<Variable>& outputsToRetainBackwardStateFor = {}) = 0;
+        virtual BackPropStatePtr Forward(const std::unordered_map<Variable, ValuePtr>& arguments,
+                                         std::unordered_map<Variable, ValuePtr>& outputs,
+                                         const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice(),
+                                         const std::unordered_set<Variable>& outputsToRetainBackwardStateFor = {}) = 0;
 
         ///
         /// Backpropagates supplied 'rootGradientValues' for one or more of the output variables of the Function, to produce gradient Values
@@ -2039,9 +2049,14 @@ namespace CNTK
         /// The 'state' parameter is an instance of an BackPropState instance obtained from a previous call to the Forward method on 'this; Function for the 
         /// computation that this gradient backpropagation corresponds to.
         ///
-        CNTK_API virtual void Backward(const BackPropStatePtr& state,
-            const std::unordered_map<Variable, ValuePtr>& rootGradientValues,
-                                       std::unordered_map<Variable, ValuePtr>& backPropagatedGradientValuesForInputs) = 0;
+        virtual void Backward(const BackPropStatePtr& state,
+                              const std::unordered_map<Variable, ValuePtr>& rootGradientValues,
+                              std::unordered_map<Variable, ValuePtr>& backPropagatedGradientValuesForInputs) = 0;
+
+        ///
+        /// Returns the name of the operation that this Function denotes
+        ///
+        virtual const std::wstring& OpName() = 0;
 
     public:
 
@@ -2153,6 +2168,11 @@ namespace CNTK
         ///
         CNTK_API FunctionPtr ReplacePlaceholder(const Variable& placeholderReplacement);
 
+        ///
+        /// Restore the models parameters from a saved model file
+        ///
+        CNTK_API void RestoreFromLegacyModel(const std::wstring& modelFilePath);
+
     private:
 
         template <typename VariableType, typename FilterFunction>
@@ -2222,9 +2242,6 @@ namespace CNTK
                 uniqueOutputs.insert(outputVar);
             }
         }
-
-    private:
-        void RestoreFromLegacyModel(const std::wstring& modelFilePath);
 
     private:
 
@@ -2580,7 +2597,7 @@ namespace CNTK
     /// E.g. When creating a classification model, typically the CrossEntropy loss Function and the ClassificationError Function comprise the two roots
     /// of the computation graph which can be "Combine"d to create a single Function with 2 outputs; viz. CrossEntropy loss and ClassificationError output.
     ///
-    CNTK_API FunctionPtr Combine(const std::vector<FunctionPtr>& operands, const std::wstring& name = L"");
+    CNTK_API FunctionPtr Combine(const std::vector<Variable>& operands, const std::wstring& name = L"");
 
     namespace Sequence
     {
@@ -2621,7 +2638,7 @@ namespace CNTK
         // Method to update the parameters associated with this learner. By returning false, this method indicates that
         // learning has stopped for all of the parameters associated with this learner
         //
-        CNTK_API virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) = 0;
+        virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) = 0;
 
         ///
         /// Returns the set of parameters associated with this learner.
@@ -2633,7 +2650,7 @@ namespace CNTK
         ///
         // TODO: move the following two methods into ISerializable interface, make 
         // Learner (and all other entities that need checkpointing capability) implement it.
-        CNTK_API virtual Dictionary GetCheckpointState() const 
+        virtual Dictionary GetCheckpointState() const 
         {
             Dictionary baseCheckpointState;
             baseCheckpointState[LearningRateAttributeName] = m_learningRate;
@@ -2644,7 +2661,7 @@ namespace CNTK
         ///
         /// Optionally overridable method to restore the learner's state from a previous checkpoint.
         ///
-        CNTK_API virtual void RestoreFromCheckpoint(const Dictionary& checkpoint) 
+        virtual void RestoreFromCheckpoint(const Dictionary& checkpoint) 
         {
             if (checkpoint.Contains(LearningRateAttributeName))
                 m_learningRate = checkpoint[LearningRateAttributeName].Value<double>();
@@ -2655,8 +2672,8 @@ namespace CNTK
         ///
         virtual ~Learner() {}
 
-        CNTK_API virtual void ResetLearningRate(double learningRate) { m_learningRate = learningRate; }
-        CNTK_API virtual double LearningRate() const { return m_learningRate; }
+        virtual void ResetLearningRate(double learningRate) { m_learningRate = learningRate; }
+        virtual double LearningRate() const { return m_learningRate; }
 
     protected:
         Learner(const std::vector<Parameter>& parameters, double learningRate)
@@ -2668,10 +2685,15 @@ namespace CNTK
     };
 
     ///
-    /// A collection of key-value pairs that represents training parameter schedule in 
-    /// terms of the number of processed samples. 
-    /// This class provides a number of convenience constructors to allow easy conversion 
-    /// from a single value, a vector of values and a list of pairs to the training schedule.
+    /// A collection of key-value pairs that represents a training parameter schedule in 
+    /// terms of the number of processed samples (e.g., learning rate and momentum schedules). 
+    /// This class is designed to simplify Learner's factory methods and provides a number of 
+    /// convenience constructors to allow easy conversion from a single value, a vector of values 
+    /// and a list of pairs to the training schedule. For example, a learning rate schedule 
+    /// { { 10, 0.5 }, { 100, 0.3 }, { 20, 0.2 } } indicates that the rate of 0.5 should be
+    /// used for the first 10 units (equivalently, samples if the default unit = 1 is used)
+    /// followed by 0.3 for the next 100 units, and then 0.2 for the remaining 20 units or 
+    /// until the end of training if it takes longer.
     ///
     template <typename T>
     class TrainingParameterSchedule
@@ -2680,31 +2702,14 @@ namespace CNTK
         ///
         /// Create a schedule with a constant parameter value.
         ///
-        TrainingParameterSchedule(T value)
-            : m_schedule({ std::make_pair(0, value) }), m_unit(1)
-        {}
+        CNTK_API TrainingParameterSchedule(T value);
 
         ///
         /// Create a schedule where the parameter changes its value every 'unit' samples:
         /// schedule[0] is used for the first 'unit' samples, schedule[1] -- for the second,
         /// and so on. The last value is then used repeatedly until the end of training.
         ///
-        TrainingParameterSchedule(const std::vector<T>& schedule, size_t unit = 1) 
-            : m_unit(unit)
-        {
-            // TODO: 0 will be used to mean "the entire sweep"
-            if (unit == 0)
-                RuntimeError("TrainingParameterSchedule::constructor : 'unit' cannot be 0.");
-
-            if (schedule.size() == 0)
-                RuntimeError("TrainingParameterSchedule::constructor : schedule is empty.");
-
-            size_t i = 1;
-            for (const auto& value : schedule)
-            {
-                m_schedule[m_unit * i++] = value;
-            }
-        }
+        CNTK_API TrainingParameterSchedule(const std::vector<T>& schedule, size_t unit = 1);
 
         ///
         /// Create a schedule using the list of key-value pairs, where the key specifies 
@@ -2715,74 +2720,104 @@ namespace CNTK
         /// '0.1' is used for the second 200 samples, after which the values is switched
         /// to '0.005'.
         ///
-        TrainingParameterSchedule(const std::initializer_list<std::pair<const size_t, T>>& schedule, size_t unit = 1)
-            : m_unit(unit)
-        {
-            // TODO: 0 will be used to mean "the entire sweep"
-            if (unit == 0)
-                RuntimeError("TrainingParameterSchedule::constructor : 'unit' cannot be 0.");
-
-            if (schedule.size() == 0)
-                RuntimeError("TrainingParameterSchedule::constructor : schedule is empty.");
-
-            size_t i = 0;
-            for (const auto& it : schedule)
-            {
-                if (it.first == 0)
-                    RuntimeError("TrainingParameterSchedule::constructor : unit count cannot be 0.");
-
-                i += it.first;
-                m_schedule[m_unit * i] = it.second;
-            }
-        }
+        CNTK_API TrainingParameterSchedule(const std::vector<std::pair<size_t, T>>& schedule, size_t unit = 1);
 
         ///
         /// Returns a value corresponding to the absolute sample count from the beginning of training.
         ///
-        CNTK_API const T& operator[](size_t samleCount) const;
+        CNTK_API virtual const T& operator[](size_t sampleCount) const;
+
+        CNTK_API virtual ~TrainingParameterSchedule();
+
+        CNTK_API TrainingParameterSchedule(const TrainingParameterSchedule<T>&); 
+        CNTK_API TrainingParameterSchedule(TrainingParameterSchedule<T>&&); 
+        CNTK_API TrainingParameterSchedule<T>& operator=(const TrainingParameterSchedule<T>&); 
+        CNTK_API TrainingParameterSchedule<T>& operator=(TrainingParameterSchedule<T>&&);
 
     private:
+        CNTK_API void ConstructSchedule(const std::vector<std::pair<size_t, T>>& schedule);
+
+    protected:           
         std::map<size_t, T> m_schedule;
         size_t m_unit;
     };
 
     typedef TrainingParameterSchedule<double> LearningRatesPerSample;
-    typedef TrainingParameterSchedule<double> MomentumsPerSample;
+    typedef TrainingParameterSchedule<double> MomentumValuesPerSample;
+
+    ///
+    /// This class allows to specify momentum as time constant in place of momentum per sample in 
+    /// all of Learners factory methods. The specified values are then automatically converted into 
+    /// per sample values.
+    /// 
+    class MomentumValuesAsTimeConstants: public MomentumValuesPerSample
+    {
+    public:
+        MomentumValuesAsTimeConstants(double value) 
+            : MomentumValuesPerSample(value)
+        { 
+            ConvertToPerSampleValues();
+        }
+        
+        MomentumValuesAsTimeConstants(const std::vector<double>& schedule, size_t unit = 1) 
+            : MomentumValuesPerSample(schedule, unit)
+        { 
+            ConvertToPerSampleValues();
+        }
+        
+        MomentumValuesAsTimeConstants(const std::vector<std::pair<size_t, double>>& schedule, size_t unit = 1) 
+            : MomentumValuesPerSample(schedule, unit)
+        { 
+            ConvertToPerSampleValues();
+        }
+
+    private:
+        CNTK_API void ConvertToPerSampleValues();
+    };
+
+    /// A collection of additional options that affect parameter updates and 
+    /// are applicable for all standard learners 
+    struct AdditionalLearningOptions
+    {
+        double l1RegularizationWeight = 0.0;
+        double l2RegularizationWeight = 0.0;
+        double gaussianNoiseInjectionStdDev = 0.0;
+        double gradientClippingThresholdPerSample = std::numeric_limits<double>::infinity();
+        bool gradientClippingWithTruncation = true;
+    };
 
     ///
     /// Create an instance of the CNTK built-in SGD learner.
     ///
     CNTK_API LearnerPtr SGDLearner(const std::vector<Parameter>& parameters,
                                    const LearningRatesPerSample& learningRates,
-                                   double clippingThresholdPerSample = std::numeric_limits<double>::infinity(),
-                                   bool gradientClippingWithTruncation = true);
+                                   AdditionalLearningOptions additionalOptions = AdditionalLearningOptions());
 
     ///
     /// Create an instance of the CNTK built-in Momentum SGD learner.
     ///
     CNTK_API LearnerPtr MomentumSGDLearner(const std::vector<Parameter>& parameters,
                                            const LearningRatesPerSample& learningRates,
-                                           const MomentumsPerSample& momentums,
-                                           double clippingThresholdPerSample = std::numeric_limits<double>::infinity(),
-                                           bool gradientClippingWithTruncation = true);
+                                           const MomentumValuesPerSample& momentumValues,
+                                           AdditionalLearningOptions additionalOptions = AdditionalLearningOptions());
 
     ///
     /// Create an instance of the CNTK built-in Nesterov's accelerated SGD learner.
     ///
     CNTK_API LearnerPtr NesterovLearner(const std::vector<Parameter>& parameters,
                                         const LearningRatesPerSample& learningRates,
-                                        const MomentumsPerSample& momentums,
-                                        double clippingThresholdPerSample = std::numeric_limits<double>::infinity(),
-                                        bool gradientClippingWithTruncation = true);
+                                        const MomentumValuesPerSample& momentumValues,
+                                        AdditionalLearningOptions additionalOptions = AdditionalLearningOptions());
 
     ///
     /// Create an instance of the CNTK built-in FSAdaGrad (improved AdaGrad) learner.
     ///
     CNTK_API LearnerPtr FSAdaGradLearner(const std::vector<Parameter>& parameters,
                                          const LearningRatesPerSample& learningRates,
-                                         const MomentumsPerSample& momentums,
-                                         double clippingThresholdPerSample = std::numeric_limits<double>::infinity(),
-                                         bool gradientClippingWithTruncation = true);
+                                         const MomentumValuesPerSample& momentumValues,
+                                         const double targetAdagradAvDenom = 0.0025, // 1/400 magic constant 
+                                         const size_t adagradT = 2 * 3600 * 100,
+                                         AdditionalLearningOptions additionalOptions = AdditionalLearningOptions());
 
     ///
     /// Create an instance of the CNTK built-in AdaGrad learner.
@@ -2790,8 +2825,7 @@ namespace CNTK
     CNTK_API LearnerPtr AdaGradLearner(const std::vector<Parameter>& parameters,
                                        const LearningRatesPerSample& learningRates,
                                        bool needAveMultiplier = true,
-                                       double clippingThresholdPerSample = std::numeric_limits<double>::infinity(),
-                                       bool gradientClippingWithTruncation = true);
+                                       AdditionalLearningOptions additionalOptions = AdditionalLearningOptions());
 
     ///
     /// Create an instance of the CNTK built-in RMSProp learner.
@@ -2804,8 +2838,7 @@ namespace CNTK
                                        double max,
                                        double min,
                                        bool needAveMultiplier = true,
-                                       double clippingThresholdPerSample = std::numeric_limits<double>::infinity(),
-                                       bool gradientClippingWithTruncation = true);
+                                       AdditionalLearningOptions additionalOptions = AdditionalLearningOptions());
 
     ///
     /// Trainer is the top-level abstraction responsible for the orchestration of the training of a model
@@ -3026,10 +3059,13 @@ namespace CNTK
     /// 
     /// Instantiate the CNTK built-in test format minibatch source
     ///
-    inline MinibatchSourcePtr TextFormatMinibatchSource(const std::wstring& dataFilePath, const std::vector<StreamConfiguration>& streamConfigs, size_t epochSize = SIZE_MAX)
+    inline MinibatchSourcePtr TextFormatMinibatchSource(const std::wstring& dataFilePath, const std::vector<StreamConfiguration>& streamConfigs, size_t epochSize = SIZE_MAX, bool randomize = true)
     {
         CNTK::Dictionary minibatchSourceConfiguration;
         minibatchSourceConfiguration[L"epochSize"] = epochSize;
+
+        if (randomize)
+            minibatchSourceConfiguration[L"randomize"] = true;
 
         CNTK::Dictionary deserializerConfiguration;
         deserializerConfiguration[L"type"] = L"CNTKTextFormatDeserializer";

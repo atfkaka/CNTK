@@ -1,3 +1,7 @@
+//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
+//
 #include "CNTKLibrary.h"
 #include <functional>
 #include "Common.h"
@@ -5,25 +9,6 @@
 using namespace CNTK;
 
 using namespace std::placeholders;
-
-FunctionPtr Embedding(const Variable& input, size_t embeddingDim, const DeviceDescriptor& device)
-{
-    assert(input.Shape().Rank() == 1);
-    size_t inputDim = input.Shape()[0];
-
-    auto embeddingParameters = Parameter(CNTK::NDArrayView::RandomUniform<float>({ embeddingDim, inputDim }, -0.05, 0.05, 1, device));
-    return Times(embeddingParameters, input);
-}
-
-FunctionPtr LSTMSequenceClassiferNet(const Variable& input, size_t numOutputClasses, size_t embeddingDim, size_t LSTMDim, size_t cellDim, const DeviceDescriptor& device, const std::wstring& outputName)
-{
-    auto embeddingFunction = Embedding(input, embeddingDim, device);
-    auto pastValueRecurrenceHook = [](const Variable& x) { return PastValue(x); };
-    auto LSTMFunction = LSTMPComponentWithSelfStabilization<float>(embeddingFunction, { LSTMDim }, { cellDim }, pastValueRecurrenceHook, pastValueRecurrenceHook, device).first;
-    auto thoughtVectorFunction = Sequence::Last(LSTMFunction);
-
-    return FullyConnectedLinearLayer(thoughtVectorFunction, numOutputClasses, device, outputName);
-}
 
 void TrainLSTMSequenceClassifer(const DeviceDescriptor& device, bool testSaveAndReLoad)
 {
@@ -102,98 +87,84 @@ void TestLearningRateControl(const DeviceDescriptor& device)
     LearningRatesPerSample learningRateSchedule({ { 2, 0.0005 }, { 2, 0.00025 } }, actualMBSize);
     auto learner = SGDLearner(classifierOutput->Parameters(), learningRateSchedule);
     Trainer trainer(classifierOutput, trainingLoss, prediction, { learner });
-
-    if (learner->LearningRate() != 0.0005)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0005, "Learner::LearningRate does not match expectation");
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
-    if (learner->LearningRate() != 0.0005)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0005, "Learner::LearningRate does not match expectation");
 
     const wchar_t* modelFile = L"seq2seq.model";
     trainer.SaveCheckpoint(modelFile);
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     auto MB2Loss = trainer.PreviousMinibatchLossAverage();
-    if (learner->LearningRate() != 0.00025)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.00025, "Learner::LearningRate does not match expectation");
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     auto MB3Loss = trainer.PreviousMinibatchLossAverage();
-    if (learner->LearningRate() != 0.00025)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.00025, "Learner::LearningRate does not match expectation");
 
     trainer.RestoreFromCheckpoint(modelFile);
-    if (learner->LearningRate() != 0.0005)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0005, "Learner::LearningRate does not match expectation");
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     auto postRestoreMB2Loss = trainer.PreviousMinibatchLossAverage();
-    if (postRestoreMB2Loss != MB2Loss)
-        throw std::runtime_error("Post checkpoint restoration training loss does not match expectation");
+    FloatingPointCompare(postRestoreMB2Loss, MB2Loss, "Post checkpoint restoration training loss does not match expectation");
 
-    if (learner->LearningRate() != 0.00025)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.00025, "Learner::LearningRate does not match expectation");
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     auto postRestoreMB3Loss = trainer.PreviousMinibatchLossAverage();
-    if (postRestoreMB3Loss != MB3Loss)
-        throw std::runtime_error("Post checkpoint restoration training loss does not match expectation");
+    FloatingPointCompare(postRestoreMB3Loss, MB3Loss, "Post checkpoint restoration training loss does not match expectation");
 
     trainer.RestoreFromCheckpoint(modelFile);
-    if (learner->LearningRate() != 0.0005)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0005, "Learner::LearningRate does not match expectation");
 
     learner->ResetLearningRate(0.0004);
-    if (learner->LearningRate() != 0.0004)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0004, "Learner::LearningRate does not match expectation");
 
     trainer.SaveCheckpoint(modelFile);
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     postRestoreMB2Loss = trainer.PreviousMinibatchLossAverage();
-    if (postRestoreMB2Loss != MB2Loss)
-        throw std::runtime_error("Post checkpoint restoration training loss does not match expectation");
+    FloatingPointCompare(postRestoreMB2Loss, MB2Loss, "Post checkpoint restoration training loss does not match expectation");
 
-    if (learner->LearningRate() != 0.0004)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0004, "Learner::LearningRate does not match expectation");
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     postRestoreMB3Loss = trainer.PreviousMinibatchLossAverage();
-    if (postRestoreMB3Loss == MB3Loss)
-        throw std::runtime_error("Post checkpoint restoration training loss does not match expectation");
+    FloatingPointCompare(postRestoreMB3Loss, MB3Loss, "Post checkpoint restoration training loss does not match expectation");
 
-    if (learner->LearningRate() != 0.0004)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0004, "Learner::LearningRate does not match expectation");
 
     trainer.RestoreFromCheckpoint(modelFile);
-    if (learner->LearningRate() != 0.0004)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0004, "Learner::LearningRate does not match expectation");
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     postRestoreMB2Loss = trainer.PreviousMinibatchLossAverage();
-    if (postRestoreMB2Loss != MB2Loss)
-        throw std::runtime_error("Post checkpoint restoration training loss does not match expectation");
+    FloatingPointCompare(postRestoreMB2Loss, MB2Loss, "Post checkpoint restoration training loss does not match expectation");
 
-    if (learner->LearningRate() != 0.0004)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0004, "Learner::LearningRate does not match expectation");
 
     trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
     postRestoreMB3Loss = trainer.PreviousMinibatchLossAverage();
-    if (postRestoreMB3Loss == MB3Loss)
-        throw std::runtime_error("Post checkpoint restoration training loss does not match expectation");
+    FloatingPointCompare(postRestoreMB3Loss, MB3Loss, "Post checkpoint restoration training loss does not match expectation");
 
-    if (learner->LearningRate() != 0.0004)
-        throw std::runtime_error("Learner::LearningRate does not match expectation");
+    FloatingPointCompare(learner->LearningRate(), 0.0004, "Learner::LearningRate does not match expectation");
 }
 
 void TrainLSTMSequenceClassifer()
 {
-#ifndef CPUONLY
-    TestLearningRateControl(DeviceDescriptor::GPUDevice(0));
-#endif
+    if (IsGPUAvailable())
+    {
+        TestLearningRateControl(DeviceDescriptor::GPUDevice(0));
+    }
+    else
+    {
+        fprintf(stderr, "Cannot run TestLearningRateControl test on CPU device.\n");
+    }
 
-#ifndef CPUONLY
-    TrainLSTMSequenceClassifer(DeviceDescriptor::GPUDevice(0), true);
-#endif
+    if (IsGPUAvailable())
+    {
+        TrainLSTMSequenceClassifer(DeviceDescriptor::GPUDevice(0), true);
+    }
     TrainLSTMSequenceClassifer(DeviceDescriptor::CPUDevice(), false);
 }

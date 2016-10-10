@@ -1,5 +1,11 @@
+//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
+//
+
 #include "CNTKLibrary.h"
 #include <functional>
+#include "Common.h"
 
 using namespace CNTK;
 
@@ -15,11 +21,25 @@ void SerializationTests();
 void LearnerTests();
 void TrainSequenceToSequenceTranslator();
 void TrainTruncatedLSTMAcousticModelClassifer();
-void EvalMultiThreadsWithNewNetwork(const DeviceDescriptor&, const int);
 void DeviceSelectionTests();
+void MultiThreadsEvaluation(bool);
 
 int main()
 {
+
+#ifndef CPUONLY
+    if (IsGPUAvailable())
+    {
+        fprintf(stderr, "Run tests on GPU device using GPU build.\n");
+    }
+    else
+    {
+        fprintf(stderr, "Run tests on CPU device using GPU build.\n");
+    }
+#else
+    fprintf(stderr, "Run tests using CPU-only build.\n");
+#endif
+
     // Lets disable automatic unpacking of PackedValue object to detect any accidental unpacking 
     // which will have a silent performance degradation otherwise
     Internal::DisableAutomaticUnpackingOfPackedValues();
@@ -41,13 +61,7 @@ int main()
     TrainSequenceToSequenceTranslator();
     TrainTruncatedLSTMAcousticModelClassifer();
 
-    // Test multi-threads evaluation
-    fprintf(stderr, "Test multi-threaded evaluation on CPU.\n");
-    EvalMultiThreadsWithNewNetwork(DeviceDescriptor::CPUDevice(), 2);
-#ifndef CPUONLY
-    fprintf(stderr, "Test multi-threaded evaluation on GPU\n");
-    EvalMultiThreadsWithNewNetwork(DeviceDescriptor::GPUDevice(0), 2);
-#endif
+    MultiThreadsEvaluation(IsGPUAvailable());
 
     fprintf(stderr, "Test device selection API\n");
     DeviceSelectionTests();

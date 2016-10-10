@@ -1,3 +1,7 @@
+//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
+//
 #include "CNTKLibrary.h"
 #include "Common.h"
 #include <functional>
@@ -185,12 +189,15 @@ void TestSparseCSCArrayView(size_t numAxes, const DeviceDescriptor& device)
 void NDArrayViewTests()
 {
     TestNDArrayView<float>(2, DeviceDescriptor::CPUDevice());
-#ifndef CPUONLY
-    TestNDArrayView<float>(0, DeviceDescriptor::GPUDevice(0));
-    TestNDArrayView<double>(4, DeviceDescriptor::GPUDevice(0));
 
-    TestSparseCSCArrayView<float>(1, DeviceDescriptor::GPUDevice(0));
-    TestSparseCSCArrayView<double>(4, DeviceDescriptor::GPUDevice(0));
-#endif
+    if (IsGPUAvailable())
+    {
+        TestNDArrayView<float>(0, DeviceDescriptor::GPUDevice(0));
+        TestNDArrayView<double>(4, DeviceDescriptor::GPUDevice(0));
+
+        TestSparseCSCArrayView<float>(1, DeviceDescriptor::GPUDevice(0));
+        TestSparseCSCArrayView<double>(4, DeviceDescriptor::GPUDevice(0));
+    }
+
     TestSparseCSCArrayView<float>(2, DeviceDescriptor::CPUDevice());
 }
