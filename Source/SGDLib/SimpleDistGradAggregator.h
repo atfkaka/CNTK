@@ -190,11 +190,8 @@ private:
     {
         Timer aggregationTimer;
         Timer executeTimer;
-        Timer waitingTimer;
         double dToMCost = 0;
-        double dToMWaiting = 0;
         double syncCost = 0;
-        double syncWaiting = 0;
         double mToDCost = 0;
 
         int deviceId = gradients[0]->GetDeviceId();
@@ -234,7 +231,14 @@ private:
         if (deviceId >= 0)
         {
             for (size_t i = 0; i < numGradMatrices; ++i)
+            {
                 m_gpuDataTransferers[i]->CopyGPUToCPUAsync(gradients[i]->Data(), gradients[i]->GetNumElements(), m_intermediateCPUBuffers[i].get());
+                m_gpuDataTransferers[i]->WaitForCopyGPUToCPUAsync();
+            }
+
+            executeTimer.Stop();
+            dToMCost = executeTimer.ElapsedSeconds();
+            executeTimer.Restart();
         }
 
         // Initiate receive of the header on the main node
@@ -254,32 +258,17 @@ private:
         if (!m_mpi->IsMainNode())
             MPI_Isend(headerCPU, headerCPU->Size(), MPI_CHAR, m_mpi->MainNodeRank(), numGradMatrices, m_mpi->Communicator(), &sendHeaderRequest) || MpiFail("MPI_Isend");
 
-        if (showSyncPerfStats)
-        {
-            executeTimer.Stop();
-            dToMCost = executeTimer.ElapsedSeconds();
-            executeTimer.Restart();
-        }
-
         // Perform MPI async allreduce on the gradient data
         std::vector<MPI_Request> allReduceRequests(numGradMatrices);
         for (size_t i = 0; i < numGradMatrices; ++i)
         {
             ElemType* reductionBuffer = gradients[i]->Data();
-            if (deviceId >= 0)
-            {
-                if (showSyncPerfStats) waitingTimer.Restart();
-                m_gpuDataTransferers[i]->WaitForCopyGPUToCPUAsync();
-                reductionBuffer = m_intermediateCPUBuffers[i].get();
-                if (showSyncPerfStats)
-                {
-                    waitingTimer.Stop();
-                    dToMWaiting += waitingTimer.ElapsedSeconds();
-                }
-            }
+            reductionBuffer = m_intermediateCPUBuffers[i].get();
 
             // On Windows this async MPI_Iallreduce call requires MS MPI v7 or higher to be installed
             MPI_Iallreduce(MPI_IN_PLACE, reductionBuffer, gradients[i]->GetNumElements(), MPIWrapper::GetDataType(reductionBuffer), MPI_SUM, m_mpi->Communicator(), &allReduceRequests[i]) || MpiFail("MPI_Iallreduce");
+
+            MPI_Wait(&allReduceRequests[i], MPI_STATUSES_IGNORE) || MpiFail("MPI_Wait");
         }
 
         // On the main node wait for the headers to arrive and aggregate
@@ -330,13 +319,6 @@ private:
         // Wait for the allreduce operations to finish and initiate transfer back to the GPU if needed
         for (size_t i = 0; i < numGradMatrices; ++i)
         {
-            if (showSyncPerfStats) waitingTimer.Restart();
-            MPI_Wait(&allReduceRequests[i], MPI_STATUSES_IGNORE) || MpiFail("MPI_Wait");
-            if (showSyncPerfStats)
-            {
-                waitingTimer.Stop();
-                syncWaiting += waitingTimer.ElapsedSeconds();
-            }
             if (deviceId >= 0)
                 m_gpuDataTransferers[i]->CopyCPUToGPUAsync(m_intermediateCPUBuffers[i].get(), gradients[i]->GetNumElements(), gradients[i]->Data());
         }
@@ -370,11 +352,11 @@ private:
             aggregationTimer.Stop();
 
             executeTimer.Stop();
-            syncCost += executeTimer.ElapsedSeconds();
-            dToMCost += dToMWaiting;
-            syncCost -= dToMWaiting;
-            syncCost += syncWaiting;
-            mToDCost -= syncWaiting;
+            //syncCost += executeTimer.ElapsedSeconds();
+            //dToMCost += dToMWaiting;
+            //syncCost -= dToMWaiting;
+            //syncCost += syncWaiting;
+            //mToDCost -= syncWaiting;
 
             m_mpiPerfRecorder.clear();
             m_mpiPerfRecorder.push_back(std::make_pair(dToMCost, "MemcpyDToM"));
