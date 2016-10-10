@@ -686,7 +686,7 @@ template class NoiseContrastiveEstimationNode<double>;
 
 
 
-// Nodes using a random number generators  should implement from this class.
+// Nodes using a random number generators should derive from this interface.
 // One purpuose of this interface is to have a common interface for setting the seeds when setting up a network.
 class IRngUser
 {
@@ -696,7 +696,7 @@ public:
 };
 
 // This implements IRngUser using RNGHandle.
-class RngUser : IRngUser
+class RngUser : public IRngUser
 {
 public:
     RNGHandle& GetRNGHandle(DEVICEID_TYPE deviceId) override
