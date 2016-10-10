@@ -488,12 +488,12 @@ CNTK2 = [
         ) = 
     {
         # Getting the weights matrix wS in the subspace of samples. Dimension: nHidden * nSamples
-        wS = TransposeTimes(weights, randomSampleSelector)
+        wS = Times(weights, randomSampleSelector)
         zS = TransposeTimes(wS, hiddenLayer) + TransposeTimes(randomSampleSelector, bias - logExpectedInSampleFrequeny) 
 
         # Getting the weight vector for the true label. Dimension nHidden
-        wT = TransposeTimes(weights, labels) 
-        zT = TransposeTimes(wT, hiddenLayer) +  TransposeTimes(labels, bias - logExpectedInSampleFrequeny) 
+        wT = Times(weights, labels) 
+        zT = TransposeTimes(wT, hiddenLayer) +  Times(bias, labels) + TransposeTimes(labels, logExpectedInSampleFrequeny)
                                         
         zSReduced = ReduceLogSum(zS)
                                         
