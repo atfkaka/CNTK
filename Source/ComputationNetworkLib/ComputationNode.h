@@ -698,6 +698,8 @@ public:
 
     virtual void /*IComputationNode::*/ BeginForwardProp() override // called before first iteration step of ForwardProp()
     {
+        m_forwardPropPerfCounter.Begin();
+
 #ifdef TRACK_GAP_NANS
         fprintf(stderr, "BeginForwardProp: %ls %ls operation [%s]\n", NodeName().c_str(), OperationName().c_str(), std::string(GetTensorShape(DetermineElementwiseTensorRank())).c_str());
 #endif
@@ -707,18 +709,22 @@ public:
 #ifdef TRACK_GAP_NANS
         fprintf(stderr, "EndForwardProp: %ls %ls operation\n", NodeName().c_str(), OperationName().c_str());
 #endif
+        m_forwardPropPerfCounter.End();
     }
     virtual void /*IComputationNode::*/ BeginBackprop() override // called before first iteration step of ComputeGradient()
     {
+        m_backwardPropPerfCounter.Begin();
 #ifdef TRACK_GAP_NANS
         fprintf(stderr, "BeginBackprop: %ls %ls operation\n", NodeName().c_str(), OperationName().c_str());
 #endif
+        
     }
     virtual void /*IComputationNode::*/ EndBackprop() override // called after last iteration step of ComputeGradient()
     {
 #ifdef TRACK_GAP_NANS
         fprintf(stderr, "EndBackprop: %ls %ls operation\n", NodeName().c_str(), OperationName().c_str());
 #endif
+        m_backwardPropPerfCounter.End();
     }
 
     // check whether a node is out of date w.r.t. its children, for lazy evaluation
@@ -894,6 +900,52 @@ protected:
     float m_learningRateMultiplier;    // update parameters? Only used for LearnableParameters.    --TODO: Should we make this a member of LearnableParameters actually? And require a type cast? Currently it is read out for all leaves.
     bool m_gradientInitialized;        // indicates whether the gradient matrix has been resized and initialized to 0
     bool m_outputNeededDuringBackprop; // indicates whether the output value of the node is needed during backprop
+
+    // performance counters
+    class PerformanceCounter
+    {
+    public:
+        unsigned long long m_start;
+        unsigned long long m_accumulated;
+        size_t m_count;
+
+        PerformanceCounter() : m_start(0), m_accumulated(0), m_count(0)
+        {
+        }
+
+        void Begin()
+        {
+            m_start = __rdtsc();
+        }
+
+        void End()
+        {
+            m_accumulated += (__rdtsc() - m_start);
+            ++ m_count;
+        }
+
+        class Auto
+        {
+            PerformanceCounter* m_pPC;
+        public:
+            Auto(PerformanceCounter* pPC)
+            {
+                m_pPC = pPC;
+                m_pPC->Begin();
+            }
+
+            ~Auto()
+            {
+                m_pPC->End();
+            }
+        };
+    };
+
+    PerformanceCounter m_forwardPropPerfCounter;
+    PerformanceCounter m_backwardPropPerfCounter;
+
+public:
+    void ReportPerf() const;
 };
 typedef ComputationNodeBase::ComputationNodeBasePtr ComputationNodeBasePtr;
 

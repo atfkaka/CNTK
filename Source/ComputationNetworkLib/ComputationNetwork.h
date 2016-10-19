@@ -67,11 +67,14 @@ public:
 
     virtual ~ComputationNetwork()
     {
+        ReportPerNodePerf();
+
         ClearNetwork(); // This will explicitly remove all nodes. This is needed to break circular references in loops.
     }
 
     void ClearNetwork();
     void InvalidateCompiledNetwork();
+    void ReportPerNodePerf();
 
     void SetDeviceId(DEVICEID_TYPE deviceId)
     {

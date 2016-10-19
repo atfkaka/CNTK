@@ -21,6 +21,35 @@ using namespace std;
 // -----------------------------------------------------------------------
 // subroutines for evaluation
 // -----------------------------------------------------------------------
+class GlobalQueryPerformanceFrequency
+{
+    unsigned long long m_qpf;
+public:
+    GlobalQueryPerformanceFrequency()
+    {
+        unsigned long long tickStart = GetTickCount64();
+        unsigned long long tscStart = __rdtsc();
+        Sleep(1000);
+        unsigned long long tickEnd = GetTickCount64();
+        unsigned long long tscEnd = __rdtsc();
+        m_qpf = (tscEnd - tscStart) * 1000 / (tickEnd - tickStart);
+    }
+    
+    float QPCToSeconds(unsigned long long ticks) const
+    {
+        return ticks * 1.0f / m_qpf;
+    }
+} g_globalQPF;
+
+void ComputationNodeBase::ReportPerf() const
+{
+    wprintf(L"%s ForwardProp %.2fs (%ld), BackwardProp %.2fs (%ld)\n",
+        m_nodeName.c_str(),
+        g_globalQPF.QPCToSeconds(m_forwardPropPerfCounter.m_accumulated),
+        m_forwardPropPerfCounter.m_count,
+        g_globalQPF.QPCToSeconds(m_backwardPropPerfCounter.m_accumulated),
+        m_backwardPropPerfCounter.m_count);
+}
 
 template<class ElemType>
 void ComputationNode<ElemType>::Backprop(const FrameRange& fr, bool childrenInThisLoop, bool childrenInOuterLoop) /*override*/

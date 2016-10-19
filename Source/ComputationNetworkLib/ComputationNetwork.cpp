@@ -51,6 +51,17 @@ vector<shared_ptr<Matrix<double>>>& MatrixPool::GetReleasedMatrices<double>()
 // construction
 // -----------------------------------------------------------------------
 
+void ComputationNetwork::ReportPerNodePerf()
+{
+    wprintf(L"Begin Network per node perf\n");
+    for (auto& iter : m_nameToNodeMap)
+    {
+        auto& node = iter.second;
+        node->ReportPerf();
+    }
+    wprintf(L"End Network per node perf\n");
+}
+
 // clear the object to empty state; this is used in the destructor, and also when loading
 // This is necessary to make sure we don't leave nodes hanging due to recurrent cyclic references.
 void ComputationNetwork::ClearNetwork()

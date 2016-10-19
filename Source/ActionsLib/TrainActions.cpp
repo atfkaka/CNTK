@@ -117,6 +117,7 @@ void DoTrain(const ConfigRecordType& config)
 
     optimizer->InitMPI(MPIWrapper::GetInstance());
     optimizer->Train(net, deviceId, dataReader.get(), cvDataReader.get(), startEpoch, loadNetworkFromCheckpoint);
+    net->ReportPerNodePerf();
 }
 
 namespace Microsoft { namespace MSR { namespace ScriptableObjects {
