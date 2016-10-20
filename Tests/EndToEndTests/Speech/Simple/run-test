@@ -2,13 +2,17 @@
 
 . $TEST_ROOT_DIR/run-test-common
 
-# cntkrun <CNTK config file name> <additional CNTK args>
-DeleteModelsAfterTest=0
-cntkrun cntk.cntk 'forceDeterministicAlgorithms=true makeMode=true' || exit $?
-echo === Deleting last epoch data
-rm $TEST_RUN_DIR/models/*.dnn
-echo ==== Re-running from checkpoint
-DeleteExistingModels=0
-DeleteModelsAfterTest=1
-# cntkrun <CNTK config file name> <additional CNTK args>
-cntkrun cntk.cntk 'forceDeterministicAlgorithms=true makeMode=true' || exit $?
+set -ex
+
+if [[ -d "$CNTK_EXTERNAL_TESTDATA_SOURCE_DIRECTORY" ]]; then
+    if [ "$OS" == "Windows_NT" ]; then
+       CNTK_EXTERNAL_TESTDATA_SOURCE_DIRECTORY="$(cygpath -au $CNTK_EXTERNAL_TESTDATA_SOURCE_DIRECTORY)"
+    fi
+    ConfigDir="$CNTK_EXTERNAL_TESTDATA_SOURCE_DIRECTORY/Config/Internal"
+    [[ -d "$ConfigDir" ]]
+else
+    echo Config not available.
+    exit 0
+fi
+
+cntkrun cntk.cntk 'forceDeterministicAlgorithms=true makeMode=true'
