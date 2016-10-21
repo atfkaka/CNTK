@@ -18,6 +18,11 @@ def pytest_addoption(parser):
     parser.addoption("--is1bitsgd", default="0",
                      help="whether 1-bit SGD is used")
 
+# Ensure modules can be imported in Python 2.x
+if sys.version_info.major < 3:
+    import imp
+    imp.load_module('examples', None, '', ('', '', imp.PKG_DIRECTORY))
+
 DEVICE_MAP = {
         'auto': 'auto',
         'cpu': -1,
