@@ -476,6 +476,60 @@ CNTK2 = [
     # (_new will be removed once the change is made)
     CrossEntropyWithSoftmax_new (L, z, tag='') = Minus (ReduceLogSum (z), TransposeTimes (L,          z),  tag=tag)
     ClassificationError_new (L, z, tag='')     = Minus (BS.Constants.One, TransposeTimes (L, Hardmax (z)), tag=tag)
+	    CrossEntropyWithSampledSoftmax(
+        hiddenLayer,                   // [numHidden] Hidden vector feedng into the linear layer before softmax.
+        labels,                        // [numClasses] One-hot for the true class (labels).
+        randomSampleSelector,          // [numClasses x numSamples] Sparse matrix. Each column is a 1-hot vector representing one sample. From GetRandomSample node.
+        weights,                       // [numClasses x numHidden] Weight matrix for the linear layer that feeds into the softmax
+        bias,                          // [numClasses] Biases for the linear layer that feeds into the softmax.
+        logExpectedInSampleFrequeny,   // For each class logarithm of the estimated frequency the class is expected to occur in the set of random samples
+        removeAccidentalHits           // If true then remove occurences of the sampled class from the random samples
+        ) = 
+    {
+        # Getting the weights matrix wS in the subspace of samples. Dimension: numHidden * nSamples
+        wS = Times (weights, randomSampleSelector) // numHidden * numSample
+        zS = TransposeTimes (hiddenLayer, wS) + Times (bias, randomSampleSelector) - TransposeTimes (logExpectedInSampleFrequeny, randomSampleSelector)// [1 x numSamples]
+
+        # Getting the weight vector for the true label. Dimension numHidden
+        wT = Times (weights, labels) // [numHidden]
+        zT = TransposeTimes (hiddenLayer, wT) +  Times (bias, labels) - TransposeTimes (logExpectedInSampleFrequeny, labels) // [1]
+                                        
+        zSReduced = ReduceLogSum (zS)
+                                        
+        # The label (true class), might already be among the sampled classes.
+        # To get the 'partition function' over the union of label and sampled classes
+        # we need to LogPlus zT if the label is not among the sampled classes.
+        labelIsInSampled = ReduceSum (TransposeTimes (labels,randomSampleSelector))
+        logSum1 = 
+             if labelIsInSampled 
+             then zSReduced 
+             else LogPlus (zT, zSReduced)
+
+        logSum = 
+            if removeAccidentalHits 
+            then logSum1 
+            else LogPlus (zT, zSReduced)
+
+        ce = logSum - zT
+    }.ce
+
+    CrossEntropyWithSampledSoftmaxLayer(
+       hiddenLayer,                    // [numHidden] Hidden vector feedng into the linear layer before softmax.
+        labels,                        // [numClasses] One-hot for the true class (labels).
+        weights,                       // [numClasses x numHidden] Weight matrix for the linear layer that feeds into the softmax
+        bias,                          // [numClasses] Biases for the linear layer that feeds into the softmax.
+        numSamples,                    // number of random samples to be used
+        samplingWeights,               // [numClasses x numSamples] Sparse matrix of dimension
+        sampleWithReplacement = true,  // boolean parameter specifiying if sampling with replacment should be used
+        removeAccidentalHits = true    // If true then remove occurences of the sampled class from the random samples
+        ) = 
+    {
+        samples        = GetRandomSample (samplingWeights, numSamples, sampleWithReplacement)
+        inclusionProbs = GetInclusionFrequency (samplingWeights, numSamples, sampleWithReplacement)
+        logPrior       = Log (inclusionProbs)
+        ce = CrossEntropyWithSampledSoftmax (hiddenLayer, labels,  samples, weights, bias, logPrior, removeAccidentalHits)
+
+    }.ce
 
     // 12. Comparison nodes
     Less(_, y, tag='')         = new ComputationNode [ operation = 'Less'         ; inputs = _AsNodes (_ : y) /*plus the function args*/ ]
