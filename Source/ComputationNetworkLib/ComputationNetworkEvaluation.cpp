@@ -946,6 +946,8 @@ void ComputationNetwork::AllocateAllMatrices(const std::vector<ComputationNodeBa
     // For each node determine parents and whether the output of the
     // node is needed during back propagation
     std::unordered_map<ComputationNodeBasePtr, bool> outputValueNeededDuringBackProp;
+
+    // parentsMap will rpovide for each node the set of all parents inputs (i.e. direct and indirect inputs)
     std::unordered_map<ComputationNodeBasePtr, std::unordered_set<ComputationNodeBasePtr>> parentsMap;
     for (auto& rootNode : forwardPropRoots)
     {
@@ -961,6 +963,8 @@ void ComputationNetwork::AllocateAllMatrices(const std::vector<ComputationNodeBa
                     if (outputValueNeededDuringBackProp.find(input) == outputValueNeededDuringBackProp.end())
                         outputValueNeededDuringBackProp[input] = input->NeedsGradient() && input->OutputUsedInComputingInputNodesGradients();
 
+                    // If 'node' needs to compute the gradient and needs the InputValue(i) for this means the input value is needed
+                    // during back-propagation.
                     outputValueNeededDuringBackProp[input] |= (node->NeedsGradient() && node->InputUsedInComputingInputNodesGradients(i));
                 }
                 else
@@ -977,9 +981,8 @@ void ComputationNetwork::AllocateAllMatrices(const std::vector<ComputationNodeBa
         parentCount[keyValue.first] = keyValue.second.size();
     }
 
-    // Construct the composite forward prop eval order by enumerating the
-    // nodes corresponding to each of our roots and then arranging them in the
-    // relative order that they appear in the global evaluation order
+    // Fill the vector compositeForwardPropEvalOrder with all nodes from nodesForForwardPropRoots
+    // in global evaluation order.
     const std::list<ComputationNodeBasePtr>& allNodesEvalOrder = GetEvalOrder(nullptr);
     std::list<ComputationNodeBasePtr> nodesForForwardPropRoots = ComputationNodeBase::EnumerateNodes(forwardPropRoots);
     std::vector<ComputationNodeBasePtr> compositeForwardPropEvalOrder;
@@ -991,6 +994,10 @@ void ComputationNetwork::AllocateAllMatrices(const std::vector<ComputationNodeBa
         }
     }
 
+    // Map matrices from matrix pool to node values.
+    // When sharing nodes we need to make sure that:
+    // * values don't get overwritten while they are still needed for input
+    // * values don't get overwritten if they are still need for gradient computation.
     set<ComputationNodeBasePtr> completedEvaluate;
     for (auto& nodeIter : compositeForwardPropEvalOrder)
     {
@@ -1049,7 +1056,7 @@ void ComputationNetwork::AllocateAllMatrices(const std::vector<ComputationNodeBa
             }
             else
             {
-                // PAR mode: we can allocate and immediately deallocate one by one
+                // PAR mode: allocate gradient matrices for all inputs.
                 n->AllocateGradientMatricesForInputs(m_matrixPool);
                 // Root node's information will be used and should not be shared with others, also it's small (1x1)
                 if ((n != trainRootNode) && n->NeedsGradient())
