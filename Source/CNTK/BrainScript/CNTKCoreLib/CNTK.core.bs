@@ -480,8 +480,8 @@ CNTK2 = [
         hiddenLayer,                   // [numHidden] Hidden vector feedng into the linear layer before softmax.
         labels,                        // [numClasses] One-hot for the true class (labels).
         randomSampleSelector,          // [numClasses x numSamples] Sparse matrix. Each column is a 1-hot vector representing one sample. From GetRandomSample node.
-        weights,                       // [numClasses x numHidden] Weight matrix for the linear layer that feeds into the softmax
-        bias,                          // [numClasses] Biases for the linear layer that feeds into the softmax.
+        weights,                       // [numHidden x numClasses] Weight matrix for the linear layer that feeds into the softmax
+        bias,                          // [1 x numClasses] Biases for the linear layer that feeds into the softmax.
         logExpectedInSampleFrequeny,   // For each class logarithm of the estimated frequency the class is expected to occur in the set of random samples
         removeAccidentalHits           // If true then remove occurences of the sampled class from the random samples
         ) = 
@@ -511,13 +511,18 @@ CNTK2 = [
             else LogPlus (zT, zSReduced)
 
         ce = logSum - zT
-    }.ce
+
+        # Check whether the label would have been predicted correctly (among the set of random samples plus label)
+        # error = 1 if the label would have beed predicted wrongly
+        zSMax = ReduceMax (zS)
+        error = Less (zT, zSMax)
+    }
 
     CrossEntropyWithSampledSoftmaxLayer(
        hiddenLayer,                    // [numHidden] Hidden vector feedng into the linear layer before softmax.
         labels,                        // [numClasses] One-hot for the true class (labels).
-        weights,                       // [numClasses x numHidden] Weight matrix for the linear layer that feeds into the softmax
-        bias,                          // [numClasses] Biases for the linear layer that feeds into the softmax.
+        weights,                       // [numHidden x numClasses] Weight matrix for the linear layer that feeds into the softmax
+        bias,                          // [1 x numClasses] Biases for the linear layer that feeds into the softmax.
         numSamples,                    // number of random samples to be used
         samplingWeights,               // [numClasses x numSamples] Sparse matrix of dimension
         sampleWithReplacement = true,  // boolean parameter specifiying if sampling with replacment should be used
@@ -527,9 +532,10 @@ CNTK2 = [
         samples        = GetRandomSample (samplingWeights, numSamples, sampleWithReplacement)
         inclusionProbs = GetInclusionFrequency (samplingWeights, numSamples, sampleWithReplacement)
         logPrior       = Log (inclusionProbs)
-        ce = CrossEntropyWithSampledSoftmax (hiddenLayer, labels,  samples, weights, bias, logPrior, removeAccidentalHits)
-
-    }.ce
+        sm = CrossEntropyWithSampledSoftmax (hiddenLayer, labels,  samples, weights, bias, logPrior, removeAccidentalHits)
+        ce = sm.ce
+        error = sm.error
+    }
 
     // 12. Comparison nodes
     Less(_, y, tag='')         = new ComputationNode [ operation = 'Less'         ; inputs = _AsNodes (_ : y) /*plus the function args*/ ]
