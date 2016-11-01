@@ -25,6 +25,142 @@
 namespace Microsoft { namespace MSR { namespace CNTK {
 
 // -----------------------------------------------------------------------
+// TripletLossNode (anchor, positive, negative)
+// = SumElements [((anchor - positive) .* (anchor - positive) - (anchor - negative) .* (anchor - negative)) + alpha]_+
+// -----------------------------------------------------------------------
+template <class ElemType>
+class TripletLossNode : public ComputationNodeNonLooping /*ComputationNode*/<ElemType>, public NumInputs<3>
+{
+    typedef ComputationNodeNonLooping<ElemType> Base; UsingComputationNodeMembersBoilerplate;
+    static const std::wstring TypeName() { return L"TripletLoss"; }
+
+public:
+    DeclareConstructorFromConfigWithNumInputs(TripletLossNode);
+    TripletLossNode(DEVICEID_TYPE deviceId, const wstring& name)
+        : Base(deviceId, name)
+    {
+    }
+
+    virtual void UpdateFunctionMBSize() override
+    {
+        m_anchorMinusPositive->Resize(Input(0)->Value());
+        m_anchorMinusNegative->Resize(Input(0)->Value());
+    }
+
+    virtual void /*ComputationNodeNonLooping::*/ ForwardPropNonLooping() override
+    {
+        ElemType alpha = 0.3f; //Make variable later
+        FrameRange fr(InputRef(0).GetMBLayout());
+        m_anchorMinusPositive->AssignDifferenceOf(InputRef(0).ValueFor(fr), InputRef(1).ValueFor(fr));
+        m_anchorMinusNegative->AssignDifferenceOf(InputRef(0).ValueFor(fr), InputRef(2).ValueFor(fr));
+        MaskMissingColumnsToZero(*m_anchorMinusPositive, InputRef(0).GetMBLayout(), fr);
+        MaskMissingColumnsToZero(*m_anchorMinusNegative, InputRef(0).GetMBLayout(), fr);
+
+        Matrix<ElemType> lossVec(1, m_anchorMinusPositive->GetNumCols(), m_anchorMinusPositive->GetDeviceId());
+        Matrix<ElemType> amnNorm(1, m_anchorMinusNegative->GetNumCols(), m_anchorMinusNegative->GetDeviceId());
+                
+        lossVec.AssignVectorNorm2Of(*m_anchorMinusPositive, /*isColWise*/ true);
+        lossVec.ElementMultiplyWith(lossVec);
+        amnNorm.AssignVectorNorm2Of(*m_anchorMinusNegative, /*isColWise*/ true);
+        amnNorm.ElementMultiplyWith(amnNorm);
+
+
+        ((lossVec -= amnNorm) += alpha);
+
+        lossVec.InplaceTruncateBottom(0.0f);
+
+        Value().VerifySize(1, 1);
+        Value().SetValue(lossVec.SumOfElements());
+
+        // Can right own matrix function to speed this up. Don't know if it's worth it due to being 1xn.
+        std::vector<ElemType> columnsMask(lossVec.GetNumCols(), 1.0);
+        for (size_t i = 0; i < lossVec.GetNumCols(); ++i)
+        {
+            if (lossVec(0, i) == 0.0f)
+            {
+                columnsMask[i] = 0.0f;
+            }
+        }
+        m_lossMask->SetValue(1, lossVec.GetNumCols(), lossVec.GetDeviceId(), columnsMask.data());
+
+
+#if NANCHECK
+        Value().HasNan("TripletLoss");
+#endif
+    }
+
+    virtual void BackpropToNonLooping(size_t inputIndex) override
+    {
+        FrameRange fr(InputRef(0).GetMBLayout());
+        auto gradient = InputRef(inputIndex).GradientFor(fr);
+        if (inputIndex == 0)
+        {
+            auto negativeMinusPositive = InputRef(2).ValueFor(fr) - InputRef(1).ValueFor(fr);
+            MaskMissingColumnsToZero(negativeMinusPositive, InputRef(0).GetMBLayout(), fr);
+            negativeMinusPositive.RowElementMultiplyWith(*m_lossMask);
+
+            Matrix<ElemType>::Multiply1x1AndWeightedAdd(2.0, Gradient() /*1x1*/, negativeMinusPositive, 1.0f, gradient);
+        }
+        else if (inputIndex == 1)
+        {
+            m_anchorMinusPositive->RowElementMultiplyWith(*m_lossMask);
+            Matrix<ElemType>::Multiply1x1AndWeightedAdd(-2.0f, Gradient() /*1x1*/, *m_anchorMinusPositive, 1.0f, gradient);
+        }
+        else
+        {
+            m_anchorMinusNegative->RowElementMultiplyWith(*m_lossMask);
+            Matrix<ElemType>::Multiply1x1AndWeightedAdd(2.0f, Gradient() /*1x1*/, *m_anchorMinusNegative, 1.0f, gradient);
+        }
+    }
+
+    virtual bool OutputUsedInComputingInputNodesGradients() const override { return false; }
+    virtual bool InputUsedInComputingInputNodesGradients(size_t /*childIndex*/) const override { return false; }
+
+    virtual void /*ComputationNodeBase::*/ Validate(bool isFinalValidationPass) override
+    {
+        ValidateBinaryReduce(isFinalValidationPass);
+    }
+
+    virtual void CopyTo(ComputationNodeBasePtr nodeP, const std::wstring& newName, const CopyNodeFlags flags) const override
+    {
+        Base::CopyTo(nodeP, newName, flags);
+        if (flags & CopyNodeFlags::copyNodeValue)
+        {
+            auto node = dynamic_pointer_cast<TripletLossNode<ElemType>>(nodeP);
+            node->m_anchorMinusPositive->SetValue(*m_anchorMinusPositive);
+            node->m_anchorMinusNegative->SetValue(*m_anchorMinusNegative);
+            node->m_lossMask->SetValue(*m_lossMask);
+        }
+    }
+
+    // request matrices needed to do node function value evaluation
+    virtual void RequestMatricesBeforeForwardProp(MatrixPool& matrixPool)
+    {
+        Base::RequestMatricesBeforeForwardProp(matrixPool);
+        RequestMatrixFromPool(m_anchorMinusPositive, matrixPool);
+        RequestMatrixFromPool(m_anchorMinusNegative, matrixPool);
+        RequestMatrixFromPool(m_lossMask, matrixPool);
+    }
+
+    // release gradient and temp matrices that no longer needed after all the children's gradients are computed.
+    virtual void ReleaseMatricesAfterBackprop(MatrixPool& matrixPool)
+    {
+        Base::ReleaseMatricesAfterBackprop(matrixPool);
+        ReleaseMatrixToPool(m_anchorMinusPositive, matrixPool);
+        ReleaseMatrixToPool(m_anchorMinusNegative, matrixPool);
+        ReleaseMatrixToPool(m_lossMask, matrixPool);
+    }
+
+private:
+    shared_ptr<Matrix<ElemType>> m_anchorMinusPositive;
+    shared_ptr<Matrix<ElemType>> m_anchorMinusNegative;
+    shared_ptr<Matrix<ElemType>> m_lossMask;
+};
+
+template class TripletLossNode<float>;
+template class TripletLossNode<double>;
+
+// -----------------------------------------------------------------------
 // SquareErrorNode (left, right)
 // = SumElements ((left - right) .* (left - right))
 // -----------------------------------------------------------------------
@@ -64,6 +200,8 @@ public:
     {
         FrameRange fr(InputRef(0).GetMBLayout());
         auto gradient = InputRef(inputIndex).GradientFor(fr);
+        const auto& blah = Gradient(); //DELETE
+        auto one = blah.Get00Element(); one; //DELETE
         Matrix<ElemType>::Multiply1x1AndWeightedAdd(inputIndex == 0 ? 2.0f : -2.0f, Gradient() /*1x1*/, *m_leftMinusRight, 1.0f, gradient); // O = (I0-I1)^2; dO/dI0 = 2*(I0-I1); dO/dI1 = -2*(I0-I1)
     }
 

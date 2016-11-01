@@ -638,6 +638,7 @@ Softmax (z, axis=0, tag='') =  # TODO: replace this with more efficient version 
 Hardmax(z, tag='') = new ComputationNode [ operation = 'Hardmax' ; inputs = _AsNodes (z) /*plus the function args*/ ]
 Sqrt(z, tag='') = new ComputationNode [ operation = 'Sqrt' ; inputs = _AsNodes (z) /*plus the function args*/ ]
 SquareError(aMatrix, anotherMatrix, tag='') = new ComputationNode [ operation = 'SquareError' ; inputs = _AsNodes (aMatrix : anotherMatrix) /*plus the function args*/ ]
+TripletLoss(aMatrix, bMatrix, cMatrix, tag='') = new ComputationNode [ operation = 'TripletLoss' ; inputs = _AsNodes (aMatrix : bMatrix : cMatrix) /*plus the function args*/ ]
 SumColumnElements(z, tag='') = new ComputationNode [ operation = 'SumColumnElements' ; inputs = _AsNodes (z) /*plus the function args*/ ] # deprecated
 SumElements(matrix, tag='') = new ComputationNode [ operation = 'SumElements' ; inputs = _AsNodes (matrix) /*plus the function args*/ ]
 # ^^ TODO: Rename to ReduceSumMB?

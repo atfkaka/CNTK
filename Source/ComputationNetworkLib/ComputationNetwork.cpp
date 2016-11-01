@@ -437,7 +437,8 @@ void ComputationNetwork::InitLearnableParametersWithBilinearFill(const Computati
 bool ComputationNetwork::IsTypicalCriterionNode(ComputationNodeBasePtr nodePtr)
 {
     // TODO: just use return!
-    if (nodePtr->OperationName() == OperationNameOf(SquareErrorNode) ||
+    if (nodePtr->OperationName() == OperationNameOf(TripletLossNode) ||
+        nodePtr->OperationName() == OperationNameOf(SquareErrorNode) ||
         nodePtr->OperationName() == OperationNameOf(LogisticNode) ||
         nodePtr->OperationName() == OperationNameOf(CrossEntropyWithSoftmaxNode) ||
         nodePtr->OperationName() == OperationNameOf(SequenceWithSoftmaxNode) ||

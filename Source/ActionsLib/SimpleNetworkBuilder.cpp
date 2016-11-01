@@ -1694,6 +1694,11 @@ shared_ptr<ComputationNode<ElemType>> SimpleNetworkBuilder<ElemType>::AddTrainAn
             tinput = builder.Times(matrix, input);
         output = builder.SquareError(label, tinput, (trainNodeName == L"") ? L"SquareError" : trainNodeName);
         break;
+    case TrainingCriterion::TripletLoss:
+        if (matrix != nullptr)
+            tinput = builder.Times(matrix, input);
+        output = builder.TripletLoss(label, tinput, (trainNodeName == L"") ? L"TripletLoss" : trainNodeName);
+        break;
     case TrainingCriterion::Logistic:
         if (matrix != nullptr)
             tinput = builder.Times(matrix, input);
@@ -1719,6 +1724,7 @@ shared_ptr<ComputationNode<ElemType>> SimpleNetworkBuilder<ElemType>::AddTrainAn
 
     if (!((m_evalCriterion == EvalCriterion::CrossEntropyWithSoftmax && m_trainCriterion == TrainingCriterion::CrossEntropyWithSoftmax) ||
           (m_evalCriterion == EvalCriterion::SquareError && m_trainCriterion == TrainingCriterion::SquareError) ||
+          (m_evalCriterion == EvalCriterion::TripletLoss && m_trainCriterion == TrainingCriterion::TripletLoss) ||
           (m_evalCriterion == EvalCriterion::Logistic && m_trainCriterion == TrainingCriterion::Logistic) ||
           (m_evalCriterion == EvalCriterion::CRF && m_trainCriterion == TrainingCriterion::CRF) ||
           (m_evalCriterion == EvalCriterion::ClassCrossEntropyWithSoftmax && m_trainCriterion == TrainingCriterion::ClassCrossEntropyWithSoftmax) ||
@@ -1744,6 +1750,12 @@ shared_ptr<ComputationNode<ElemType>> SimpleNetworkBuilder<ElemType>::AddTrainAn
                 tinput = builder.Times(matrix, input);
             // output = builder.SquareError(label, tinput, (evalNodeName == L"")?L"EvalSquareError":evalNodeName);
             output = builder.SquareError(label, tinput, (evalNodeName == L"") ? L"SquareError" : evalNodeName);
+            break;
+        case EvalCriterion::TripletLoss:
+            if (matrix != nullptr && tinput == input)
+                tinput = builder.Times(matrix, input);
+            // output = builder.TripletLoss(label, tinput, (evalNodeName == L"")?L"EvalTripletLoss":evalNodeName);
+            output = builder.TripletLoss(label, tinput, (evalNodeName == L"") ? L"TripletLoss" : evalNodeName);
             break;
         case EvalCriterion::Logistic:
             if (matrix != nullptr && tinput == input)
@@ -1786,12 +1798,13 @@ TrainingCriterion ParseTrainingCriterionString(wstring s)
 {
     if      (EqualCI(s, L"crossEntropyWithSoftmax"))      return TrainingCriterion::CrossEntropyWithSoftmax;
     else if (EqualCI(s, L"squareError"))                  return TrainingCriterion::SquareError;
+    else if (EqualCI(s, L"tripletLoss"))                  return TrainingCriterion::TripletLoss;
     else if (EqualCI(s, L"logistic"))                     return TrainingCriterion::Logistic;
     else if (EqualCI(s, L"noiseContrastiveEstimation"))   return TrainingCriterion::NCECrossEntropyWithSoftmax;
     // legacy/deprecated
     else if (EqualCI(s, L"classCrossEntropyWithSoftmax")) return TrainingCriterion::ClassCrossEntropyWithSoftmax;
     else if (EqualCI(s, L"sequenceWithSoftmax"))          return TrainingCriterion::SequenceWithSoftmax;
-    else LogicError("trainingCriterion: Invalid trainingCriterion value. Valid values are (crossEntropyWithSoftmax | squareError | logistic | classCrossEntropyWithSoftmax| sequenceWithSoftmax)");
+    else LogicError("trainingCriterion: Invalid trainingCriterion value. Valid values are (crossEntropyWithSoftmax | squareError | tripletLoss | logistic | classCrossEntropyWithSoftmax| sequenceWithSoftmax)");
 }
 
 EvalCriterion ParseEvalCriterionString(wstring s)
@@ -1801,11 +1814,12 @@ EvalCriterion ParseEvalCriterionString(wstring s)
     else if (EqualCI(s, L"logistic"))                     return EvalCriterion::Logistic;
     else if (EqualCI(s, L"noiseContrastiveEstimation"))   return EvalCriterion::NCECrossEntropyWithSoftmax;
     else if (EqualCI(s, L"squareError"))                  return EvalCriterion::SquareError;
+    else if (EqualCI(s, L"tripletLoss"))                  return EvalCriterion::TripletLoss;
     // legacy/deprecated
     else if (EqualCI(s, L"classCrossEntropyWithSoftmax")) return EvalCriterion::ClassCrossEntropyWithSoftmax;
     else if (EqualCI(s, L"sequenceWithSoftmax"))          return EvalCriterion::SequenceWithSoftmax;
     else if (EqualCI(s, L"errorPrediction"))              return EvalCriterion::ClassificationError;
-    else LogicError("evalCriterion: Invalid trainingCriterion value. Valid values are (errorPrediction | crossEntropyWithSoftmax | squareError | logistic | sequenceWithSoftmax)");
+    else LogicError("evalCriterion: Invalid trainingCriterion value. Valid values are (errorPrediction | crossEntropyWithSoftmax | squareError | tripletLoss | logistic | sequenceWithSoftmax)");
 }
 
 }}}

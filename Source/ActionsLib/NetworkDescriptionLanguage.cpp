@@ -225,6 +225,7 @@ bool CheckFunction(std::string& p_nodeType, bool* allowUndeterminedVariable)
     else if (EqualInsensitive(nodeType, OperationNameOf(SparseInputValue), L"SparseInput")) ret = true;
     else if (EqualInsensitive(nodeType, OperationNameOf(SqrtNode))) ret = true;
     else if (EqualInsensitive(nodeType, OperationNameOf(SquareErrorNode), L"SE")) ret = true;
+    else if (EqualInsensitive(nodeType, OperationNameOf(TripletLossNode), L"TL")) ret = true;
     else if (EqualInsensitive(nodeType, OperationNameOf(SumColumnElementsNode))) ret = true;
     else if (EqualInsensitive(nodeType, OperationNameOf(SumElementsNode))) ret = true;
     else if (EqualInsensitive(nodeType, OperationNameOf(TanhNode))) ret = true;

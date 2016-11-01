@@ -629,7 +629,7 @@ namespace CNTK
 
         // We currently require that the inputs' dynamic axes if any match
         std::vector<Axis> outputDynamicAxes;
-        if ((op == PrimitiveOpType::SumAll) || (op == PrimitiveOpType::SquaredError) || (op == PrimitiveOpType::CrossEntropyWithSoftmax) || (op == PrimitiveOpType::ClassificationError))
+        if ((op == PrimitiveOpType::SumAll) || (op == PrimitiveOpType::SquaredError) || (op == PrimitiveOpType::TripletLoss) ||(op == PrimitiveOpType::CrossEntropyWithSoftmax) || (op == PrimitiveOpType::ClassificationError))
             outputDynamicAxes = std::vector<Axis>({});
         else if (op == PrimitiveOpType::Where)
             outputDynamicAxes = AsVector<Axis>(functionConfig[PrimitiveFunction::AttributeNameNewDynamicAxes].Value<std::vector<DictionaryValue>>());
@@ -879,8 +879,9 @@ namespace CNTK
             case PrimitiveOpType::SquaredError:
             case PrimitiveOpType::CrossEntropyWithSoftmax:
             case PrimitiveOpType::ClassificationError:
+            case PrimitiveOpType::TripletLoss:
             {
-                if (op == PrimitiveOpType::ClassificationError)
+                if (op == PrimitiveOpType::ClassificationError || op == PrimitiveOpType::TripletLoss)
                     assert(inputs.size() >= 2);
                 else
                     assert(inputs.size() == 2);
@@ -1578,6 +1579,9 @@ namespace CNTK
         }
         case PrimitiveOpType::SquaredError:
             computationNodePtr = New<SquareErrorNode<ElementType>>(network->GetDeviceId(), internalNodeName);
+            break;
+        case PrimitiveOpType::TripletLoss:
+            computationNodePtr = New<TripletLossNode<ElementType>>(network->GetDeviceId(), internalNodeName);
             break;
         case PrimitiveOpType::CrossEntropyWithSoftmax:
             computationNodePtr = New<CrossEntropyWithSoftmaxNode<ElementType>>(network->GetDeviceId(), internalNodeName);
@@ -2800,6 +2804,13 @@ namespace CNTK
         auto squaredDifference = ElementTimes(difference, difference);
         return Internal::ReduceElements(squaredDifference, PrimitiveFunction::InternalSumReductionOpName, Axis::AllStaticAxes(), name);
     }
+
+    /*
+    FunctionPtr TripletLoss(const Variable& anchor, const Variable& pos, const Variable& neg, const std::wstring& name)
+    {
+        // What is the shape of the variables?.  Need to be careful about zeroing out negative loss
+    }
+    */
 
     FunctionPtr CrossEntropyWithSoftmax(const Variable& prediction, const Variable& labels, const Axis& axis, const std::wstring& name)
     {

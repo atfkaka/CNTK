@@ -30,7 +30,7 @@ namespace CNTK
 {
     // Move primitiveOpNames out from PrimitiveOpTypeName(), as local static variables are not thread-safe under VS2013.
     // Todo: Move it into PrimitiveOpTypeName() as local static after upgraded to VS2015.
-    static const std::unordered_map<PrimitiveOpType, std::wstring> primitiveOpNames = {
+        static const std::unordered_map<PrimitiveOpType, std::wstring> primitiveOpNames = {
         {PrimitiveOpType::Negate, L"Negate"},
         {PrimitiveOpType::Sigmoid, L"Sigmoid"},
         {PrimitiveOpType::Tanh, L"Tanh"},
@@ -79,7 +79,7 @@ namespace CNTK
         {PrimitiveOpType::RandomSample, L"RandomSample"},
         {PrimitiveOpType::RandomSampleInclusionFrequency, L"RandomSampleInclusionFrequency"},
         {PrimitiveOpType::ROIPooling, L"ROIPooling"},
-    };
+        };
 
     inline const std::wstring& PrimitiveOpTypeName(PrimitiveOpType opType)
     {
