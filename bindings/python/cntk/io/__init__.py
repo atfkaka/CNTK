@@ -349,6 +349,13 @@ class ImageDeserializer(Deserializer):
             node = node.name()
         self.input[node] = dict(labelDim=num_classes) # reader distinguishes labels from features by calling this 'labelDim'
 
+    # TODO: ignore labels on C++ level if labeldim is not specified
+    def ignore_labels(self):
+        '''
+        Ignore labels from the image deserializer
+        '''
+        self.input["_ignore_labels_"] = dict(labelDim=1000)
+
     @staticmethod
     def crop(crop_type='center', ratio=1.0, jitter_type='uniRatio'):
         '''
