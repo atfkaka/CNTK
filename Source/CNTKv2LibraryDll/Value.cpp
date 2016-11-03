@@ -137,6 +137,15 @@ namespace CNTK
         return MakeSharedObject<Value>(deviceValueData, deviceValueMask);
     }
 
+    //template <typename ElementType>
+    ///*static*/ ValuePtr Value::Create(const NDShape& sampleShape, const std::vector<std::tuple<std::vector<ElementType>, std::vector<SparseIndexType>, std::vector<SparseIndexType>>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/)
+    template <typename ElementType>
+    /*static*/ ValuePtr Value::Create(const NDShape& sampleShape, const std::vector<SparseSequenceData<ElementType>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/)
+    {
+        // Todo: add implementation.
+        return nullptr;
+    }
+
     /*virtual*/ Value::~Value()
     {
     }
@@ -222,4 +231,7 @@ namespace CNTK
     template /*static*/ CNTK_API ValuePtr Value::Create<double>(const NDShape& sampleShape, const std::vector<std::vector<double>>& sequences, const DeviceDescriptor& device, bool readOnly/* = false*/);
     template /*static*/ CNTK_API ValuePtr Value::Create<float>(size_t vocabSize, const std::vector<std::vector<size_t>>& oneHotSequences, const DeviceDescriptor& device, bool readOnly/* = false*/);
     template /*static*/ CNTK_API ValuePtr Value::Create<double>(size_t vocabSize, const std::vector<std::vector<size_t>>& oneHotSequences, const DeviceDescriptor& device, bool readOnly/* = false*/);
+    template /*static*/ CNTK_API ValuePtr Value::Create<float>(const NDShape& sampleShape, const std::vector<SparseSequenceData<float>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/);
+    template /*static*/ CNTK_API ValuePtr Value::Create<double>(const NDShape& sampleShape, const std::vector<SparseSequenceData<double>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/);
+
 }

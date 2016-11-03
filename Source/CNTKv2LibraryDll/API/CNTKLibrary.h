@@ -771,6 +771,22 @@ namespace CNTK
     };
 
     /// 
+    /// The struct defines layout of samples of a sparse sequence (csc)
+    /// Each sample is represented by 1-dimentional array. N-dimential tensor needs to be flatted into the 1-dimentional array first.
+    ///
+    /// This struct can also be represented by std::vector<std::tuple<std::vector<ElementType>, std::vector<SparseIndexType>, std::vector<SparseIndexType>>>.
+    /// However, the struct is easier to understand and use.
+    template <typename ElementType>
+    struct SparseSequenceData
+    {
+        // Todo: use pointer to vector should be more efficient, but need to check how to work with C#.
+        SparseSequenceData(std::vector<ElementType> data, std::vector<SparseIndexType> indices, std::vector<SparseIndexType> nnzCounts) : m_data(data), m_indices(indices), m_nnzCounts(nnzCounts) {}
+        std::vector<ElementType> m_data;            // All non-zero data in the sequence.
+        std::vector<SparseIndexType> m_indices;     // The index of each non-zero data in m_data.
+        std::vector<SparseIndexType> m_nnzCounts;   // The number of non-zero data of each sample.
+    };
+
+    /// 
     /// Denotes a multi-dimensional array with an optional mask and is the actual data fed into or produced from a computation.
     /// The mask is typically lower dimensionality than the data, meaning data is masked in coarse individual sample units where
     /// sample shape is data.Shape().SubShape(0, data.Shape().Rank() - mask.Shape().Rank)
@@ -802,6 +818,18 @@ namespace CNTK
         ///
         template <typename ElementType>
         CNTK_API static ValuePtr Create(size_t vocabularySize, const std::vector<std::vector<size_t>>& oneHotSequences, const DeviceDescriptor& device, bool readOnly = false);
+
+        ///
+        /// Create a new Value object containing a collection of variable length sequences of sparse input.
+        /// The created Value object contains a copy of the specified 'sequences' data.
+        ///
+        /// Alterneatively, the sequence can also be represented by the tuple:
+        /// <vector of all non-zero data, vector of index for each value in the data vector, and vector of number of non-zero elements of each sample>
+        /// as follows
+        /// template <typename ElementType>
+        /// CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<std::tuple<std::vector<ElementType>, std::vector<SparseIndexType>, std::vector<SparseIndexType>>>& SparseSequences, const DeviceDescriptor& device, bool readOnly = false);
+        template <typename ElementType>
+        CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<SparseSequenceData<ElementType>>& SparseSequences, const DeviceDescriptor& device, bool readOnly = false);
 
         ///
         /// Destruct 'this' Value object.
