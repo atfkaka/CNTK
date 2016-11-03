@@ -460,15 +460,15 @@ void RunEvaluationOneHidden(FunctionPtr evalFunc, const DeviceDescriptor& device
 using std::vector;
 
 /// 
-/// This is an example to illustrate how users create sparse sequences from raw data (dense format).
-/// Here we assume the tensor is 30x30x30, and the tensorData contains the data for all sequences in dense format.
+/// This is an example to illustrate how users would use sparse input.
+/// Here we assume the tensor is 30x30x30, and the tensorData is the data in dense format.
 /// Todo: How can a user provide the n-dimensional tensor data in sparse format? Ideally he does not need
-/// first to flat the tensor into 1-dimensional vector and provides it as input. 
+/// first to flat the tensor into 1-dimensional vector.
 ///
-void SpaseInputEvalSample(vector<float[30][30][30]> tensorData, int numOfSequences, vector<int> numOfSamples)
+void SpaseInputEvalSample1(vector<float[30][30][30]> tensorData, int numOfSequences, vector<int> numOfSamples)
 {
     // This is a sample to illustrate how to use Value::Create interface for sparse input.
-    // Assumging the tensor data is 30x30x30.     
+    // Assumging the tensor data is 30x30x30.
     vector<float> *data;
     vector<SparseIndexType> *indices;
     vector<SparseIndexType> *nnzCounts;
@@ -498,7 +498,7 @@ void SpaseInputEvalSample(vector<float[30][30][30]> tensorData, int numOfSequenc
         for (int sample = 0; sample < numOfSamples[seq]; sample++)
         {
             count = 0;
-            // first transform the tensor data
+            // first transform the tensor data into sparse presentation
             for (int i = 0; i < 30; i++)
                 for (int j = 0; j < 30; j++)
                     for (int k = 0; k < 30; k++)
@@ -528,6 +528,72 @@ void SpaseInputEvalSample(vector<float[30][30][30]> tensorData, int numOfSequenc
 
     /// Add method to get output value as dense or spare format.
 }
+
+
+/// 
+/// This is an example to illustrate how users create sparse sequences from raw data (dense format).
+/// Here we assume the tensor is 30x30x30, and the tensorData contains the data for all sequences in dense format.
+/// Todo: How can a user provide the n-dimensional tensor data in sparse format? Ideally he does not need
+/// first to flat the tensor into 1-dimensional vector and provides it as input. 
+///
+void SpaseInputEvalSample2(vector<float[30][30][30]> tensorData, int numOfSequences, vector<int> numOfSamples)
+{
+    // This is a sample to illustrate how to use Value::Create interface for sparse input.
+    // Assumging the tensor data is 30x30x30.        
+    int count;
+    int numTensor = 0;
+
+    // Load model
+    auto modelFuncPtr = CNTK::Function::LoadModel(DataType::Float, L"01_OneHidden", DeviceDescriptor::CPUDevice());
+
+    // Get input variables
+    Variable inputVar;
+    if (!GetInputVariableByName(modelFuncPtr, L"features", inputVar))
+    {
+        fprintf(stderr, "Input input variable is not available.\n");
+        throw("Input variable not found error.");
+    }
+
+    // Prepare sparse presentation 
+    SparseBatchData<float> inputData;
+    inputData.numOfSamples = numOfSamples;
+    inputData.numOfSequences = numOfSequences;
+    
+    for (int seq = 0; seq < numOfSequences; seq++)
+    {
+        for (int sample = 0; sample < numOfSamples[seq]; sample++)
+        {
+            count = 0;
+            // first transform the tensor data
+            for (int i = 0; i < 30; i++)
+                for (int j = 0; j < 30; j++)
+                    for (int k = 0; k < 30; k++)
+                    {
+                        if (tensorData[numTensor][i][j][k] != 0)
+                        {
+                            inputData.m_data.push_back(tensorData[numTensor][i][j][k]);
+                            inputData.m_indices.push_back(i * 30 + j * 30 + k);
+                            count++;
+                        }
+                    }
+            inputData.m_nnzCounts.push_back(count);
+            numTensor++;
+        }
+    }
+
+    auto inputValp = Value::Create<float>(inputVar.Shape(), inputData, DeviceDescriptor::CPUDevice());
+
+    // Define output.
+    ValuePtr outputValue;
+    auto outputVar = modelFuncPtr->Output();
+    std::unordered_map<Variable, ValuePtr> outputs = {{outputVar, outputValue}};
+
+    // Evaluate the model
+    modelFuncPtr->Forward({{inputVar, inputValp}}, outputs, DeviceDescriptor::CPUDevice());
+
+    /// Add method to get output value as dense or spare format.
+}
+
 
 void MultiThreadsEvaluation(bool isGPUAvailable)
 {

@@ -146,6 +146,13 @@ namespace CNTK
         return nullptr;
     }
 
+    template <typename ElementType>
+    /*static*/ ValuePtr Value::Create(const NDShape& sampleShape, const SparseBatchData<ElementType>& sparseBatchData, const DeviceDescriptor& device, bool readOnly /*= false*/)
+    {
+        // Todo: add implementation.
+        return nullptr;
+    }
+    
     /*virtual*/ Value::~Value()
     {
     }
@@ -231,7 +238,9 @@ namespace CNTK
     template /*static*/ CNTK_API ValuePtr Value::Create<double>(const NDShape& sampleShape, const std::vector<std::vector<double>>& sequences, const DeviceDescriptor& device, bool readOnly/* = false*/);
     template /*static*/ CNTK_API ValuePtr Value::Create<float>(size_t vocabSize, const std::vector<std::vector<size_t>>& oneHotSequences, const DeviceDescriptor& device, bool readOnly/* = false*/);
     template /*static*/ CNTK_API ValuePtr Value::Create<double>(size_t vocabSize, const std::vector<std::vector<size_t>>& oneHotSequences, const DeviceDescriptor& device, bool readOnly/* = false*/);
-    template /*static*/ CNTK_API ValuePtr Value::Create<float>(const NDShape& sampleShape, const std::vector<SparseSequenceData<float>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/);
-    template /*static*/ CNTK_API ValuePtr Value::Create<double>(const NDShape& sampleShape, const std::vector<SparseSequenceData<double>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/);
+    template /*static*/ CNTK_API ValuePtr Value::Create<float>(const NDShape& sampleShape, const std::vector<SparseSequenceData<float>>& sparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/);
+    template /*static*/ CNTK_API ValuePtr Value::Create<double>(const NDShape& sampleShape, const std::vector<SparseSequenceData<double>>& sparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/);
+    template /*static*/ CNTK_API ValuePtr Value::Create<float>(const NDShape& sampleShape, const SparseBatchData<float>& sparseBatchData, const DeviceDescriptor& device, bool readOnly /*= false*/);
+    template /*static*/ CNTK_API ValuePtr Value::Create<double>(const NDShape& sampleShape, const SparseBatchData<double>& sparseBatchData, const DeviceDescriptor& device, bool readOnly /*= false*/);
 
 }

@@ -786,6 +786,17 @@ namespace CNTK
         std::vector<SparseIndexType> m_nnzCounts;   // The number of non-zero data of each sample.
     };
 
+
+    template <typename ElementType>
+    struct SparseBatchData
+    {
+        int numOfSequences;                         // number of sequences in the batch
+        std::vector<int> numOfSamples;              // number of samples in each sequence
+        std::vector<ElementType> m_data;            // All non-zero data in the sequence.
+        std::vector<SparseIndexType> m_indices;     // The index of each non-zero data in m_data.
+        std::vector<SparseIndexType> m_nnzCounts;   // The number of non-zero data of each sample.
+    };
+
     /// 
     /// Denotes a multi-dimensional array with an optional mask and is the actual data fed into or produced from a computation.
     /// The mask is typically lower dimensionality than the data, meaning data is masked in coarse individual sample units where
@@ -821,6 +832,10 @@ namespace CNTK
 
         ///
         /// Create a new Value object containing a collection of variable length sequences of sparse input.
+        /// Each sequence has its own stroage for all non-zero values, together with sparse layout data.
+        /// Please note, it is assumed that the calls has flatted its n-dimensional tensor data into 1-dimensional vector, and 
+        /// the index of each non-zero value refers to the position in the 1-dimensional vector.
+        /// Todo: provide a way for users to directly specify sparse layout in n-dimensional vector.
         /// The created Value object contains a copy of the specified 'sequences' data.
         ///
         /// Alterneatively, the sequence can also be represented by the tuple:
@@ -829,7 +844,18 @@ namespace CNTK
         /// template <typename ElementType>
         /// CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<std::tuple<std::vector<ElementType>, std::vector<SparseIndexType>, std::vector<SparseIndexType>>>& SparseSequences, const DeviceDescriptor& device, bool readOnly = false);
         template <typename ElementType>
-        CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<SparseSequenceData<ElementType>>& SparseSequences, const DeviceDescriptor& device, bool readOnly = false);
+        CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<SparseSequenceData<ElementType>>& sparseSequences, const DeviceDescriptor& device, bool readOnly = false);
+
+        ///
+        /// Create a new Value object containing a collection of variable length sequences of sparse input.
+        /// All non-zero values for all sequences are stored in a vector. The caller needs first to flat its 
+        /// n-dimensional tensor data into 1-dimensional vector, and then provide additional information
+        /// about the sparse layout: number of sequence, number of samples in each sequence, number of non-zero values of each sample, 
+        /// and the index in the flatted 1-dimensional vector for each non-zero value.
+        /// The created Value object contains a copy of the specified 'sequences' data.
+        ///
+        template <typename ElementType>
+        CNTK_API static ValuePtr Create(const NDShape& sampleShape, const SparseBatchData<ElementType>& sparseBatchData, const DeviceDescriptor& device, bool readOnly = false);
 
         ///
         /// Destruct 'this' Value object.
