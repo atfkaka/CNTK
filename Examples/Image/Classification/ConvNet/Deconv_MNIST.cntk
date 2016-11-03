@@ -1,4 +1,4 @@
-# ConvNet on MNIST dataset. 
+# Deconvolution on MNIST dataset. 
 
 command = trainNetwork:testNetwork
 
@@ -36,15 +36,19 @@ trainNetwork = {
         z = model (featScaled)
 
         # loss and special nodes
-        mse = SquareError(z, featScaled)
+        err = z - featScaled
+        sqErr = err .* err
+        mse = ReduceMean(sqErr)
+        rmse = Sqrt(mse)
+        
         featureNodes = (features)
-        criterionNodes = (mse)
+        criterionNodes = (rmse)
    }
 
     SGD = [
         epochSize = 60000
         minibatchSize = 32
-        learningRatesPerMB = 0.001
+        learningRatesPerMB = 0.01
         momentumPerMB = 0.9
         maxEpochs = 10
         
