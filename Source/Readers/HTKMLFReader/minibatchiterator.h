@@ -324,7 +324,6 @@ public:
     std::vector<size_t> &bounds()
     {
         checkhasdata();
-        assert(phoneboundaries.size() == 1);
         return phoneboundaries[0];
     }
     std::vector<size_t> &bounds(size_t i)
