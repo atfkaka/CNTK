@@ -9,59 +9,47 @@ outputDir = "./Output" ;
 
 modelPath = "$outputDir$/Models/ConvNet_MNIST"
 #stderr = "$outputDir$/ConvNet_MNIST_bs_out"
+#forceDeterministicAlgorithms = true 
 
 # TRAINING CONFIG
 trainNetwork = {
     action = "train"
 
     BrainScriptNetworkBuilder = {
-        imageShape = 28:28:1                        # image dimensions, 1 channel only
-        labelDim = 10                               # number of distinct labels
-        featScale = 1/256
-        Scale{f} = x => Constant(f) .* x
-        
-        model = xScaled => {
-            c1      = ConvolutionalLayer {16, (5:5), pad = true}(xScaled)
+        model = featScaled => {
+            c1      = ConvolutionalLayer {16, (5:5), pad = true}(featScaled)
             r1      = ReLU(c1)
             p1      = MaxPoolingLayer {(2:2), stride=(2:2)}(r1)
             unpool1 = MaxUnpooling(p1, r1, (2:2:1), stride=(2:2:1), autoPadding=(false:false:false), lowerPad=0, upperPad=0)
-            W = BS.Parameters.Parameter(16, 4, init='gaussian', initValueScale=0.1)
-            deconv  = Convolution(W, unpool1, (5:5:1), stride=(2:2:1), sharing=(true:true:true), autoPadding=(false:false:false), lowerPad=(0:0:0), upperPad=(0:0:0), deconv=true)
-
-            #c2      = ConvolutionalLayer {48, (3:3), pad = false}(p1)
-            #r2      = ReLU(c2) 
-            #h1      = DenseLayer {96}(r2)
-            #d1      = Dropout(h1)
-            #r3      = ReLU(d1)  
-            #z       = LinearLayer {labelDim}(r3)
+            W       = ParameterTensor{(1:5:5:16), init="uniform", initValueScale=0.1, initOnCPUOnly=true}
+            deconv  = Convolution(W, unpool1, (5:5:1), mapDims=16, stride=(1:1), sharing=(true:true:true), autoPadding=(false:false:false), lowerPad=(2:2:0), upperPad=(2:2:0), deconv=true)
         }.deconv
 
         # inputs
+        imageShape = 28:28:1                        # image dimensions, 1 channel only
         features = Input {imageShape}
-        #labels = Input {labelDim}
+
+        Scale{f} = x => Constant(1.0 / 256.0) .* x
+        featScaled = Scale {featScale} (features)
 
         # apply model to features
-        xScaled = Scale {featScale} (features)
-        z = model (xScaled)
+        z = model (featScaled)
 
-        # loss and error computation
-        mse = SquareError(z, xScaled)
-
-        # Special Nodes
+        # loss and special nodes
+        mse = SquareError(z, featScaled)
         featureNodes = (features)
         criterionNodes = (mse)
    }
 
-    SGD = {
+    SGD = [
         epochSize = 60000
-        minibatchSize = 64
-        maxEpochs = 40
-        learningRatesPerSample = 0.001*10:0.0005*10:0.0001
-		dropoutRate = 0.5
-        momentumAsTimeConstant = 0*5:1024
+        minibatchSize = 32
+        learningRatesPerMB = 0.001
+        momentumPerMB = 0.9
+        maxEpochs = 10
         
         numMBsToShowResult = 500
-    }
+    ]
 
     reader = {
         readerType = "CNTKTextFormatReader"
