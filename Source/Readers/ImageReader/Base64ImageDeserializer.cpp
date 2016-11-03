@@ -97,7 +97,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             std::vector<char> decodedImage;
             if (!Decode64BitImage(token, endToken, decodedImage))
             {
-                fprintf(stderr, "WARNING: Cannot decode sequence with id %" PRIu64 " in the input file '%ls'\n", sequence.m_key.m_sequence, m_parent.m_fileName.c_str());
+                fprintf(stderr, "WARNING: Cannot decode sequence with id %s in the input file '%ls'\n", 
+                    m_parent.m_corpus->GetStringRegistry()[sequence.m_key.m_sequence].c_str(),
+                    m_parent.m_fileName.c_str());
                 resultingImage->m_isValid = false;
             }
             else
@@ -107,7 +109,9 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 auto& cvImage = resultingImage->m_image;
                 if (!cvImage.data)
                 {
-                    fprintf(stderr, "WARNING: Cannot decode sequence with id %" PRIu64 " in the input file '%ls'\n", sequence.m_key.m_sequence, m_parent.m_fileName.c_str());
+                    fprintf(stderr, "WARNING: Cannot decode sequence with id %s in the input file '%ls'\n",
+                        m_parent.m_corpus->GetStringRegistry()[sequence.m_key.m_sequence].c_str(),
+                        m_parent.m_fileName.c_str());
                     resultingImage->m_isValid = false;
                 }
                 else
@@ -123,6 +127,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
                 ImageDimensions dimensions(cvImage.cols, cvImage.rows, cvImage.channels());
                 resultingImage->m_sampleLayout = std::make_shared<TensorShape>(dimensions.AsTensorShape(HWC));
                 resultingImage->m_id = sequenceId;
+                resultingImage->m_key = sequence.m_key;
                 resultingImage->m_numberOfSamples = 1;
                 resultingImage->m_chunk = shared_from_this();
             }
@@ -133,6 +138,7 @@ namespace Microsoft { namespace MSR { namespace CNTK {
             label->m_chunk = shared_from_this();
             m_parent.m_labelGenerator->CreateLabelFor(classId, *label);
             label->m_numberOfSamples = 1;
+            label->m_key = sequence.m_key;
             result.push_back(label);
         }
 
@@ -155,6 +161,8 @@ namespace Microsoft { namespace MSR { namespace CNTK {
     // A constructor to support compositional configuration
     Base64ImageDeserializer::Base64ImageDeserializer(CorpusDescriptorPtr corpus, const ConfigParameters& config)
     {
+        m_corpus = corpus;
+        m_hasSequenceKeys = false;
         ConfigParameters inputs = config("input");
         std::vector<std::string> featureNames = GetSectionsWithParameter("Base64ImageDeserializer", inputs, "transforms");
         std::vector<std::string> labelNames = GetSectionsWithParameter("Base64ImageDeserializer", inputs, "labelDim");
@@ -275,15 +283,15 @@ namespace Microsoft { namespace MSR { namespace CNTK {
         Timer timer;
         timer.Start();
 
-        bool hasSequenceKeys = HasSequenceKeys(mapPath);
+        m_hasSequenceKeys = HasSequenceKeys(mapPath);
         m_fileName.assign(mapPath.begin(), mapPath.end());
 
-        attempt(5, [this, hasSequenceKeys, corpus]()
+        attempt(5, [this, corpus]()
         {
             if (!m_dataFile || ferror(m_dataFile.get()) != 0)
                 m_dataFile.reset(fopenOrDie(m_fileName, L"rbS"), [](FILE* f) { if (f) fclose(f); });
 
-            m_indexer = make_unique<Indexer>(m_dataFile.get(), !hasSequenceKeys);
+            m_indexer = make_unique<Indexer>(m_dataFile.get(), !m_hasSequenceKeys, !m_hasSequenceKeys);
             m_indexer->Build(corpus);
         });
 

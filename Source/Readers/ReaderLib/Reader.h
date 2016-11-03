@@ -7,9 +7,9 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 #include "Sequences.h"
 #include "TensorShape.h"
-#include <unordered_set>
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -99,6 +99,8 @@ struct Minibatch
     Minibatch(bool endOfEpoch) : m_endOfEpoch(endOfEpoch)
     {
     }
+
+    std::function<std::string(const size_t)> m_idToKeyMapping;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

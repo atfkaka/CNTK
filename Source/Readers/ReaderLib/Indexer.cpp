@@ -14,8 +14,9 @@ const static char ROW_DELIMITER = '\n';
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
-Indexer::Indexer(FILE* file, bool skipSequenceIds, char streamPrefix, size_t chunkSize, size_t bufferSize) :
+    Indexer::Indexer(FILE* file, bool skipSequenceIds, bool numericSequenceId, char streamPrefix, size_t chunkSize, size_t bufferSize) :
     m_streamPrefix(streamPrefix),
+    m_numericSequenceId(numericSequenceId),
     m_bufferSize(bufferSize),
     m_file(file),
     m_fileOffsetStart(0),
@@ -129,7 +130,7 @@ void Indexer::Build(CorpusDescriptorPtr corpus)
     size_t id = 0;
     int64_t offset = GetFileOffset();
     // read the very first sequence id
-    if (!TryGetSequenceId(id))
+    if (!TryGetSequenceId(id, corpus->GetStringRegistry()))
     {
         RuntimeError("Expected a sequence id at the offset %" PRIi64 ", none was found.", offset);
     }
@@ -144,7 +145,7 @@ void Indexer::Build(CorpusDescriptorPtr corpus)
         offset = GetFileOffset(); // a new line starts at this offset;
         sd.m_numberOfSamples++;
 
-        if (!m_done && TryGetSequenceId(id) && id != currentKey)
+        if (!m_done && TryGetSequenceId(id, corpus->GetStringRegistry()) && id != currentKey)
         {
             // found a new sequence, which starts at the [offset] bytes into the file
             sd.m_byteSize = offset - sd.m_fileOffsetBytes;
@@ -163,13 +164,27 @@ void Indexer::Build(CorpusDescriptorPtr corpus)
 
 void Indexer::AddSequenceIfIncluded(CorpusDescriptorPtr corpus, size_t sequenceKey, SequenceDescriptor& sd)
 {
-    auto& stringRegistry = corpus->GetStringRegistry();
-    auto key = std::to_string(sequenceKey);
-    if (corpus->IsIncluded(key))
+    if (m_numericSequenceId)
     {
-        sd.m_key.m_sequence = stringRegistry[key];
-        sd.m_key.m_sample = 0;
-        m_index.AddSequence(sd);
+        auto& stringRegistry = corpus->GetStringRegistry();
+        auto key = std::to_string(sequenceKey);
+        if (corpus->IsIncluded(key))
+        {
+            sd.m_key.m_sequence = stringRegistry[key];
+            sd.m_key.m_sample = 0;
+            m_index.AddSequence(sd);
+        }
+    }
+    else
+    {
+        auto& stringRegistry = corpus->GetStringRegistry();
+        auto key = corpus->GetStringRegistry()[sequenceKey];
+        if (corpus->IsIncluded(key))
+        {
+            sd.m_key.m_sequence = stringRegistry[key];
+            sd.m_key.m_sample = 0;
+            m_index.AddSequence(sd);
+        }
     }
 }
 
@@ -191,24 +206,41 @@ void Indexer::SkipLine()
     }
 }
 
-bool Indexer::TryGetSequenceId(size_t& id)
+bool Indexer::TryGetSequenceId(size_t& id, StringToIdMap& mapping)
 {
     bool found = false;
     id = 0;
+    std::string key;
     while (!m_done)
     {
         while (m_pos != m_bufferEnd)
         {
             char c = *m_pos;
 
-            if (!isdigit(c))
+            if (m_numericSequenceId)
             {
-                // Stop as soon as there's a non-digit character
-                return found;
+                if (!isdigit(c))
+                {
+                    // Stop as soon as there's a non-digit character
+                    return found;
+                }
+                id = id * 10 + (c - '0');
+            }
+            else
+            {
+                if (!isalnum(c))
+                {
+                    if (found && !mapping.TryGet(key, id))
+                    {
+                        id = mapping.AddValue(key);
+                    }
+                    // Stop as soon as there's a non-digit character
+                    return found;
+                }
+                key += c;
             }
 
             found |= true;
-            id = id * 10 + (c - '0');
             ++m_pos;
         }
         RefillBuffer();

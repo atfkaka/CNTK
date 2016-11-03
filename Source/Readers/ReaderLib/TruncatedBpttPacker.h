@@ -40,7 +40,7 @@ private:
     // For each new input, sequence id is reset to 0, and incremented each time
     // a sequence is added to the layout. This allows layouts corresponding to different
     // inputs to have consistent sequence ids.
-    void PackSlot(size_t streamIndex, size_t slotIndex, size_t& sequenceId);
+    void PackSlot(size_t streamIndex, size_t slotIndex);
 
     virtual MBLayoutPtr CreateMBLayout(const StreamBatch& batch)
     {

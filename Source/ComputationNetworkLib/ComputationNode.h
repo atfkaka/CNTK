@@ -1811,7 +1811,8 @@ public:
                                       const std::vector<std::string>& labelMapping, const std::string& sequenceSeparator, 
                                       const std::string& sequencePrologue, const std::string& sequenceEpilogue, const std::string& elementSeparator,
                                       const std::string& sampleSeparator, std::string valueFormatString,
-                                      bool outputGradient = false) const;
+                                      bool outputGradient = false,
+                                      std::function<std::string(size_t)> idToKeyMapping = [](size_t){ return ""; }) const;
 
     // simple helper to log the content of a minibatch
     void DebugLogMinibatch(bool outputGradient = false) const

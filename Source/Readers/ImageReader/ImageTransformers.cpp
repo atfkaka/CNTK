@@ -32,6 +32,7 @@ SequenceDataPtr ImageTransformerBase::Transform(SequenceDataPtr sequence)
     result->m_image = inputSequence->m_image;
     result->m_numberOfSamples = inputSequence->m_numberOfSamples;
     result->m_elementType = GetElementTypeFromOpenCVType(inputSequence->m_image.depth());
+    result->m_key = inputSequence->m_key;
 
     ImageDimensions outputDimensions(inputSequence->m_image.cols, inputSequence->m_image.rows, inputSequence->m_image.channels());
     result->m_sampleLayout = std::make_shared<TensorShape>(outputDimensions.AsTensorShape(HWC));
@@ -450,6 +451,7 @@ SequenceDataPtr TransposeTransformer::TypedTranspose<TElementTo>::Apply(ImageSeq
 
     size_t count = shape->GetNumElements();
     auto result = std::make_shared<DenseSequenceWithBuffer<TElementTo>>(m_memBuffers, count);
+    result->m_key = inputSequence->m_key;
 
     ImageDimensions dimensions(*shape, ImageLayoutKind::HWC);
     size_t rowCount = dimensions.m_height * dimensions.m_width;
@@ -755,6 +757,7 @@ SequenceDataPtr CastTransformer::TypedCast<TElementTo>::Apply(SequenceDataPtr se
     auto& inputSequence = static_cast<DenseSequenceData&>(*sequence);
     size_t count = shape->GetNumElements() * sequence->m_numberOfSamples;
     auto result = std::make_shared<DenseSequenceWithBuffer<TElementTo>>(m_memBuffers, count);
+    result->m_key = sequence->m_key;
 
     auto src = reinterpret_cast<const TElementFrom*>(inputSequence.GetDataBuffer());
     auto dst = result->GetBuffer();

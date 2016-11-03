@@ -278,4 +278,14 @@ void CompositeDataReader::StartEpoch(const EpochConfiguration& cfg, const std::m
     ReaderBase::StartEpoch(config, inputDescriptions);
 }
 
+Minibatch CompositeDataReader::ReadMinibatch()
+{
+    auto m = ReaderBase::ReadMinibatch();
+    m.m_idToKeyMapping = [this](size_t sequence)
+    {
+        return m_corpus->GetStringRegistry()[sequence];
+    };
+    return m;
+}
+
 }}}

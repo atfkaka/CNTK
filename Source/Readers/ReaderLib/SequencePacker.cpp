@@ -21,7 +21,7 @@ MBLayoutPtr SequencePacker::CreateMBLayout(const StreamBatch& batch)
     {
         MBLayout::SequenceInfo info;
 
-        info.seqId = index;
+        info.seqId = batch[index]->m_key.m_sequence;
         info.tBegin = 0;
         info.tEnd = batch[index]->m_numberOfSamples;
         infos.push_back(info);
@@ -134,7 +134,8 @@ MBLayoutPtr SequencePacker::PackDenseStream(const StreamBatch& batch, size_t str
             continue;
         }
 
-        const auto& sequence = batch[sequenceInfo.seqId];
+        const auto& sequence = batch[i];
+        assert(sequenceInfo.seqId == sequence->m_key.m_sequence);
         size_t numSamples = sequence->m_numberOfSamples;
         assert(numSamples == sequenceInfo.GetNumTimeSteps());
 
@@ -246,8 +247,9 @@ MBLayoutPtr SequencePacker::PackSparseStream(const StreamBatch& batch, size_t st
     {
         // For each time step, iterate over all sequences in the minibatch,
         // traversing the layout in vertical direction.
-        for (const auto& sequenceInfo : sequenceInfos)
+        for (size_t i = 0; i < sequenceInfos.size(); ++i)
         {
+            const auto& sequenceInfo = sequenceInfos[i];
             // skip the sequence if it does not intersect with the time step
             if (timeStep < sequenceInfo.tBegin || timeStep >= sequenceInfo.tEnd)
             {
@@ -257,20 +259,20 @@ MBLayoutPtr SequencePacker::PackSparseStream(const StreamBatch& batch, size_t st
             // store the offset of the current column )...
             sparseColumnIndices.push_back(columnOffset);
 
-            auto seqId = sequenceInfo.seqId;
-            if (seqId == GAP_SEQUENCE_ID)
+            if (sequenceInfo.seqId == GAP_SEQUENCE_ID)
             {
                 continue;
             }
 
             // compute the index of the sample inside the sequence.
             size_t sampleIndex = timeStep - sequenceInfo.tBegin;
-            const auto& sequence = batch[seqId];
+            const auto& sequence = batch[i];
+            assert(sequenceInfo.seqId == sequence->m_key.m_sequence);
             
             // make sure the index less than the sequence length in samples.
             assert(sampleIndex < sequence->m_numberOfSamples);
 
-            auto& sequenceOffset = sequenceOffsets[seqId];
+            auto& sequenceOffset = sequenceOffsets[i];
             SparseSequenceDataPtr sparseSequence = static_pointer_cast<SparseSequenceData>(sequence);
             IndexType nnz = sparseSequence->m_nnzCounts[sampleIndex];
 
