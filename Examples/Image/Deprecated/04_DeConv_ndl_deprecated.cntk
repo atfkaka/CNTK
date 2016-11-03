@@ -9,7 +9,7 @@
 RootDir = ".."
 
 ConfigDir = "$RootDir$/Config"
-DataDir   = "$RootDir$/Data"
+DataDir   = "$RootDir$/DataSets/MNIST"
 OutputDir = "$RootDir$/Output"
 ModelDir  = "$OutputDir$/Models"
 
@@ -21,8 +21,8 @@ imageLayout = "cudnn"
 command = train:test
 
 precision = "float"
-modelPath = "$ModelDir$/04_DeConv"
-ndlMacros = "$ConfigDir$/Macros.ndl"
+modelPath = "04_DeConv"
+ndlMacros = "Macros.ndl"
 
 # uncomment the following line to write logs to a file 
 # stderr = "$OutputDir$/04_DeConv_out"
@@ -42,7 +42,7 @@ train = [
     action = "train"
 
     NDLNetworkBuilder = [
-        networkDescription = "$ConfigDir$/04_DeConv.ndl"
+        networkDescription = "04_DeConv.ndl"
     ]
     
     SGD = [
@@ -79,7 +79,7 @@ test = [
     minibatchSize = 16
     
     NDLNetworkBuilder = [
-        networkDescription = "$ConfigDir$/04_DeConv.ndl"
+        networkDescription = "04_DeConv.ndl"
     ]
     
     reader = [
