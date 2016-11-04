@@ -27,7 +27,17 @@
 #include <list>
 #include <set>
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <stdlib.h>
+#endif
+
+
 using namespace std;
+
+// TODO: Remove this global variable. This is for saving temporary files locally, a workaround solution for slow HDFS FUSE on philly.
+bool saveTempLocal(false);
 
 namespace Microsoft { namespace MSR { namespace CNTK {
 
@@ -98,6 +108,27 @@ void ComputationNetwork::Save(const wstring& fileName, const FileOptions fileFor
     // Saving into temporary file and then renaming it to the requested fileName
     // This is a standard trick to avoid havign corrupted model files if process dies during writing
     wstring tmpFileName = fileName + L".tmp";
+
+    if (saveTempLocal)
+    {
+#ifdef _WIN32
+        TCHAR tempdir[MAX_PATH];
+        int dwRetVal = GetTempPath(MAX_PATH, tempdir);
+        // tmpFilename path is a full path
+        if (MAX_PATH >= (dwRetVal + tmpFileName.substr(4).length()) && dwRetVal > 0)
+        {
+            tmpFileName = (wstring)tempdir + tmpFileName.substr(4);
+        }
+#else
+        const char *tempdir = getenv("TEMP");
+        if (tempdir == NULL)
+        {
+            tempdir = "/tmp/";
+        }
+        tmpFileName = wstring(tempdir, tempdir + strlen(tempdir)) + tmpFileName;
+#endif
+    }
+
     SaveToFileImpl(tmpFileName, fileFormat);
     renameOrDie(tmpFileName, fileName);
 }

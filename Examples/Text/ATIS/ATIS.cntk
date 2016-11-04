@@ -7,6 +7,7 @@ DataDir = Data
 makeMode = false
 modelPath = $WorkDir$/ATIS.slot.lstm
 parallelTrain = true
+saveTempLocal = true
 
 #stderr = $WorkDir$/log
 

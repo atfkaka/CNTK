@@ -45,6 +45,8 @@ using namespace std;
 using namespace Microsoft::MSR;
 using namespace Microsoft::MSR::CNTK;
 
+extern bool saveTempLocal;
+
 // ===========================================================================
 // DoTrain() - implements CNTK "train" command
 // ===========================================================================
@@ -71,6 +73,7 @@ template <class ConfigRecordType, typename ElemType>
 void DoTrain(const ConfigRecordType& config)
 {
     bool makeMode = config(L"makeMode", true);
+    saveTempLocal = config(L"saveTempLocal", false);
     DEVICEID_TYPE deviceId = DeviceFromConfig(config);
     int traceLevel = config(L"traceLevel", 0);
 
@@ -208,6 +211,7 @@ void DoDumpNodes(const ConfigParameters& config)
     wstring outputFile       = config(L"outputFile", defOutFilePath);
     bool printValues         = config(L"printValues", true);
     bool printMetadata       = config(L"printMetadata", true);
+    saveTempLocal            = config(L"saveTempLocal", false);
     if (!printValues && !printMetadata)
         InvalidArgument("printValues and printMetadata: Since both are set to false, there will be nothing to dump");
 
@@ -233,6 +237,7 @@ void DoEdit(const ConfigParameters& config)
     {
         bool makeMode = config(L"makeMode", true);
         wstring outputPathname = config(L"outputModelPath");
+        saveTempLocal = config(L"saveTempLocal", false);
         // in makeMode, if output file exists, we are done
         if (makeMode && File::Exists(outputPathname))
         {
@@ -283,6 +288,7 @@ void DoBatchNormalizationStat(const ConfigParameters& config)
 
     wstring curModelPath = config(L"modelPath", L"");
     wstring newModelPath = config(L"newModelPath", L"");
+    saveTempLocal        = config(L"saveTempLocal", false);
     if (newModelPath == L"")
     {
         newModelPath = curModelPath + L".PBN";

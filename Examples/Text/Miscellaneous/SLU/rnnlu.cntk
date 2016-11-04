@@ -7,7 +7,7 @@ traceLevel=1
 
 LSTM=[
     action=train
-	makeMode=true
+    makeMode=true
 
     # output model path
     modelPath=$ExpDir$/cntkdebug.dnn
