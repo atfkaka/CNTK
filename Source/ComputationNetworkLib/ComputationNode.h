@@ -1749,7 +1749,7 @@ public:
     // release gradient and temp matrices that no longer needed after all the children's gradients are computed.
     virtual void ReleaseMatricesAfterBackprop(MatrixPool& matrixPool) override
     {
-        if (!IsLeaf() && !RequiresPreCompute() && g_shareNodeValueMatrices)
+        if (!IsLeaf() && !RequiresPreCompute())
         {
             if (m_gradient != nullptr && m_gradient->GetMatrixType() != SPARSE) // since we don't have a sparse pool yet
                 ReleaseMatrixToPool(m_gradient, matrixPool);
