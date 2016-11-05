@@ -360,420 +360,96 @@ SWIGEXPORT void SWIGSTDCALL CSharp_delete_Variable(void * jarg1) {
 }
 
 
-SWIGEXPORT void * SWIGSTDCALL CSharp_new_ValueBuffer() {
-  void * jresult ;
-  ValueBuffer *result = 0 ;
+SWIGEXPORT void SWIGSTDCALL CSharp_final_set(void * jarg1) {
+  NDShape arg1 ;
+  NDShape *argp1 ;
   
-  result = (ValueBuffer *)new ValueBuffer();
+  argp1 = (NDShape *)jarg1; 
+  if (!argp1) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null NDShape", 0);
+    return ;
+  }
+  arg1 = *argp1; 
+  final = arg1;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_final_get() {
+  void * jresult ;
+  NDShape result;
+  
+  result = final;
+  jresult = new NDShape((const NDShape &)result); 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_delete_Value(void * jarg1) {
+  Value *arg1 = (Value *) 0 ;
+  
+  arg1 = (Value *)jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_new_Value() {
+  void * jresult ;
+  Value *result = 0 ;
+  
+  result = (Value *)new Value();
   jresult = (void *)result; 
   return jresult;
 }
 
 
-SWIGEXPORT void SWIGSTDCALL CSharp_ValueBuffer_m_type_set(void * jarg1, int jarg2) {
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  enum BufferType arg2 ;
+SWIGEXPORT void * SWIGSTDCALL CSharp_BackPropState_Function(void * jarg1) {
+  void * jresult ;
+  BackPropState *arg1 = (BackPropState *) 0 ;
+  SwigValueWrapper< std::shared_ptr< Function > > result;
   
-  arg1 = (ValueBuffer *)jarg1; 
-  arg2 = (enum BufferType)jarg2; 
-  if (arg1) (arg1)->m_type = arg2;
-}
-
-
-SWIGEXPORT int SWIGSTDCALL CSharp_ValueBuffer_m_type_get(void * jarg1) {
-  int jresult ;
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  enum BufferType result;
-  
-  arg1 = (ValueBuffer *)jarg1; 
-  result = (enum BufferType) ((arg1)->m_type);
-  jresult = (int)result; 
+  arg1 = (BackPropState *)jarg1; 
+  result = ((BackPropState const *)arg1)->Function();
+  jresult = new FunctionPtr((const FunctionPtr &)result); 
   return jresult;
 }
 
 
-SWIGEXPORT void SWIGSTDCALL CSharp_ValueBuffer_m_buffer_set(void * jarg1, void * jarg2) {
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  void *arg2 = (void *) 0 ;
+SWIGEXPORT void SWIGSTDCALL CSharp_delete_BackPropState(void * jarg1) {
+  BackPropState *arg1 = (BackPropState *) 0 ;
   
-  arg1 = (ValueBuffer *)jarg1; 
-  arg2 = (void *)jarg2; 
-  if (arg1) (arg1)->m_buffer = arg2;
+  arg1 = (BackPropState *)jarg1; 
+  delete arg1;
 }
 
 
-SWIGEXPORT void * SWIGSTDCALL CSharp_ValueBuffer_m_buffer_get(void * jarg1) {
-  void * jresult ;
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  void *result = 0 ;
+SWIGEXPORT void SWIGSTDCALL CSharp_delete_Function(void * jarg1) {
+  Function *arg1 = (Function *) 0 ;
   
-  arg1 = (ValueBuffer *)jarg1; 
-  result = (void *) ((arg1)->m_buffer);
+  arg1 = (Function *)jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_new_CompositeFunciton() {
+  void * jresult ;
+  CompositeFunciton *result = 0 ;
+  
+  result = (CompositeFunciton *)new CompositeFunciton();
   jresult = (void *)result; 
   return jresult;
 }
 
 
-SWIGEXPORT void SWIGSTDCALL CSharp_ValueBuffer_m_indices_set(void * jarg1, void * jarg2) {
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  std::vector< int > arg2 ;
-  std::vector< int > *argp2 ;
+SWIGEXPORT void SWIGSTDCALL CSharp_delete_CompositeFunciton(void * jarg1) {
+  CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
   
-  arg1 = (ValueBuffer *)jarg1; 
-  argp2 = (std::vector< int > *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< int >", 0);
-    return ;
-  }
-  arg2 = *argp2; 
-  if (arg1) (arg1)->m_indices = arg2;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_ValueBuffer_m_indices_get(void * jarg1) {
-  void * jresult ;
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  std::vector< int > result;
-  
-  arg1 = (ValueBuffer *)jarg1; 
-  result =  ((arg1)->m_indices);
-  jresult = new std::vector< int >((const std::vector< int > &)result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_ValueBuffer_m_colIndicies_set(void * jarg1, void * jarg2) {
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  std::vector< int > arg2 ;
-  std::vector< int > *argp2 ;
-  
-  arg1 = (ValueBuffer *)jarg1; 
-  argp2 = (std::vector< int > *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< int >", 0);
-    return ;
-  }
-  arg2 = *argp2; 
-  if (arg1) (arg1)->m_colIndicies = arg2;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_ValueBuffer_m_colIndicies_get(void * jarg1) {
-  void * jresult ;
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  std::vector< int > result;
-  
-  arg1 = (ValueBuffer *)jarg1; 
-  result =  ((arg1)->m_colIndicies);
-  jresult = new std::vector< int >((const std::vector< int > &)result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_delete_ValueBuffer(void * jarg1) {
-  ValueBuffer *arg1 = (ValueBuffer *) 0 ;
-  
-  arg1 = (ValueBuffer *)jarg1; 
+  arg1 = (CompositeFunciton *)jarg1; 
   delete arg1;
 }
 
 
-SWIGEXPORT void SWIGSTDCALL CSharp_IEvalModel_LoadModel(void * jarg1, int jarg2, void * jarg3, int jarg4) {
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  DataType arg2 ;
-  std::wstring *arg3 = 0 ;
-  DeviceDescriptor *arg4 = 0 ;
-  DeviceDescriptor temp4 ;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  arg2 = (DataType)jarg2; 
-  arg3 = (std::wstring *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::wstring const & type is null", 0);
-    return ;
-  } 
-  temp4 = (DeviceDescriptor)jarg4; 
-  arg4 = &temp4; 
-  (arg1)->LoadModel(arg2,(std::wstring const &)*arg3,(DeviceDescriptor const &)*arg4);
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_IEvalModel_GetVariableByName(void * jarg1, void * jarg2) {
-  void * jresult ;
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  std::wstring arg2 ;
-  std::wstring *argp2 ;
-  SwigValueWrapper< Variable > result;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  argp2 = (std::wstring *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::wstring", 0);
-    return 0;
-  }
-  arg2 = *argp2; 
-  result = (arg1)->GetVariableByName(arg2);
-  jresult = new Variable((const Variable &)result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_IEvalModel_GetModelOutputs(void * jarg1, void * jarg2) {
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  std::vector< Variable > *arg2 = 0 ;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  arg2 = (std::vector< Variable > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< Variable > & type is null", 0);
-    return ;
-  } 
-  (arg1)->GetModelOutputs(*arg2);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_IEvalModel_GetModelInputs(void * jarg1, void * jarg2, void * jarg3) {
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  std::vector< Variable > *arg2 = 0 ;
-  std::vector< Variable > *arg3 = 0 ;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  arg2 = (std::vector< Variable > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< Variable > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::vector< Variable > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< Variable > & type is null", 0);
-    return ;
-  } 
-  (arg1)->GetModelInputs(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_IEvalModel_Evaluate__SWIG_0(void * jarg1, void * jarg2, void * jarg3) {
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  std::unordered_map< std::wstring,ValueBuffer * > *arg2 = 0 ;
-  std::unordered_map< std::wstring,ValueBuffer * > *arg3 = 0 ;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  arg2 = (std::unordered_map< std::wstring,ValueBuffer * > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::unordered_map< std::wstring,ValueBuffer * > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  (arg1)->Evaluate(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_IEvalModel_Evaluate__SWIG_1(void * jarg1, void * jarg2, void * jarg3) {
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  std::unordered_map< std::wstring,SequenceOfValueBuffer * > *arg2 = 0 ;
-  std::unordered_map< std::wstring,SequenceOfValueBuffer * > *arg3 = 0 ;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  arg2 = (std::unordered_map< std::wstring,SequenceOfValueBuffer * > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,SequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::unordered_map< std::wstring,SequenceOfValueBuffer * > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,SequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  (arg1)->Evaluate(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_IEvalModel_Evaluate__SWIG_2(void * jarg1, void * jarg2, void * jarg3) {
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *arg2 = 0 ;
-  std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *arg3 = 0 ;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  arg2 = (std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  (arg1)->Evaluate(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_delete_IEvalModel(void * jarg1) {
-  IEvalModel *arg1 = (IEvalModel *) 0 ;
-  
-  arg1 = (IEvalModel *)jarg1; 
-  delete arg1;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_Eval_LoadModel(void * jarg1, int jarg2, void * jarg3, int jarg4) {
-  Eval *arg1 = (Eval *) 0 ;
-  DataType arg2 ;
-  std::wstring *arg3 = 0 ;
-  DeviceDescriptor *arg4 = 0 ;
-  DeviceDescriptor temp4 ;
-  
-  arg1 = (Eval *)jarg1; 
-  arg2 = (DataType)jarg2; 
-  arg3 = (std::wstring *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::wstring const & type is null", 0);
-    return ;
-  } 
-  temp4 = (DeviceDescriptor)jarg4; 
-  arg4 = &temp4; 
-  (arg1)->LoadModel(arg2,(std::wstring const &)*arg3,(DeviceDescriptor const &)*arg4);
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_Eval_GetVariableByName(void * jarg1, void * jarg2) {
-  void * jresult ;
-  Eval *arg1 = (Eval *) 0 ;
-  std::wstring arg2 ;
-  std::wstring *argp2 ;
-  SwigValueWrapper< Variable > result;
-  
-  arg1 = (Eval *)jarg1; 
-  argp2 = (std::wstring *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::wstring", 0);
-    return 0;
-  }
-  arg2 = *argp2; 
-  result = (arg1)->GetVariableByName(arg2);
-  jresult = new Variable((const Variable &)result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_Eval_GetModelOutputs(void * jarg1, void * jarg2) {
-  Eval *arg1 = (Eval *) 0 ;
-  std::vector< Variable > *arg2 = 0 ;
-  
-  arg1 = (Eval *)jarg1; 
-  arg2 = (std::vector< Variable > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< Variable > & type is null", 0);
-    return ;
-  } 
-  (arg1)->GetModelOutputs(*arg2);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_Eval_GetModelInputs(void * jarg1, void * jarg2, void * jarg3) {
-  Eval *arg1 = (Eval *) 0 ;
-  std::vector< Variable > *arg2 = 0 ;
-  std::vector< Variable > *arg3 = 0 ;
-  
-  arg1 = (Eval *)jarg1; 
-  arg2 = (std::vector< Variable > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< Variable > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::vector< Variable > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< Variable > & type is null", 0);
-    return ;
-  } 
-  (arg1)->GetModelInputs(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_Eval_Evaluate__SWIG_0(void * jarg1, void * jarg2, void * jarg3) {
-  Eval *arg1 = (Eval *) 0 ;
-  std::unordered_map< std::wstring,ValueBuffer * > *arg2 = 0 ;
-  std::unordered_map< std::wstring,ValueBuffer * > *arg3 = 0 ;
-  
-  arg1 = (Eval *)jarg1; 
-  arg2 = (std::unordered_map< std::wstring,ValueBuffer * > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::unordered_map< std::wstring,ValueBuffer * > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  (arg1)->Evaluate(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_Eval_Evaluate__SWIG_1(void * jarg1, void * jarg2, void * jarg3) {
-  Eval *arg1 = (Eval *) 0 ;
-  std::unordered_map< std::wstring,SequenceOfValueBuffer * > *arg2 = 0 ;
-  std::unordered_map< std::wstring,SequenceOfValueBuffer * > *arg3 = 0 ;
-  
-  arg1 = (Eval *)jarg1; 
-  arg2 = (std::unordered_map< std::wstring,SequenceOfValueBuffer * > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,SequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::unordered_map< std::wstring,SequenceOfValueBuffer * > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,SequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  (arg1)->Evaluate(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_Eval_Evaluate__SWIG_2(void * jarg1, void * jarg2, void * jarg3) {
-  Eval *arg1 = (Eval *) 0 ;
-  std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *arg2 = 0 ;
-  std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *arg3 = 0 ;
-  
-  arg1 = (Eval *)jarg1; 
-  arg2 = (std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  arg3 = (std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > *)jarg3;
-  if (!arg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,BatchOfSequenceOfValueBuffer * > & type is null", 0);
-    return ;
-  } 
-  (arg1)->Evaluate(*arg2,*arg3);
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_new_Eval() {
-  void * jresult ;
-  Eval *result = 0 ;
-  
-  result = (Eval *)new Eval();
-  jresult = (void *)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_delete_Eval(void * jarg1) {
-  Eval *arg1 = (Eval *) 0 ;
-  
-  arg1 = (Eval *)jarg1; 
-  delete arg1;
-}
-
-
-SWIGEXPORT IEvalModel * SWIGSTDCALL CSharp_Eval_SWIGUpcast(Eval *jarg1) {
-    return (IEvalModel *)jarg1;
+SWIGEXPORT Function * SWIGSTDCALL CSharp_CompositeFunciton_SWIGUpcast(CompositeFunciton *jarg1) {
+    return (Function *)jarg1;
 }
 
 #ifdef __cplusplus

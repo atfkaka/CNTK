@@ -10,4 +10,16 @@
 
 
 public class CSEval {
+  public static SWIGTYPE_p_NDShape final {
+    set {
+      CSEvalPINVOKE.final_set(SWIGTYPE_p_NDShape.getCPtr(value));
+      if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    } 
+    get {
+      SWIGTYPE_p_NDShape ret = new SWIGTYPE_p_NDShape(CSEvalPINVOKE.final_get(), true);
+      if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+      return ret;
+    } 
+  }
+
 }
