@@ -187,14 +187,34 @@ class CSEvalPINVOKE {
   }
 
 
+  protected class SWIGWStringHelper {
+
+    public delegate string SWIGWStringDelegate(global::System.IntPtr message);
+    static SWIGWStringDelegate wstringDelegate = new SWIGWStringDelegate(CreateWString);
+
+    [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="SWIGRegisterWStringCallback_CSEval")]
+    public static extern void SWIGRegisterWStringCallback_CSEval(SWIGWStringDelegate wstringDelegate);
+
+    static string CreateWString([global::System.Runtime.InteropServices.MarshalAs(global::System.Runtime.InteropServices.UnmanagedType.LPWStr)]global::System.IntPtr cString) {
+      return global::System.Runtime.InteropServices.Marshal.PtrToStringUni(cString);
+    }
+
+    static SWIGWStringHelper() {
+      SWIGRegisterWStringCallback_CSEval(wstringDelegate);
+    }
+  }
+
+  static protected SWIGWStringHelper swigWStringHelper = new SWIGWStringHelper();
+
+
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_Variable")]
-  public static extern global::System.IntPtr new_Variable(global::System.Runtime.InteropServices.HandleRef jarg1);
+  public static extern global::System.IntPtr new_Variable([global::System.Runtime.InteropServices.MarshalAs(global::System.Runtime.InteropServices.UnmanagedType.LPWStr)]string jarg1);
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Variable_m_name_set")]
-  public static extern void Variable_m_name_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+  public static extern void Variable_m_name_set(global::System.Runtime.InteropServices.HandleRef jarg1, [global::System.Runtime.InteropServices.MarshalAs(global::System.Runtime.InteropServices.UnmanagedType.LPWStr)]string jarg2);
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Variable_m_name_get")]
-  public static extern global::System.IntPtr Variable_m_name_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+  public static extern string Variable_m_name_get(global::System.Runtime.InteropServices.HandleRef jarg1);
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_Variable")]
   public static extern void delete_Variable(global::System.Runtime.InteropServices.HandleRef jarg1);

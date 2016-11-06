@@ -39,17 +39,17 @@ public class Variable : global::System.IDisposable {
     }
   }
 
-  public Variable(SWIGTYPE_p_std__wstring name) : this(CSEvalPINVOKE.new_Variable(SWIGTYPE_p_std__wstring.getCPtr(name)), true) {
+  public Variable(string name) : this(CSEvalPINVOKE.new_Variable(name), true) {
     if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
   }
 
-  public SWIGTYPE_p_std__wstring m_name {
+  public string m_name {
     set {
-      CSEvalPINVOKE.Variable_m_name_set(swigCPtr, SWIGTYPE_p_std__wstring.getCPtr(value));
+      CSEvalPINVOKE.Variable_m_name_set(swigCPtr, value);
       if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
     } 
     get {
-      SWIGTYPE_p_std__wstring ret = new SWIGTYPE_p_std__wstring(CSEvalPINVOKE.Variable_m_name_get(swigCPtr), true);
+      string ret = CSEvalPINVOKE.Variable_m_name_get(swigCPtr);
       if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
       return ret;
     } 

@@ -29,9 +29,6 @@ struct SparseSequenceData
 // just a placeholder.
 class Variable
 {
-    template <typename T>
-    friend struct std::hash;
-
 public:
     Variable(std::wstring name) : m_name(name) {}
 

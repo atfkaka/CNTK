@@ -298,56 +298,147 @@ SWIGEXPORT void SWIGSTDCALL SWIGRegisterStringCallback_CSEval(SWIG_CSharpStringH
 
 #define SWIG_contract_assert(nullreturn, expr, msg) if (!(expr)) {SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentOutOfRangeException, msg, ""); return nullreturn; } else
 
+/*  Errors in SWIG */
+#define  SWIG_UnknownError    	   -1
+#define  SWIG_IOError        	   -2
+#define  SWIG_RuntimeError   	   -3
+#define  SWIG_IndexError     	   -4
+#define  SWIG_TypeError      	   -5
+#define  SWIG_DivisionByZero 	   -6
+#define  SWIG_OverflowError  	   -7
+#define  SWIG_SyntaxError    	   -8
+#define  SWIG_ValueError     	   -9
+#define  SWIG_SystemError    	   -10
+#define  SWIG_AttributeError 	   -11
+#define  SWIG_MemoryError    	   -12
+#define  SWIG_NullReferenceError   -13
+
+
+
+
+/* Callback for returning strings to C# without leaking memory */
+typedef void * (SWIGSTDCALL* SWIG_CSharpWStringHelperCallback)(const wchar_t *);
+static SWIG_CSharpWStringHelperCallback SWIG_csharp_wstring_callback = NULL;
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+SWIGEXPORT void SWIGSTDCALL SWIGRegisterWStringCallback_CSEval(SWIG_CSharpWStringHelperCallback callback) {
+  SWIG_csharp_wstring_callback = callback;
+}
+
 
 #include "CppHeader.h"
+
+
+#include <stdexcept>
+
+
+#include <string>
+
+
+#include <vector>
+#include <algorithm>
+#include <stdexcept>
+
+
+#include <map>
+#include <algorithm>
+#include <stdexcept>
+
+
+SWIGINTERN void SWIG_CSharpException(int code, const char *msg) {
+  if (code == SWIG_ValueError) {
+    SWIG_CSharpExceptionArgumentCodes exception_code = SWIG_CSharpArgumentOutOfRangeException;
+    SWIG_CSharpSetPendingExceptionArgument(exception_code, msg, 0);
+  } else {
+    SWIG_CSharpExceptionCodes exception_code = SWIG_CSharpApplicationException;
+    switch(code) {
+    case SWIG_MemoryError:
+      exception_code = SWIG_CSharpOutOfMemoryException;
+      break;
+    case SWIG_IndexError:
+      exception_code = SWIG_CSharpIndexOutOfRangeException;
+      break;
+    case SWIG_DivisionByZero:
+      exception_code = SWIG_CSharpDivideByZeroException;
+      break;
+    case SWIG_IOError:
+      exception_code = SWIG_CSharpIOException;
+      break;
+    case SWIG_OverflowError:
+      exception_code = SWIG_CSharpOverflowException;
+      break;
+    case SWIG_RuntimeError:
+    case SWIG_TypeError:
+    case SWIG_SyntaxError:
+    case SWIG_SystemError:
+    case SWIG_UnknownError:
+    default:
+      exception_code = SWIG_CSharpApplicationException;
+      break;
+    }
+    SWIG_CSharpSetPendingException(exception_code, msg);
+  }
+}
+
+
+#include <stdexcept>
+
+
+#include <utility>
+
+
+#include <string>
+
+
+#include <stdio.h>
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-SWIGEXPORT void * SWIGSTDCALL CSharp_new_Variable(void * jarg1) {
+SWIGEXPORT void * SWIGSTDCALL CSharp_new_Variable(wchar_t * jarg1) {
   void * jresult ;
   std::wstring arg1 ;
-  std::wstring *argp1 ;
   Variable *result = 0 ;
   
-  argp1 = (std::wstring *)jarg1; 
-  if (!argp1) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::wstring", 0);
+  if (!jarg1) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null wstring", 0);
     return 0;
   }
-  arg1 = *argp1; 
+  (&arg1)->assign(jarg1); 
   result = (Variable *)new Variable(arg1);
   jresult = (void *)result; 
   return jresult;
 }
 
 
-SWIGEXPORT void SWIGSTDCALL CSharp_Variable_m_name_set(void * jarg1, void * jarg2) {
+SWIGEXPORT void SWIGSTDCALL CSharp_Variable_m_name_set(void * jarg1, wchar_t * jarg2) {
   Variable *arg1 = (Variable *) 0 ;
-  std::wstring arg2 ;
-  std::wstring *argp2 ;
+  std::wstring *arg2 = 0 ;
   
   arg1 = (Variable *)jarg1; 
-  argp2 = (std::wstring *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::wstring", 0);
+  if (!jarg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null wstring", 0);
     return ;
   }
-  arg2 = *argp2; 
-  if (arg1) (arg1)->m_name = arg2;
+  std::wstring arg2_str(jarg2);
+  arg2 = &arg2_str; 
+  if (arg1) (arg1)->m_name = *arg2;
 }
 
 
 SWIGEXPORT void * SWIGSTDCALL CSharp_Variable_m_name_get(void * jarg1) {
   void * jresult ;
   Variable *arg1 = (Variable *) 0 ;
-  std::wstring result;
+  std::wstring *result = 0 ;
   
   arg1 = (Variable *)jarg1; 
-  result =  ((arg1)->m_name);
-  jresult = new std::wstring((const std::wstring &)result); 
+  result = (std::wstring *) & ((arg1)->m_name);
+  jresult = SWIG_csharp_wstring_callback(result->c_str()); 
   return jresult;
 }
 
