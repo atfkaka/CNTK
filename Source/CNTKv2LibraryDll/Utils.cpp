@@ -239,7 +239,7 @@ namespace CNTK
 
     template <typename T>
     TrainingParameterSchedule<T>::TrainingParameterSchedule(T value, UnitType unit) 
-        : m_schedule({ make_pair(0, value) }), m_unit(unit), m_epochSize(EntireSweep)
+        : m_schedule({ make_pair(0, value) }), m_unit(unit), m_epochSize(FullDataSweep)
     {
     }
 
@@ -266,13 +266,7 @@ namespace CNTK
     template <typename T>
     void TrainingParameterSchedule<T>::ConstructSchedule(const std::vector<std::pair<size_t, T>>& schedule)
     {
-        if (m_epochSize == EntireSweep)
-        {
-            //Sweep based schedules are currently not functional (learners don't have sweep info).
-            NOT_IMPLEMENTED;
-        }
-
-        const auto epochSize = (m_epochSize == EntireSweep) ? 1 : m_epochSize;
+        const auto epochSize = (m_epochSize == FullDataSweep) ? 1 : m_epochSize;
 
         if (schedule.size() == 0)
             RuntimeError("TrainingParameterSchedule::ConstructSchedule : schedule is empty.");

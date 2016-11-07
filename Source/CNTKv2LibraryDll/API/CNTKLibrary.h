@@ -2936,7 +2936,7 @@ namespace CNTK
         ///
         /// A special value that can be used for the epochSize to indicate that the schedule is sweep-based.
         ///
-        static const size_t EntireSweep = 0;
+        static const size_t FullDataSweep = 0;
 
         ///
         /// Create a schedule with a constant parameter value.
@@ -2974,7 +2974,7 @@ namespace CNTK
         ///
         UnitType Unit() const { return m_unit; }
 
-        bool IsSweepBased() const { return m_epochSize == EntireSweep; }
+        bool IsSweepBased() const { return m_epochSize == FullDataSweep; }
 
         CNTK_API virtual ~TrainingParameterSchedule();
 
@@ -3100,7 +3100,7 @@ namespace CNTK
     /// For e.g momentum, AdaGrad, RMSProp etc. are different types of learners with their own algorithms for
     /// learning parameter values using first order gradients.
     ///
-    class Learner : public std::enable_shared_from_this<Learner>, public IDictionarySerializable
+    class Learner : public std::enable_shared_from_this<Learner>, public IDictionarySerializable, public Internal::IEventListener<Internal::EventType::EndOfSweep>
     {
     public:
         //
@@ -3133,7 +3133,6 @@ namespace CNTK
         /// This method needs to be explicitly overriden in subclasses.
         ///
         virtual size_t CurrentVersion() const override { NOT_IMPLEMENTED }
-
 
         ///
         /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
@@ -3178,6 +3177,14 @@ namespace CNTK
             {
                 return schedule[m_sampleCount];
             }
+        }
+
+        ///
+        /// This method is invoked by the IEventDispatcher<EventType:EndOfSweep> (MinibatchSource), to which this 
+        /// learner is subscribed, to notify that the current sweep has just ended.
+        ///
+        void OnEvent() override {
+            m_sweepCount++;
         }
 
         Learner(const std::vector<Parameter>& parameters, const LearningRateSchedule& learningRateSchedule)
@@ -3256,7 +3263,7 @@ namespace CNTK
     /// using the specified learners and training data either explicitly supplied as Value objects or from
     /// a MinibatchSource object.
     ///
-    class Trainer
+    class Trainer 
     {
     public:
         ///
@@ -3404,7 +3411,7 @@ namespace CNTK
     ///
     /// Abstraction for generating minibatches of samples for training/evaluation.
     ///
-    class MinibatchSource : public std::enable_shared_from_this<MinibatchSource>
+    class MinibatchSource : public std::enable_shared_from_this<MinibatchSource>, public Internal::IEventDispatcher<Internal::EventType::EndOfSweep>
     {
     public:
         static const size_t InfinitelyRepeat = SIZE_MAX;
@@ -3469,6 +3476,14 @@ namespace CNTK
 
     protected:
         MinibatchSource() {}
+
+        ///
+        /// Notifies all of the subscribed listeners that an end of a sweep has been reached.
+        ///
+        void OnReachingSweepEnd() const
+        {
+            PublishEvent();
+        }
     };
 
     ///

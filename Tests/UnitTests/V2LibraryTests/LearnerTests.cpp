@@ -106,10 +106,6 @@ void TestRMSPropLearner(size_t numParameters, size_t numMinibatches, const Devic
 
 void TestTrainingParametersSchedule()
 {
-    VerifyException([]() {
-        LearningRatePerMinibatchSchedule({ 3.0, 2.0, 1.0 }, LearningRateSchedule::EntireSweep);
-    }, "Was able to create not-yet-implemented sweep-based schedule.");
-
     LearningRateSchedule schedule1 = 0.5;
     assert(schedule1.Unit() == LearningRateSchedule::UnitType::Sample);
     assert(schedule1[0] == 0.5);
@@ -228,12 +224,37 @@ void TestTrainingParametersSchedule()
     assert(schedule16[99999] == exp(-1.0 / 3.0));
 }
 
+class MockEventDispatcher : public Internal::IEventDispatcher<Internal::EventType::EndOfSweep>
+{
+public:
+    void PublishMockEvent() const { PublishEvent(); }
+};
+
+
+void TestSweepBasedSchedule()
+{
+    auto learner = SGDLearner({}, LearningRatePerSampleSchedule({1,2,3,4,5}, LearningRateSchedule::FullDataSweep));
+    
+    MockEventDispatcher dispatcher;
+    dispatcher.AddEventListener(learner);
+
+    assert(1 == learner->LearningRate());
+
+    for (auto i : {2, 3, 4, 5 })
+    {
+        dispatcher.PublishMockEvent();
+        assert(i == learner->LearningRate());
+    }
+}
+
 
 void LearnerTests()
 {
     fprintf(stderr, "\nLearnerTests..\n");
 
     TestTrainingParametersSchedule();
+
+    TestSweepBasedSchedule();
 
     TestSGDLearner<double>(5, 3, DeviceDescriptor::CPUDevice());
 
