@@ -45,6 +45,7 @@ public:
     {
         m_anchorMinusPositive->Resize(Input(0)->Value());
         m_anchorMinusNegative->Resize(Input(0)->Value());
+        m_lossMask->Resize(1, Input(0)->Value().GetNumCols());
     }
 
     virtual void /*ComputationNodeNonLooping::*/ ForwardPropNonLooping() override
@@ -58,21 +59,18 @@ public:
 
         Matrix<ElemType> lossVec(1, m_anchorMinusPositive->GetNumCols(), m_anchorMinusPositive->GetDeviceId());
         Matrix<ElemType> amnNorm(1, m_anchorMinusNegative->GetNumCols(), m_anchorMinusNegative->GetDeviceId());
-                
+
         lossVec.AssignVectorNorm2Of(*m_anchorMinusPositive, /*isColWise*/ true);
         lossVec.ElementMultiplyWith(lossVec);
         amnNorm.AssignVectorNorm2Of(*m_anchorMinusNegative, /*isColWise*/ true);
         amnNorm.ElementMultiplyWith(amnNorm);
 
-
         ((lossVec -= amnNorm) += alpha);
-
         lossVec.InplaceTruncateBottom(0.0f);
-
         Value().VerifySize(1, 1);
         Value().SetValue(lossVec.SumOfElements());
 
-        // Can right own matrix function to speed this up. Don't know if it's worth it due to being 1xn.
+        // Can write own matrix function to speed this up. Don't know if it's worth it due to being 1xn.
         std::vector<ElemType> columnsMask(lossVec.GetNumCols(), 1.0);
         for (size_t i = 0; i < lossVec.GetNumCols(); ++i)
         {
@@ -82,7 +80,6 @@ public:
             }
         }
         m_lossMask->SetValue(1, lossVec.GetNumCols(), lossVec.GetDeviceId(), columnsMask.data());
-
 
 #if NANCHECK
         Value().HasNan("TripletLoss");
@@ -200,8 +197,6 @@ public:
     {
         FrameRange fr(InputRef(0).GetMBLayout());
         auto gradient = InputRef(inputIndex).GradientFor(fr);
-        const auto& blah = Gradient(); //DELETE
-        auto one = blah.Get00Element(); one; //DELETE
         Matrix<ElemType>::Multiply1x1AndWeightedAdd(inputIndex == 0 ? 2.0f : -2.0f, Gradient() /*1x1*/, *m_leftMinusRight, 1.0f, gradient); // O = (I0-I1)^2; dO/dI0 = 2*(I0-I1); dO/dI1 = -2*(I0-I1)
     }
 
