@@ -1331,6 +1331,7 @@ size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
         }
         rowToId[i] = indexer[row];
     }
+    CUDA_CALL(cudaThreadSynchronize());
     CUDA_CALL(cudaMemcpy(GetRowToIdMap(), rowToId, sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyHostToDevice));
     return indexer.size();
 }
