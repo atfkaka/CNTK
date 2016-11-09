@@ -246,6 +246,54 @@ class CSEvalPINVOKE {
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_CompositeFunciton")]
   public static extern void delete_CompositeFunciton(global::System.Runtime.InteropServices.HandleRef jarg1);
 
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_SparseSequenceDataFloat")]
+  public static extern global::System.IntPtr new_SparseSequenceDataFloat(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_data_set")]
+  public static extern void SparseSequenceDataFloat_m_data_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_data_get")]
+  public static extern global::System.IntPtr SparseSequenceDataFloat_m_data_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_indices_set")]
+  public static extern void SparseSequenceDataFloat_m_indices_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_indices_get")]
+  public static extern global::System.IntPtr SparseSequenceDataFloat_m_indices_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_nnzCounts_set")]
+  public static extern void SparseSequenceDataFloat_m_nnzCounts_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_nnzCounts_get")]
+  public static extern global::System.IntPtr SparseSequenceDataFloat_m_nnzCounts_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_SparseSequenceDataFloat")]
+  public static extern void delete_SparseSequenceDataFloat(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_SparseSequenceDataDouble")]
+  public static extern global::System.IntPtr new_SparseSequenceDataDouble(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_data_set")]
+  public static extern void SparseSequenceDataDouble_m_data_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_data_get")]
+  public static extern global::System.IntPtr SparseSequenceDataDouble_m_data_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_indices_set")]
+  public static extern void SparseSequenceDataDouble_m_indices_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_indices_get")]
+  public static extern global::System.IntPtr SparseSequenceDataDouble_m_indices_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_nnzCounts_set")]
+  public static extern void SparseSequenceDataDouble_m_nnzCounts_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_nnzCounts_get")]
+  public static extern global::System.IntPtr SparseSequenceDataDouble_m_nnzCounts_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_SparseSequenceDataDouble")]
+  public static extern void delete_SparseSequenceDataDouble(global::System.Runtime.InteropServices.HandleRef jarg1);
+
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_SWIGUpcast")]
   public static extern global::System.IntPtr CompositeFunciton_SWIGUpcast(global::System.IntPtr jarg1);
 }

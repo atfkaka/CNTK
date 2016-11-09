@@ -500,7 +500,7 @@ SWIGEXPORT void * SWIGSTDCALL CSharp_BackPropState_Function(void * jarg1) {
   
   arg1 = (BackPropState *)jarg1; 
   result = ((BackPropState const *)arg1)->Function();
-  jresult = new FunctionPtr((const FunctionPtr &)result); 
+  jresult = new std::shared_ptr<  FunctionPtr >(new FunctionPtr((FunctionPtr &)result)); 
   return jresult;
 }
 
@@ -535,6 +535,222 @@ SWIGEXPORT void SWIGSTDCALL CSharp_delete_CompositeFunciton(void * jarg1) {
   CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
   
   arg1 = (CompositeFunciton *)jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_new_SparseSequenceDataFloat(void * jarg1, void * jarg2, void * jarg3) {
+  void * jresult ;
+  std::vector< float > arg1 ;
+  std::vector< SparseIndexType > arg2 ;
+  std::vector< SparseIndexType > arg3 ;
+  std::vector< float > *argp1 ;
+  std::vector< SparseIndexType > *argp2 ;
+  std::vector< SparseIndexType > *argp3 ;
+  SparseSequenceData< float > *result = 0 ;
+  
+  argp1 = (std::vector< float > *)jarg1; 
+  if (!argp1) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< float >", 0);
+    return 0;
+  }
+  arg1 = *argp1; 
+  argp2 = (std::vector< SparseIndexType > *)jarg2; 
+  if (!argp2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< SparseIndexType >", 0);
+    return 0;
+  }
+  arg2 = *argp2; 
+  argp3 = (std::vector< SparseIndexType > *)jarg3; 
+  if (!argp3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< SparseIndexType >", 0);
+    return 0;
+  }
+  arg3 = *argp3; 
+  result = (SparseSequenceData< float > *)new SparseSequenceData< float >(arg1,arg2,arg3);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_SparseSequenceDataFloat_m_data_set(void * jarg1, void * jarg2) {
+  SparseSequenceData< float > *arg1 = (SparseSequenceData< float > *) 0 ;
+  std::vector< float > *arg2 = (std::vector< float > *) 0 ;
+  
+  arg1 = (SparseSequenceData< float > *)jarg1; 
+  arg2 = (std::vector< float > *)jarg2; 
+  if (arg1) (arg1)->m_data = *arg2;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_SparseSequenceDataFloat_m_data_get(void * jarg1) {
+  void * jresult ;
+  SparseSequenceData< float > *arg1 = (SparseSequenceData< float > *) 0 ;
+  std::vector< float > *result = 0 ;
+  
+  arg1 = (SparseSequenceData< float > *)jarg1; 
+  result = (std::vector< float > *)& ((arg1)->m_data);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_SparseSequenceDataFloat_m_indices_set(void * jarg1, void * jarg2) {
+  SparseSequenceData< float > *arg1 = (SparseSequenceData< float > *) 0 ;
+  std::vector< SparseIndexType > *arg2 = (std::vector< SparseIndexType > *) 0 ;
+  
+  arg1 = (SparseSequenceData< float > *)jarg1; 
+  arg2 = (std::vector< SparseIndexType > *)jarg2; 
+  if (arg1) (arg1)->m_indices = *arg2;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_SparseSequenceDataFloat_m_indices_get(void * jarg1) {
+  void * jresult ;
+  SparseSequenceData< float > *arg1 = (SparseSequenceData< float > *) 0 ;
+  std::vector< SparseIndexType > *result = 0 ;
+  
+  arg1 = (SparseSequenceData< float > *)jarg1; 
+  result = (std::vector< SparseIndexType > *)& ((arg1)->m_indices);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_SparseSequenceDataFloat_m_nnzCounts_set(void * jarg1, void * jarg2) {
+  SparseSequenceData< float > *arg1 = (SparseSequenceData< float > *) 0 ;
+  std::vector< SparseIndexType > *arg2 = (std::vector< SparseIndexType > *) 0 ;
+  
+  arg1 = (SparseSequenceData< float > *)jarg1; 
+  arg2 = (std::vector< SparseIndexType > *)jarg2; 
+  if (arg1) (arg1)->m_nnzCounts = *arg2;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_SparseSequenceDataFloat_m_nnzCounts_get(void * jarg1) {
+  void * jresult ;
+  SparseSequenceData< float > *arg1 = (SparseSequenceData< float > *) 0 ;
+  std::vector< SparseIndexType > *result = 0 ;
+  
+  arg1 = (SparseSequenceData< float > *)jarg1; 
+  result = (std::vector< SparseIndexType > *)& ((arg1)->m_nnzCounts);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_delete_SparseSequenceDataFloat(void * jarg1) {
+  SparseSequenceData< float > *arg1 = (SparseSequenceData< float > *) 0 ;
+  
+  arg1 = (SparseSequenceData< float > *)jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_new_SparseSequenceDataDouble(void * jarg1, void * jarg2, void * jarg3) {
+  void * jresult ;
+  std::vector< double > arg1 ;
+  std::vector< SparseIndexType > arg2 ;
+  std::vector< SparseIndexType > arg3 ;
+  std::vector< double > *argp1 ;
+  std::vector< SparseIndexType > *argp2 ;
+  std::vector< SparseIndexType > *argp3 ;
+  SparseSequenceData< double > *result = 0 ;
+  
+  argp1 = (std::vector< double > *)jarg1; 
+  if (!argp1) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< double >", 0);
+    return 0;
+  }
+  arg1 = *argp1; 
+  argp2 = (std::vector< SparseIndexType > *)jarg2; 
+  if (!argp2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< SparseIndexType >", 0);
+    return 0;
+  }
+  arg2 = *argp2; 
+  argp3 = (std::vector< SparseIndexType > *)jarg3; 
+  if (!argp3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null std::vector< SparseIndexType >", 0);
+    return 0;
+  }
+  arg3 = *argp3; 
+  result = (SparseSequenceData< double > *)new SparseSequenceData< double >(arg1,arg2,arg3);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_SparseSequenceDataDouble_m_data_set(void * jarg1, void * jarg2) {
+  SparseSequenceData< double > *arg1 = (SparseSequenceData< double > *) 0 ;
+  std::vector< double > *arg2 = (std::vector< double > *) 0 ;
+  
+  arg1 = (SparseSequenceData< double > *)jarg1; 
+  arg2 = (std::vector< double > *)jarg2; 
+  if (arg1) (arg1)->m_data = *arg2;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_SparseSequenceDataDouble_m_data_get(void * jarg1) {
+  void * jresult ;
+  SparseSequenceData< double > *arg1 = (SparseSequenceData< double > *) 0 ;
+  std::vector< double > *result = 0 ;
+  
+  arg1 = (SparseSequenceData< double > *)jarg1; 
+  result = (std::vector< double > *)& ((arg1)->m_data);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_SparseSequenceDataDouble_m_indices_set(void * jarg1, void * jarg2) {
+  SparseSequenceData< double > *arg1 = (SparseSequenceData< double > *) 0 ;
+  std::vector< SparseIndexType > *arg2 = (std::vector< SparseIndexType > *) 0 ;
+  
+  arg1 = (SparseSequenceData< double > *)jarg1; 
+  arg2 = (std::vector< SparseIndexType > *)jarg2; 
+  if (arg1) (arg1)->m_indices = *arg2;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_SparseSequenceDataDouble_m_indices_get(void * jarg1) {
+  void * jresult ;
+  SparseSequenceData< double > *arg1 = (SparseSequenceData< double > *) 0 ;
+  std::vector< SparseIndexType > *result = 0 ;
+  
+  arg1 = (SparseSequenceData< double > *)jarg1; 
+  result = (std::vector< SparseIndexType > *)& ((arg1)->m_indices);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_SparseSequenceDataDouble_m_nnzCounts_set(void * jarg1, void * jarg2) {
+  SparseSequenceData< double > *arg1 = (SparseSequenceData< double > *) 0 ;
+  std::vector< SparseIndexType > *arg2 = (std::vector< SparseIndexType > *) 0 ;
+  
+  arg1 = (SparseSequenceData< double > *)jarg1; 
+  arg2 = (std::vector< SparseIndexType > *)jarg2; 
+  if (arg1) (arg1)->m_nnzCounts = *arg2;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_SparseSequenceDataDouble_m_nnzCounts_get(void * jarg1) {
+  void * jresult ;
+  SparseSequenceData< double > *arg1 = (SparseSequenceData< double > *) 0 ;
+  std::vector< SparseIndexType > *result = 0 ;
+  
+  arg1 = (SparseSequenceData< double > *)jarg1; 
+  result = (std::vector< SparseIndexType > *)& ((arg1)->m_nnzCounts);
+  jresult = (void *)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_delete_SparseSequenceDataDouble(void * jarg1) {
+  SparseSequenceData< double > *arg1 = (SparseSequenceData< double > *) 0 ;
+  
+  arg1 = (SparseSequenceData< double > *)jarg1; 
   delete arg1;
 }
 

@@ -13,11 +13,7 @@
 %include <attribute.i>
 %include <std_shared_ptr.i>
 
-%include "CppHeader.h" 
 
-
-%template() SparseSequenceData<float>;
-%template() SparseSequenceData<double>;
 %template() std::vector<SparseSequenceData<float>>;
 %template() std::vector<SparseSequenceData<float>>;
 
@@ -40,5 +36,19 @@
 %template() std::vector<std::shared_ptr<CNTK::Learner>>;
 %template() std::pair<size_t, double>;
 %template() std::vector<std::pair<size_t, double>>;
+%shared_ptr(BackPropStatePtr);
+%shared_ptr(FunctionPtr);
+%shared_ptr(ValuePtr);
 
 // %feature ("noabstract") Function
+
+%include "CppHeader.h" 
+
+%template(SparseSequenceDataFloat) SparseSequenceData<float>;
+%template(SparseSequenceDataDouble) SparseSequenceData<double>;
+
+%shared_ptr(BackPropStatePtr);
+%shared_ptr(FunctionPtr);
+%shared_ptr(ValuePtr);
+
+

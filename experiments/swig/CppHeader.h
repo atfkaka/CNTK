@@ -26,6 +26,7 @@ struct SparseSequenceData
     std::vector<SparseIndexType> m_nnzCounts;   // The number of non-zero data of each sample.
 };
 
+
 // just a placeholder.
 class Variable
 {
@@ -101,8 +102,24 @@ typedef std::shared_ptr<Value> ValuePtr;
 class Value : public std::enable_shared_from_this<Value>
 {
 public:
+    ///
+    /// Create a new Value object containing a collection of variable length sequences.
+    /// The created Value object contains a copy of the specified 'sequences' data.
+    ///
+    template <typename ElementType>
+    CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<std::vector<ElementType>>& sequences, const DeviceDescriptor& device, bool readOnly = false);
+
+    ///
+    /// Create a new Value object containing a collection of variable length sequences of one hot vectors
+    /// The created Value object contains a copy of the specified 'sequences' data.
+    ///
+    template <typename ElementType>
+    CNTK_API static ValuePtr Create(size_t vocabularySize, const std::vector<std::vector<size_t>>& oneHotSequences, const DeviceDescriptor& device, bool readOnly = false);
+
+
     template <typename ElementType>
     CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<SparseSequenceData<ElementType>>& sparseSequences, const DeviceDescriptor& device, bool readOnly = false);
+
 
     ///
     /// Destruct 'this' Value object.
@@ -143,6 +160,11 @@ class Function : public std::enable_shared_from_this<Function>
                                      std::unordered_map<std::wstring, ValuePtr>& outputs,
                                      const DeviceDescriptor& computeDevice = DeviceDescriptor::CPUOnly,
                                      const std::unordered_set<std::wstring>& outputsToRetainBackwardStateFor = {}) = 0;
+
+    ///
+    /// Load a function from a model file
+    ///
+    CNTK_API static FunctionPtr LoadModel(const DataType dataType, const std::wstring& modelFile, const DeviceDescriptor& computeDevice = DeviceDescriptor::CPUOnly);
 
 };
 
