@@ -26,6 +26,12 @@ struct KeyType
 
     // Sample id.
     size_t m_sample : 24;
+
+    size_t AsSizeT()
+    {
+        size_t tmp = m_sequence;
+        return (tmp << 40) | m_sample;
+    }
 };
 
 class Chunk;

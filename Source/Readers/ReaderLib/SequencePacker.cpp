@@ -241,6 +241,17 @@ MBLayoutPtr SequencePacker::PackSparseStream(const StreamBatch& batch, size_t st
     sort(sequenceInfos.begin(), sequenceInfos.end(),
         [](const MBLayout::SequenceInfo& a, const MBLayout::SequenceInfo& b){ return a.s < b.s; });
 
+    std::map<size_t, size_t> infoIdToBatchIndex;
+    for (const auto& s : sequenceInfos)
+    {
+        if (s.seqId == GAP_SEQUENCE_ID)
+            continue;
+        size_t index =
+            std::find_if(batch.begin(), batch.end(), [&s](const SequenceDataPtr& d) { return s.seqId == d->m_key.m_sequence; }) - batch.begin();
+        assert(index < batch.size());
+        infoIdToBatchIndex[s.seqId] = index;
+    }
+
     // Iterate over the all time steps in the layout (total number of samples/columns 
     // in a parallel sequence), traversing the layout in horizontal direction.
     for (auto timeStep = 0; timeStep < pMBLayout->GetNumTimeSteps(); ++timeStep)
@@ -266,13 +277,14 @@ MBLayoutPtr SequencePacker::PackSparseStream(const StreamBatch& batch, size_t st
 
             // compute the index of the sample inside the sequence.
             size_t sampleIndex = timeStep - sequenceInfo.tBegin;
-            const auto& sequence = batch[i];
+            size_t index = infoIdToBatchIndex[sequenceInfo.seqId];
+            const auto& sequence = batch[index];
             assert(sequenceInfo.seqId == sequence->m_key.m_sequence);
             
             // make sure the index less than the sequence length in samples.
             assert(sampleIndex < sequence->m_numberOfSamples);
 
-            auto& sequenceOffset = sequenceOffsets[i];
+            auto& sequenceOffset = sequenceOffsets[index];
             SparseSequenceDataPtr sparseSequence = static_pointer_cast<SparseSequenceData>(sequence);
             IndexType nnz = sparseSequence->m_nnzCounts[sampleIndex];
 

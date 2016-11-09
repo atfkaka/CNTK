@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(ImageSimpleCompositeAndBase64)
             0,
             1,
             false,
-            false,
+            true,
             true,
             additionalParameters);
     };

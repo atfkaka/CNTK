@@ -55,12 +55,14 @@ public:
         image->m_numberOfSamples = 1;
         image->m_chunk = shared_from_this();
         image->m_elementType = dataType;
+        image->m_key = m_description.m_key;
         result.push_back(image);
 
         auto label = std::make_shared<CategorySequenceData>();
         label->m_chunk = shared_from_this();
         m_parent.m_labelGenerator->CreateLabelFor(imageSequence.m_classId, *label);
         label->m_numberOfSamples = 1;
+        label->m_key = m_description.m_key;
         result.push_back(label);
     }
 

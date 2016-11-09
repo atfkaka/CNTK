@@ -436,6 +436,36 @@ public:
         Lock();
     }
 
+    // short-hand to initialize an MBLayout for the common case of frame mode
+    // In frame mode, there is one parallel "sequence" per sample, which is 1 frame long.
+    // This function provides an efficient short-cut implementation of AddSequence(t, t, 0, 1) for every sample t.
+    void InitAsFrameMode(size_t numSamples, std::vector<size_t> ids)
+    {
+        Init(numSamples, 1);
+
+        // create sequences array
+        SequenceInfo virginSeqInfo = { 0, 0, 0, 1 };
+        m_sequences.resize(numSamples, virginSeqInfo); // pass it here since otherwise STL will initialize everything to 0 unnecessarily
+
+        // update sequence indices
+        for (size_t s = 0; s < numSamples; s++)
+        {
+            // remember it
+            auto &seqDesc = m_sequences[s];
+            seqDesc.seqId = ids[s];
+            seqDesc.s = s;
+        }
+        m_numFramesDeclared = numSamples;
+
+        // create all the cached fast-lookup information
+        m_distanceToStart.SetValue(0);
+        m_distanceToEnd.SetValue(0);
+        m_distanceToNearestStart[0] = 0;
+        m_distanceToNearestEnd[0] = 0;
+
+        Lock();
+    }
+
     // mark a range of frames in a parallel sequence as invalid
     // I'd love to start with all-gaps, but that would require to set flags upfront, and then clearing them.
     void AddGap(size_t s, ptrdiff_t beginTime, size_t endTime)

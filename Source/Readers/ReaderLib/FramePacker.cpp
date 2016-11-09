@@ -22,7 +22,12 @@ MBLayoutPtr FramePacker::CreateMBLayout(const StreamBatch& batch)
     }
     // Creating the minibatch layout.
     MBLayoutPtr pMBLayout = make_shared<MBLayout>();
-    pMBLayout->InitAsFrameMode(batch.size());
+    vector<size_t> ids;
+    ids.reserve(batch.size());
+    for (auto s : batch)
+        ids.push_back(s->m_key.m_sequence);
+
+    pMBLayout->InitAsFrameMode(batch.size(), ids);
     return pMBLayout;
 }
 

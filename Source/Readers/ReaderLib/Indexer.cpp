@@ -228,7 +228,7 @@ bool Indexer::TryGetSequenceId(size_t& id, StringToIdMap& mapping)
             }
             else
             {
-                if (!isalnum(c))
+                if (isspace(c))
                 {
                     if (found && !mapping.TryGet(key, id))
                     {

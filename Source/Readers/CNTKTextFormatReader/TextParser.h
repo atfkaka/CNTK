@@ -183,7 +183,7 @@ private:
     TextParser(CorpusDescriptorPtr corpus, const std::wstring& filename, const vector<StreamDescriptor>& streams);
 
     // Fills some metadata members to be conformant to the exposed SequenceData interface.
-    void FillSequenceMetadata(SequenceBuffer& sequenceBuffer, size_t sequenceId);
+    void FillSequenceMetadata(SequenceBuffer& sequenceBuffer, const SequenceDescriptor& sequenceDsc);
 
     void SetTraceLevel(unsigned int traceLevel);
 
