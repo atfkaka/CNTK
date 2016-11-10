@@ -20,9 +20,9 @@ cntk_padWidth = 1000
 cntk_padHeight = 1000
 
 # directories
-rootDir = "D:/GitHub/CNTK/Examples/Image/Detection/FastRCNN/"
-imgDir = rootDir + "../../Datasets/Grocery/"
-pascalDataDir = rootDir + "../../Datasets/Pascal/"
+rootDir = os.path.dirname(os.path.realpath(sys.argv[0])) + "/"
+imgDir = rootDir + "../../DataSets/Grocery/"
+pascalDataDir = rootDir + "../../DataSets/Pascal/"
 
 # derived directories
 procDir = rootDir + "proc/" + datasetName + "_{}/".format(cntk_nrRois)

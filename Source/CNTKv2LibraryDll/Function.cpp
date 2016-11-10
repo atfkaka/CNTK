@@ -186,9 +186,56 @@ namespace CNTK
         }
     }
 
-    void Function::RestoreFromLegacyModel(const std::wstring& modelFilePath)
+    void Function::SaveModel(const std::wstring& modelFilePath, bool usinglegacyModelFormat)
     {
-        auto loadedModelFunction = LoadLegacyModel(Outputs()[0].GetDataType(), modelFilePath, DeviceDescriptor::CPUDevice());
+        if (usinglegacyModelFormat)
+        {
+            Internal::SaveAsLegacyModel(shared_from_this(), modelFilePath);
+        }
+        else
+        {
+            Dictionary model = Serialize();
+            auto stream = GetFstream(modelFilePath, false);
+            *stream << model;
+            stream->flush();
+        }
+    }
+
+    // data type is only need for legacy format, in V2, data type is baked into the model file.
+    /*static*/ FunctionPtr Function::LoadModel(DataType dataType, const std::wstring& modelFile, const DeviceDescriptor& computeDevice)
+    {
+        auto stream = GetFstream(modelFile, true);
+        if (!IsLegacyModel(*stream))
+        {
+            Dictionary model;
+            *stream >> model;
+            auto restoredFunction = Function::Deserialize(model, computeDevice);
+            if (restoredFunction->Outputs()[0].GetDataType() != dataType)
+            {
+                InvalidArgument("The loaded model's data type (%s) is different form the requested data type(%s).",
+                                DataTypeName(restoredFunction->Outputs()[0].GetDataType()),
+                                DataTypeName(dataType));
+            }
+            return restoredFunction;
+        }
+        else
+        {
+            return Internal::LoadLegacyModel(dataType, modelFile, computeDevice);
+        }
+    }
+
+    void Function::RestoreModel(const std::wstring& modelFilePath)
+    {
+        auto stream = GetFstream(modelFilePath, true);
+        if (!IsLegacyModel(*stream))
+        {
+            Dictionary model;
+            *stream >> model;
+            RestoreFromCheckpoint(model);
+            return;
+        }
+
+        auto loadedModelFunction = Internal::LoadLegacyModel(Outputs()[0].GetDataType(), modelFilePath, DeviceDescriptor::CPUDevice());
 
         // TODO: Make sure that the loaded model is the same as the trainer's model through UID matching in the V2 format
         // TODO: For V1 format models make sure that the loaded model is isomorphic to the trainer's model
@@ -531,6 +578,7 @@ namespace CNTK
     /*static*/ const std::wstring PrimitiveFunction::AttributeNameNormalizationTimeConstant = L"normalizationTimeConstant";
     /*static*/ const std::wstring PrimitiveFunction::AttributeNameBlendTimeConstant = L"blendTimeConstant";
     /*static*/ const std::wstring PrimitiveFunction::AttributeNameEpsilon = L"epsilon";
+    /*static*/ const std::wstring PrimitiveFunction::AttributeNameSamplesSeen = L"samplesSeen";
     /*static*/ const std::wstring PrimitiveFunction::AttributeNameUseCuDNNEngine = L"useCuDNNEngine";
     /*static*/ const std::wstring PrimitiveFunction::AttributeNameNewDynamicAxes = L"newDynamicAxes";
     /*static*/ const std::wstring PrimitiveFunction::AttributeNameBeginIndex = L"beginIndex";
@@ -866,12 +914,12 @@ namespace CNTK
                 break;
             }
             case PrimitiveOpType::BatchNormalization:
-                {
+            {
                 assert(inputs.size() == 5);
-                    auto spatial = functionConfig[PrimitiveFunction::AttributeNameSpatial].Value<bool>();
-                    outputShape = BatchNormalizationOutputShape(inputs, spatial, inferDimensions);
+                auto spatial = functionConfig[PrimitiveFunction::AttributeNameSpatial].Value<bool>();
+                outputShape = BatchNormalizationOutputShape(inputs, spatial, inferDimensions);
                 break;
-                }
+            }
             case PrimitiveOpType::PackedIndex:
                 outputShape = UnaryElementwiseOpOutputShape(inputs[1].Shape());
                 break;
@@ -1002,8 +1050,10 @@ namespace CNTK
         // This also applies to other enums (DataType, VariableKind, etc.)
         if (op > PrimitiveOpType::Combine)
         {
-            LogicError("Unexpected variable '%ls':'%d' "
-                        "(%s).", opKey.c_str(), op, GetVersionsString<PrimitiveFunction>(s_serializationVersion, version).c_str());
+            LogicError("Unexpected variable '%ls':'%u' (%s).", 
+                        opKey.c_str(), 
+                        static_cast<std::underlying_type<CNTK::PrimitiveOpType>::type>(op),
+                        GetVersionsString<PrimitiveFunction>(s_serializationVersion, version).c_str());
         }
 
         const auto& uid = dict[uidKey].Value<std::wstring>();
@@ -1187,7 +1237,7 @@ namespace CNTK
 
         if (root->Uid() != rootUid)
         {
-            LogicError("Root UID '%ls' is different from the expected value '%ls'.", rootUid.c_str(), root->Uid().c_str());
+            LogicError("Root UID '%ls' is different from the expected value '%ls'.", root->Uid().c_str(), rootUid.c_str());
         }
 
         if (placeholderReplacements.size() > 0)
@@ -1563,7 +1613,11 @@ namespace CNTK
             auto blendTimeConstant = functionConfig[PrimitiveFunction::AttributeNameBlendTimeConstant].Value<double>();
             auto epsilon = functionConfig[PrimitiveFunction::AttributeNameEpsilon].Value<double>();
             auto useCuDNNEngine = functionConfig[PrimitiveFunction::AttributeNameUseCuDNNEngine].Value<bool>();
-            computationNodePtr = New<BatchNormalizationNode<ElementType>>(network->GetDeviceId(), internalNodeName, spatial, normalizationTimeConstant, blendTimeConstant, epsilon, !useCuDNNEngine, ImageLayoutKind::CHW);
+            size_t samplesSeen = 0;
+            if (functionConfig.Contains(PrimitiveFunction::AttributeNameSamplesSeen))
+                samplesSeen = functionConfig[PrimitiveFunction::AttributeNameSamplesSeen].Value<size_t>();
+
+            computationNodePtr = New<BatchNormalizationNode<ElementType>>(network->GetDeviceId(), internalNodeName, spatial, normalizationTimeConstant, blendTimeConstant, epsilon, !useCuDNNEngine, ImageLayoutKind::CHW, samplesSeen);
             break;
         }
         case PrimitiveOpType::Combine:
@@ -1765,6 +1819,12 @@ namespace CNTK
                     }
                 }
             }
+
+            // Record the timestamps of Parameter values
+            assert(m_lastRecordedParameterValueTimeStamps.empty());
+            auto functionParameters = Parameters();
+            for (auto parameter : functionParameters)
+                m_lastRecordedParameterValueTimeStamps.insert({ parameter, parameter.CurrentValueTimeStamp() });
         }
 
 
@@ -1772,7 +1832,7 @@ namespace CNTK
         {
             ComputationNodeBasePtr backpropRootNode;
 
-            // Now recursively create the network in a top-down fashion
+            // Now recursively traverse the network in a top-down fashion
             auto rootFunction = RootFunction();
             auto rootFunctionOutputs = rootFunction->Outputs();
             std::vector<ComputationNodeBasePtr> forwardRootNodes;
@@ -2401,6 +2461,19 @@ namespace CNTK
         list<ComputationNodeBasePtr> dropoutNodes = m_computationNetwork->GetNodesWithType(OperationNameOf(DropoutNode));
         for (auto& nodeIter : dropoutNodes)
             nodeIter->SetEvalTimeStampOutdatedWrtAll();
+        
+        // Bump the timestamp of the parameter nodes whose values have changed
+        for (auto& paramTimeStampRecord : m_lastRecordedParameterValueTimeStamps)
+        {
+            auto parameter = paramTimeStampRecord.first;
+            auto prevTimeStamp = paramTimeStampRecord.second;
+            auto newTimeStamp = parameter.CurrentValueTimeStamp();
+            if (newTimeStamp > prevTimeStamp)
+            {
+                paramTimeStampRecord.second = newTimeStamp;
+                m_variableToNodeMap[parameter]->BumpEvalTimeStamp();
+            }
+        }
 
         // The 'outputsToRetainBackwardStateFor' nodes also need to be evaluated if not already specified in 'outputs'
         for (auto rootVarForBackprop : outputsToRetainBackwardStateFor)
@@ -2885,11 +2958,11 @@ namespace CNTK
                                    const std::wstring& name)
     {
         auto additionalProperties = Dictionary();
-        additionalProperties[L"spatial"] = spatial;
-        additionalProperties[L"normalizationTimeConstant"] = normalizationTimeConstant;
-        additionalProperties[L"blendTimeConstant"] = blendTimeConstant;
-        additionalProperties[L"epsilon"] = epsilon;
-        additionalProperties[L"useCuDNNEngine"] = useCuDNNEngine;
+        additionalProperties[PrimitiveFunction::AttributeNameSpatial] = spatial;
+        additionalProperties[PrimitiveFunction::AttributeNameNormalizationTimeConstant] = normalizationTimeConstant;
+        additionalProperties[PrimitiveFunction::AttributeNameBlendTimeConstant] = blendTimeConstant;
+        additionalProperties[PrimitiveFunction::AttributeNameEpsilon] = epsilon;
+        additionalProperties[PrimitiveFunction::AttributeNameUseCuDNNEngine] = useCuDNNEngine;
 
         std::vector<Variable> operands = { operand, scale, bias, runningMean, runningInvStd };
         return CompositeFunction::Create(MakeSharedObject<PrimitiveFunction>(PrimitiveOpType::BatchNormalization,
@@ -3004,7 +3077,7 @@ namespace CNTK
 
         FunctionPtr BroadcastAs(const Variable& operand, const Variable& broadcastAs, const std::wstring& name)
         {
-            auto dataPadded = Internal::Scatter(operand, Sequence::IsFirst(broadcastAs), broadcastAs.DynamicAxes());
+            auto dataPadded = Internal::Scatter(operand, Sequence::IsFirst(broadcastAs), operand.DynamicAxes());
             auto placeHolderOutput = PlaceholderVariable(operand.Shape(), broadcastAs.DynamicAxes());
             auto output = ElementSelect(Sequence::IsFirst(broadcastAs), dataPadded, PastValue(placeHolderOutput), name);
             return output->ReplacePlaceholders({ { placeHolderOutput, output } });
@@ -3072,9 +3145,9 @@ namespace CNTK
             return Internal::GatherPacked(operand, Internal::PackedIndex(/*layout of*/ operand, Where(condition, newDynamicAxes)), name);
         }
 
-        FunctionPtr Scatter(const Variable& operand, const Variable& condition, const std::vector<Axis>& newDynamicAxes, const std::wstring& name)
+        FunctionPtr Scatter(const Variable& operand, const Variable& condition, const std::vector<Axis>& whereNodeDynamicAxes, const std::wstring& name)
         {
-            return Internal::ScatterPacked(operand, Internal::PackedIndex(/*layout of*/ condition, Where(condition, newDynamicAxes)), /*layout of*/ condition, name);
+            return Internal::ScatterPacked(operand, Internal::PackedIndex(/*layout of*/ condition, Where(condition, whereNodeDynamicAxes)), /*layout of*/ condition, name);
         }
 
         FunctionPtr Slice(const Variable& operand, const Axis& axis, int beginIndex, int endIndex, const std::wstring& name)

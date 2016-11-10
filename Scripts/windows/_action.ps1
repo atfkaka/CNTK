@@ -1,8 +1,13 @@
-﻿function ActionOperations()
+﻿#
+# Copyright (c) Microsoft. All rights reserved.
+# Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
+#
+
+function ActionOperations()
 {
     Write-Host "Performing install operations"
 
-    foreach ($item in $global:operationList) {
+    foreach ($item in $Script:operationList) {
         
         foreach ($actionItem in $item.Action) {
             ActionItem $actionItem
@@ -14,8 +19,8 @@
 }
 
 function ActionItem(
-    [hashtable] $item
-){
+    [hashtable] $item)
+{
     $func = $item["Function"]
 
     $expr = $func +' $item' 
@@ -30,8 +35,7 @@ function ActionItem(
 
 
 function InstallExe(
-    [Parameter(Mandatory = $true)][hashtable] $table
-)
+    [Parameter(Mandatory = $true)][hashtable] $table)
 {
     FunctionIntro $table
     
@@ -51,8 +55,7 @@ function InstallExe(
         $runningOn = ((Get-WmiObject -class Win32_OperatingSystem).Caption).ToUpper()
         $platform  = ($platform.ToString()).ToUpper()
 
-        if (-not $runningOn.StartsWith($platform))
-        {
+        if (-not $runningOn.StartsWith($platform)) {
             return
         }
     }
@@ -70,8 +73,8 @@ function InstallExe(
     
     if ( ($processWait -ne $null) -and ($Execute) -and ($false) ) {
         do {
-    	    start-sleep 20
-	        $pwait = Get-Process $processWait -ErrorAction SilentlyContinue
+            start-sleep 20
+            $pwait = Get-Process $processWait -ErrorAction SilentlyContinue
         } while (-not ($pwait -eq $null))
     }
     
@@ -82,8 +85,7 @@ function InstallExe(
 }
 
 function InstallWheel(
-    [Parameter(Mandatory = $true)][hashtable] $table
-)
+    [Parameter(Mandatory = $true)][hashtable] $table)
 {
     FunctionIntro $table
 
@@ -91,8 +93,6 @@ function InstallWheel(
     $EnvName      = $table["EnvName"]
     $message      = $table["message"]
     $whlDirectory = $table["WheelDirectory"]
-
-    
 
     Write-Host $message
     if (-not $Execute) {
@@ -104,6 +104,9 @@ function InstallWheel(
     if ($whlFile -eq $null) {
         throw "No WHL file found at $cntkRootDir\cntk\Python"
     }
+    if ($whlFile.Count -gt 1) {
+        Throw "Multiple WHL files found in $cntkRootDir\cntk\Python. Please make sure it contains only the WHL file matching your CNTK download"
+    }
     $whl = $whlFile.FullName
 
     $condaExe = Join-Path $BasePath 'Scripts\conda.exe'
@@ -111,9 +114,6 @@ function InstallWheel(
 
     $oldPath = $env:PATH
     $env:PATH = $newPaths + ';' + $env:PATH
-    if (test-path $whlDirectory -PathType Container) {
-        Invoke-DosCommand pip (Write-Output uninstall cntk --yes)
-    }
 
     Invoke-DosCommand pip (Write-Output install $whl)
     $env:PATH = $oldPath 
@@ -121,8 +121,7 @@ function InstallWheel(
 }
 
 function MakeDirectory(
-    [Parameter(Mandatory = $true)][hashtable] $table
-)
+    [Parameter(Mandatory = $true)][hashtable] $table)
 {
     FunctionIntro $table
     
@@ -139,8 +138,7 @@ function MakeDirectory(
 }
 
 function AddToPath(
-    [Parameter(Mandatory = $true)][hashtable] $table
-)
+    [Parameter(Mandatory = $true)][hashtable] $table)
 {
     FunctionIntro $table
 
@@ -179,8 +177,7 @@ function AddToPath(
 }
 
 function ExtractAllFromZip(
-    [Parameter(Mandatory = $true)][hashtable] $table
-)
+    [Parameter(Mandatory = $true)][hashtable] $table)
 {
     FunctionIntro $table
 
@@ -206,23 +203,33 @@ function ExtractAllFromZip(
 }
 
 function CreateBatch(
-    [Parameter(Mandatory = $true)][hashtable] $table
-)
+    [Parameter(Mandatory = $true)][hashtable] $table)
 {
     FunctionIntro $table
 
     $func = $table["Function"]
     $filename = $table["Filename"]
-    $command = $table["Command"]
 
     if (-not $Execute) {
-        Write-Host "Create-Bach [$filename]:No-Execute flag. No file created"
+        Write-Host "Create-Batch [$filename]:No-Execute flag. No file created"
         return
     }
 
     Remove-Item -Path $filename -ErrorAction SilentlyContinue | Out-Null
 
-    add-content -Path $filename -Value $command -ErrorAction SilentlyContinue
+    $batchScript = @"
+@echo off
+if /I "%CMDCMDLINE%" neq ""%COMSPEC%" " (
+    echo.
+    echo Please execute this script from inside a regular Windows command prompt.
+    echo.
+    exit /b 0
+)
+set PATH=$cntkRootDir\cntk;%PATH%
+"$AnacondaBasePath\Scripts\activate" "$AnacondaBasePath\envs\cntk-py34"
+"@
+
+    add-content -Path $filename -Encoding Ascii -Value $batchScript
 }
 
 

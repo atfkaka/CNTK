@@ -1,8 +1,13 @@
-﻿function DownloadOperations()
+﻿#
+# Copyright (c) Microsoft. All rights reserved.
+# Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
+#
+
+function DownloadOperations()
 {
     Write-Host "Performing download operations"
 
-    foreach ($item in $global:operationList) {
+    foreach ($item in $Script:operationList) {
         
         foreach ($downloadItem in $item.Download) {
             DownloadItem $downloadItem

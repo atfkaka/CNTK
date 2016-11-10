@@ -6,6 +6,26 @@
 import math
 from . import cntk_py
 from .utils import typemap
+from enum import Enum, unique
+
+@unique
+class UnitType(Enum):
+    '''
+    Indicates whether the values in the schedule are specified on the per-sample or 
+    per-minibatch basis.
+    '''
+
+    sample = 1
+    '''
+    Schedule contains per-sample values.
+    '''
+
+    minibatch = 2
+    '''
+    Schedule contains per-minibatch values (and need to be re-scaled by the learner
+    using the actual minibatch size in samples).
+    '''
+
 
 __doc__='''
 Learner tunes a set of parameters during the training process. One can use
@@ -17,8 +37,8 @@ the following learning algorithms:
 +========================+
 | AdaGrad                |
 +------------------------+
-| FSAdaGrad              |
-| (a variant of Adam)    |
+| Adam                   |
+| (a low memory variant) |
 +------------------------+
 | MomentumSGD            |
 +------------------------+
@@ -71,126 +91,201 @@ class Learner(cntk_py.Learner):
         Resets the learning rate.
 
         Args:
-            learning_rate (`float`): learning rate to reset to
+            learning_rate (`float`, `list` or a training schedule): learning rate 
+            to reset to
         '''
-        return super(Learner, self).reset_learning_rate()
+        learning_rate = learning_rate_schedule(learning_rate)
+        return super(Learner, self).reset_learning_rate(learning_rate)
 
-    @property
-    def learning_rate(self):
+    def learning_rate(self, minibatch_size=1):
         '''
         The learning rate.
+
+        Args:
+            minibatch_size (`int`): minibatch size to re-scaled
+            the learning rate to the per-sample value (in case when the schedule 
+            was build with unit=UnitType.minibatch).
         '''
-        return super(Learner, self).learning_rate()
+        return super(Learner, self).learning_rate(minibatch_size)
 
 @typemap
-def learning_rate_schedule(lr, units=1):
+def training_parameter_schedule(schedule, epoch_size=1, unit=UnitType.sample):
     '''
-    Create a learning rate schedule.
+    Create a training parameter schedule containing either per-sample (default)
+    or per-minibatch values.
 
     Examples:
-        >>> # Use a fixed learning rate 0.01 for all samples
-        >>> lr = learning_rate_schedule(0.01)
-        >>> lr[0], lr[1]
+        >>> # Use a fixed value 0.01 for all samples
+        >>> s = training_parameter_schedule(0.01)
+        >>> s[0], s[1]
         (0.01, 0.01)
 
-        >>> # Use the learning rate 0.01 for the first 1000 samples, then 0.001 for the remaining ones
-        >>> lr = learning_rate_schedule([0.01, 0.001], 1000)
-        >>> lr[0], lr[1], lr[1000], lr[1001]
+        >>> # Use 0.01 for the first 1000 samples, then 0.001 for the remaining ones
+        >>> s = training_parameter_schedule([0.01, 0.001], 1000)
+        >>> s[0], s[1], s[1000], s[1001]
         (0.01, 0.01, 0.001, 0.001)
 
+        >>> # Use 0.1 for the first 12 epochs, then 0.01 for the next 15,
+        >>> # followed by 0.001 for the remaining ones, with a 100 samples in an epoch
+        >>> s = training_parameter_schedule([(12, 0.1), (15, 0.01), (1, 0.001)], 100)
+        >>> s[0], s[1199], s[1200], s[2699], s[2700], s[5000]
+        (0.1, 0.1, 0.01, 0.01, 0.001, 0.001)
+
     Args:
-        lr (`float` or `list`): if `float`, it is the learning rate to be used
+        schedule (`float` or `list`): if `float`, is the parameter schedule to be used
          for all samples. In case of list, the elements are used as the
-         learning rates for ``units`` samples.
-        units (`int`): unit for the learning rates to have effect
+         values for ``epoch_size`` samples. If list contains pair, the second element is
+         used as a value for (``epoch_size`` x first element) samples
+        epoch_size (`int`): number of samples as a scheduling unit. Parameters in
+         the schedule change their values every 'epoch_size' samples.
+        unit (:class:`cntk.ops.functions.UnitType`): one of two
+
+          * 'sample': the returned schedule contains per-sample values (default)
+          * 'minibatch': the returned schedule contains per-minibatch values.
 
     Returns:
-        schedule for learning rates per sample
+        training parameter schedule
     '''
-    if isinstance(lr, float):
-        return cntk_py.learning_rates_per_sample(lr)
+    if not isinstance(unit, UnitType):
+            raise ValueError('schedule unit "%s" is not supported' %
+                    str(method))
 
-    if not isinstance(lr, list):
-        raise ValueError('lr must be either a float or a list, not %s'%type(lr))
+    if isinstance(schedule, (cntk_py.training_parameter_per_sample_schedule, 
+                             cntk_py.training_parameter_per_minibatch_schedule,
+                             cntk_py.momentum_as_time_constant_schedule)):
+        return schedule
 
-    return cntk_py.learning_rates_per_sample(lr, units)
+    if isinstance(schedule, (int, float)):
+        if unit is UnitType.sample:
+            return cntk_py.training_parameter_per_sample_schedule(schedule)
+        else:
+            return cntk_py.training_parameter_per_minibatch_schedule(schedule)
+
+    if isinstance(schedule, list):
+        if unit is UnitType.sample:
+            return cntk_py.training_parameter_per_sample_schedule(schedule, epoch_size)
+        else:
+            return cntk_py.training_parameter_per_minibatch_schedule(schedule, epoch_size)
+
+    raise ValueError('schedule must be either a float or a list, not %s'%type(schedule))
 
 @typemap
-def momentum_schedule(momentum, units=1):
+def learning_rate_schedule(lr, epoch_size=1, unit=UnitType.sample):
     '''
-    Create a momentum schedule in a minibatch agnostic way.
+    Create a learning rate schedule (using the same semantics as 
+    :func:`training_parameter_schedule`).
+
+    Args:
+        lr (`float` or `list`): see parameter ``schedule`` in 
+         :func:`training_parameter_schedule`.
+        epoch_size (`int`): see parameter ``epoch_size`` in 
+         :func:`training_parameter_schedule`.
+        unit (:class:`cntk.ops.functions.UnitType`): see parameter 
+         ``unit`` in :func:`training_parameter_schedule`.
+
+    Returns:
+        learning rate schedule
+    '''
+    return training_parameter_schedule(lr, epoch_size, unit)
+
+@typemap
+def momentum_schedule(momentum, epoch_size=1, unit=UnitType.sample):
+    '''
+    Create a momentum schedule (using the same semantics as 
+    :func:`training_parameter_schedule`).
+
+    Args:
+        momentum (`float` or `list`): see parameter ``schedule`` in 
+         :func:`training_parameter_schedule`.
+        epoch_size (`int`): see parameter ``epoch_size`` in 
+         :func:`training_parameter_schedule`.
+        unit (:class:`cntk.ops.functions.UnitType`): see parameter 
+         ``unit`` in :func:`training_parameter_schedule`.
+
+    If you want to provide momentum values in a sample/minibatch
+    agnostic way, use :func:`momentum_as_time_constant_schedule`.
+
+    Examples:
+        >>> # Use a fixed momentum of 0.99 for all samples
+        >>> m = momentum_schedule(0.99)
+
+        >>> # Use the momentum value 0.99 for the first 1000 samples, 
+        >>> # then 0.9 for the remaining ones
+        >>> m = momentum_schedule([0.99,0.9], 1000)
+        >>> m[0], m[999], m[1000], m[1001]
+        (0.99, 0.99, 0.9, 0.9)
+        
+        >>> # Use the momentum value 0.99 for the first 999 samples, 
+        >>> # then 0.88 for the next 888 samples, and 0.77 for the
+        >>> # the remaining ones
+        >>> m = momentum_schedule([(999,0.99),(888,0.88),(0, 0.77)])
+        >>> m[0], m[998], m[999], m[999+888-1], m[999+888]
+        (0.99, 0.99, 0.88, 0.88, 0.77)
+
+    Args:
+        momentum (`float` or `list`): see parameter ``schedule`` in 
+         :func:`training_parameter_schedule`.
+        epoch_size (`int`): see parameter ``epoch_size`` in 
+         :func:`training_parameter_schedule`.
+        unit (:class:`cntk.ops.functions.UnitType`): see parameter 
+         ``unit`` in :func:`training_parameter_schedule`.
+
+    Returns:
+        momentum schedule
+    '''
+    return training_parameter_schedule(momentum, epoch_size, unit)
+
+@typemap
+def momentum_as_time_constant_schedule(momentum, epoch_size=1):
+    '''
+    Create a momentum schedule in a minibatch agnostic way (using the same 
+    semantics as :func:`training_parameter_schedule`).
+
+    Args:
+        momentum (`float` or `list`): see parameter ``schedule`` in 
+         :func:`training_parameter_schedule`.
+        epoch_size (`int`): see parameter ``epoch_size`` in 
+         :func:`training_parameter_schedule`.
+        unit (:class:`cntk.ops.functions.UnitType`): see parameter 
+         ``unit`` in :func:`training_parameter_schedule`.
 
     CNTK specifies momentum in a minibatch-size agnostic way as the time
     constant (in samples) of a unit-gain 1st-order IIR filter. The value
     specifies the number of samples after which a gradient has an effect of
     1/e=37%.
 
-    If you want to specify the momentum per sample,
-    use :func:`momentums_per_sample`.
+    If you want to specify the momentum per sample (or per minibatch),
+    use :func:`momentum_schedule`.
 
 
     Examples:
         >>> # Use a fixed momentum of 1100 for all samples
-        >>> m = momentum_schedule(1100)
+        >>> m = momentum_as_time_constant_schedule(1100)
 
-        >>> # Use the time constant 1100 for the first 1000 samples, then 1500 for the remaining ones
-        >>> m = momentum_schedule([1100, 1500], 1000)
-
-    Args:
-        momentum (`float` or `list`): if `float`, it is the momentum to be used
-         for all samples. In case of list, the elements are used as the
-         momentum for ``units`` samples.
-        units (`int`): unit for the momentum to have effect
-
-    Returns:
-        momentum schedule
-    '''
-    # FIXME: Swig does not see MomentumValuesAsTimeConstants as an inherited
-    # type of MomentumValuesPerSample, so we are doing the conversion
-    # explicitly for now. This has to be solved in the Swig layer eventually.
-    to_per_sample = lambda x: 0 if x==0 else math.exp(-1.0 / x)
-
-    if isinstance(momentum, (int, float)):
-        return cntk_py.momentums_per_sample(to_per_sample(momentum))
-
-
-    if not isinstance(momentum, list):
-        raise ValueError('momentum must be either a float or a list, not %s'%type(momentum))
-
-    return cntk_py.momentums_per_sample([to_per_sample(m) for m in momentum], units)
-
-@typemap
-def momentum_schedule_per_sample(momentum, units=1):
-    '''
-    Create a momentum schedule where the momentum is specified on a per-sample
-    basis.
-
-    If you want to provide momentum values in a sample/minibatch
-    agnostic way, use :func:`momentum_schedule`.
-
-    Examples:
-        >>> # Use a fixed momentum of 0.99 for all samples
-        >>> m = momentum_schedule_per_sample(0.99)
-
-        >>> # Use the learning rate 0.99 for the first 1000 samples, then 0.9 for the remaining ones
-        >>> m = momentum_schedule_per_sample([0.99,0.9], 1000)
+        >>> # Use the time constant 1100 for the first 1000 samples, 
+        >>> # then 1500 for the remaining ones
+        >>> m = momentum_as_time_constant_schedule([1100, 1500], 1000)
 
     Args:
-        momentum (`float` or `list`): if `float`, it is the momentum to be used
-         for all samples. In case of list, the elements are used as the
-         momentum for ``units`` samples.
-        units (`int`): unit for the momentum to have effect
+        momentum (`float` or `list`): see parameter ``schedule`` in 
+         :func:`training_parameter_schedule`.
+        epoch_size (`int`): see parameter ``epoch_size`` in 
+         :func:`training_parameter_schedule`.
 
     Returns:
-        schedule for momentum per sample
+        momentum as time constant schedule
     '''
+    if isinstance(momentum, (cntk_py.training_parameter_per_sample_schedule, 
+                             cntk_py.training_parameter_per_minibatch_schedule,
+                             cntk_py.momentum_as_time_constant_schedule)):
+        return momentum
+
     if isinstance(momentum, (int, float)):
-        return cntk_py.momentums_per_sample(momentum)
+        return cntk_py.momentum_as_time_constant_schedule(momentum)
+    if isinstance(momentum, list):
+        return cntk_py.momentum_as_time_constant_schedule(momentum, epoch_size)
 
-    if not isinstance(momentum, list):
-        raise ValueError('momentum must be either a float or a list, not %s'%type(momentum))
-
-    return cntk_py.momentums_per_sample(momentum, units)
+    raise ValueError('momentum must be either a float or a list, not %s'%type(momentum))
 
 
 # TODO figure out how to pass infty to C++ in a portable way
@@ -206,8 +301,9 @@ def sgd(parameters, lr,
         parameters (`list` of parameters): list of network parameters to tune.
          These can be obtained by the '.parameters()' method of the root
          operator.
-        lr ('float' or output of :func:`learning_rate_schedule`): learning
-         rates per sample.
+        lr ('float', `list` or output of `:func:learning_rate_schedule`): learning rate 
+         schedule. When the argument value is a `float` or a `list`, lr is 
+         converted to a per-sample schedule by invoking `:func:learning_rate_schedule`.
         l1_regularization_weight ('float', optional): the L1 regularization weight per sample,
          defaults to 0.0
         l2_regularization_weight ('float', optional): the L2 regularization weight per sample,
@@ -221,8 +317,8 @@ def sgd(parameters, lr,
     Returns:
         Instance of a :class:`cntk.learner.Learner` that can be passed to the :class:`cntk.trainer.Trainer`
     '''
-    if isinstance(lr, (int, float)):
-        lr = learning_rate_schedule(lr)
+    lr = learning_rate_schedule(lr)
+    gaussian_noise_injection_std_dev = training_parameter_schedule(gaussian_noise_injection_std_dev)
 
     additional_options = cntk_py.AdditionalLearningOptions()
     additional_options.l1_regularization_weight = l1_regularization_weight
@@ -244,10 +340,14 @@ def momentum_sgd(parameters, lr, momentum,
     Args:
         parameters (list of parameters): list of network parameters to tune.
          These can be obtained by the root operator's ``parameters``.
-        lr ('float' or output of `:func:learning_rate_schedule`): learning
-         rates per sample.
-        momentum (`float` or output of `:func:momentum_schedule`): momentum as time constant.
-         Refer to https://github.com/Microsoft/CNTK/wiki/SGD-block#converting-learning-rate-and-momentum-parameters-from-other-toolkits
+        lr ('float', `list` or output of `:func:learning_rate_schedule`): learning rate 
+         schedule. When the argument value is a `float` or a `list`, lr is 
+         converted to a per-sample schedule by invoking `:func:learning_rate_schedule`.
+        momentum (`float`, `list` or output of `:func:momentum_schedule` or 
+         `:func:momentum_as_time_constant_schedule`): momentum schedule. When the argument 
+         value is a `float` or a `list`, momentum is converted to a per-sample schedule by 
+         invoking `:func:momentum_schedule`. Refer to 
+         https://github.com/Microsoft/CNTK/wiki/SGD-block#converting-learning-rate-and-momentum-parameters-from-other-toolkits
         l1_regularization_weight ('float', optional): the L1 regularization weight per sample,
          defaults to 0.0
         l2_regularization_weight ('float', optional): the L2 regularization weight per sample,
@@ -261,11 +361,9 @@ def momentum_sgd(parameters, lr, momentum,
     Returns:
         Instance of a :class:`cntk.learner.Learner` that can be passed to the :class:`cntk.trainer.Trainer`
     '''
-    if isinstance(lr, (int, float)):
-        lr = learning_rate_schedule(lr)
-
-    if isinstance(momentum, (int, float)):
-        momentum = momentum_schedule(momentum)
+    lr = learning_rate_schedule(lr)
+    momentum = momentum_schedule(momentum)
+    gaussian_noise_injection_std_dev = training_parameter_schedule(gaussian_noise_injection_std_dev)
 
     additional_options = cntk_py.AdditionalLearningOptions()
     additional_options.l1_regularization_weight = l1_regularization_weight
@@ -288,10 +386,14 @@ def nesterov(parameters, lr, momentum,
     Args:
         parameters (list of parameters): list of network parameters to tune.
          These can be obtained by the root operator's ``parameters``.
-        lr ('float' or output of `:func:learning_rate_schedule`): learning
-         rates per sample.
-        momentum (`float` or output of `:func:momentum_schedule`): momentum as time constant.
-         Refer to https://github.com/Microsoft/CNTK/wiki/SGD-block#converting-learning-rate-and-momentum-parameters-from-other-toolkits
+        lr ('float', `list` or output of `:func:learning_rate_schedule`): learning rate 
+         schedule. When the argument value is a `float` or a `list`, lr is 
+         converted to a per-sample schedule by invoking `:func:learning_rate_schedule`.
+        momentum (`float`, `list` or output of `:func:momentum_schedule` or 
+         `:func:momentum_as_time_constant_schedule`): momentum schedule. When the argument 
+         value is a `float` or a `list`, momentum is converted to a per-sample schedule by 
+         invoking `:func:momentum_schedule`. Refer to 
+         https://github.com/Microsoft/CNTK/wiki/SGD-block#converting-learning-rate-and-momentum-parameters-from-other-toolkits
         l1_regularization_weight ('float', optional): the L1 regularization weight per sample,
          defaults to 0.0
         l2_regularization_weight ('float', optional): the L2 regularization weight per sample,
@@ -305,11 +407,9 @@ def nesterov(parameters, lr, momentum,
     Returns:
         Instance of a :class:`cntk.learner.Learner` that can be passed to the :class:`cntk.trainer.Trainer`
     '''
-    if isinstance(lr, (int, float)):
-        lr = learning_rate_schedule(lr)
-
-    if isinstance(momentum, (int, float)):
-        momentum = momentum_schedule(momentum)
+    lr = learning_rate_schedule(lr)
+    momentum = momentum_schedule(momentum)
+    gaussian_noise_injection_std_dev = training_parameter_schedule(gaussian_noise_injection_std_dev)
 
     additional_options = cntk_py.AdditionalLearningOptions()
     additional_options.l1_regularization_weight = l1_regularization_weight
@@ -332,9 +432,9 @@ def adagrad(parameters, lr, need_ave_multiplier=True,
     Args:
         parameters (list of parameters): list of network parameters to tune.
          These can be obtained by the root operator's ``parameters``.
-        lr ('float' or output of `:func:learning_rate_schedule`): learning
-         rates per sample.
-         allowed, but schedules will be added soon
+        lr ('float', `list` or output of `:func:learning_rate_schedule`): learning rate 
+         schedule. When the argument value is a `float` or a `list`, lr is 
+         converted to a per-sample schedule by invoking `:func:learning_rate_schedule`.
         need_ave_multiplier ('bool', default):
         l1_regularization_weight ('float', optional): the L1 regularization weight per sample,
          defaults to 0.0
@@ -349,8 +449,8 @@ def adagrad(parameters, lr, need_ave_multiplier=True,
     Returns:
         Instance of a :class:`cntk.learner.Learner` that can be passed to the :class:`cntk.trainer.Trainer`
     '''
-    if isinstance(lr, (int, float)):
-        lr = learning_rate_schedule(lr)
+    lr = learning_rate_schedule(lr)
+    gaussian_noise_injection_std_dev = training_parameter_schedule(gaussian_noise_injection_std_dev)
 
     additional_options = cntk_py.AdditionalLearningOptions()
     additional_options.l1_regularization_weight = l1_regularization_weight
@@ -364,25 +464,30 @@ def adagrad(parameters, lr, need_ave_multiplier=True,
 
 # TODO: unCamelCase and integrate upcoming CR
 @typemap
-def fsadagrad(parameters, lr, momentum,
-        targetAdagradAvDenom = 0.0025, varianceTimeConstant = 720000,
+def adam_sgd(parameters, lr, momentum,
+        variance_momentum = momentum_as_time_constant_schedule(720000),
+        low_memory=True,
         l1_regularization_weight=0.0, l2_regularization_weight=0.0,
         gaussian_noise_injection_std_dev=0.0, gradient_clipping_threshold_per_sample=1E10,
         gradient_clipping_with_truncation=True):
     '''
-    Creates an FS AdaGrad learner instance to learn the parameters.
+    Creates an Adam learner instance to learn the parameters.
 
     Args:
         parameters (list of parameters): list of network parameters to tune.
          These can be obtained by the root operator's ``parameters``.
-        lr ('float' or output of `:func:learning_rate_schedule`): learning
-         rates per sample.
-        momentum (`float` or output of `:func:momentum_schedule`): momentum as time constant.
-         Refer to https://github.com/Microsoft/CNTK/wiki/SGD-block#converting-learning-rate-and-momentum-parameters-from-other-toolkits
-        targetAdagradAvDenom ('float', optional): FSAdaGrad magic number,
-         defaults to 0.0025 (1/400)
-        varianceTimeConstant ('long', optional): FSAdaGrad magic number,
-         defaults to 720000 ( 2 * 3600 * 100)
+        lr ('float', `list` or output of `:func:learning_rate_schedule`): learning rate 
+         schedule. When the argument value is a `float` or a `list`, lr is 
+         converted to a per-sample schedule by invoking `:func:learning_rate_schedule`.
+        momentum (`float`, `list` or output of `:func:momentum_schedule` or 
+         `:func:momentum_as_time_constant_schedule`): momentum schedule. When the argument 
+         value is a `float` or a `list`, momentum is converted to a per-sample schedule by 
+         invoking `:func:momentum_schedule`. Refer to 
+         https://github.com/Microsoft/CNTK/wiki/SGD-block#converting-learning-rate-and-momentum-parameters-from-other-toolkits
+        variance_momentum (`float`, `list` or output of `:func:momentum_schedule` or 
+         `:func:momentum_as_time_constant_schedule`): variance momentum schedule. When the argument 
+         value is a `float` or a `list`, variance momentum is converted to a per-sample schedule by 
+         invoking `:func:momentum_schedule`. Defaults to momentum_as_time_constant_schedule(720000).
         l1_regularization_weight ('float', optional): the L1 regularization weight per sample,
          defaults to 0.0
         l2_regularization_weight ('float', optional): the L2 regularization weight per sample,
@@ -396,11 +501,13 @@ def fsadagrad(parameters, lr, momentum,
     Returns:
         Instance of a :class:`cntk.learner.Learner` that can be passed to the :class:`cntk.trainer.Trainer`
     '''
-    if isinstance(lr, (int, float)):
-        lr = learning_rate_schedule(lr)
+    if not low_memory:
+        raise NotImplementedError('adam: low_memory=True currently required')
 
-    if isinstance(momentum, (int, float)):
-        momentum = momentum_schedule(momentum)
+    lr = learning_rate_schedule(lr)
+    momentum = momentum_schedule(momentum)
+    variance_momentum = momentum_schedule(variance_momentum)
+    gaussian_noise_injection_std_dev = training_parameter_schedule(gaussian_noise_injection_std_dev)
 
     additional_options = cntk_py.AdditionalLearningOptions()
     additional_options.l1_regularization_weight = l1_regularization_weight
@@ -409,9 +516,8 @@ def fsadagrad(parameters, lr, momentum,
     additional_options.gradient_clipping_threshold_per_sample = gradient_clipping_threshold_per_sample
     additional_options.gradient_clipping_with_truncation = gradient_clipping_with_truncation
 
-    return cntk_py.fsada_grad_learner(parameters, lr, momentum,
-            targetAdagradAvDenom, varianceTimeConstant,
-            additional_options)
+    return cntk_py.adam_learner(parameters, lr, momentum,
+            variance_momentum, low_memory, additional_options)
 
 @typemap
 def rmsprop(parameters, lr,
@@ -426,8 +532,9 @@ def rmsprop(parameters, lr,
     Args:
         parameters (list of parameters): list of network parameters to tune.
          These can be obtained by the root operator's ``parameters``.
-        lr ('float'): learning rate per sample. Currently, only float is
-         allowed, but schedules will be added soon
+        lr ('float', `list` or output of `:func:learning_rate_schedule`): learning rate 
+         schedule. When the argument value is a `float` or a `list`, lr is 
+         converted to a per-sample schedule by invoking `:func:learning_rate_schedule`.
         gamma ('float'):
         inc ('float'):
         dec ('float'):
@@ -447,8 +554,8 @@ def rmsprop(parameters, lr,
     Returns:
         Instance of a :class:`cntk.learner.Learner` that can be passed to the :class:`cntk.trainer.Trainer`
     '''
-    if isinstance(lr, (int, float)):
-        lr = learning_rate_schedule(lr)
+    lr = learning_rate_schedule(lr)
+    gaussian_noise_injection_std_dev = training_parameter_schedule(gaussian_noise_injection_std_dev)
 
     additional_options = cntk_py.AdditionalLearningOptions()
     additional_options.l1_regularization_weight = l1_regularization_weight
