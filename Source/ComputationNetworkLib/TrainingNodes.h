@@ -2651,10 +2651,8 @@ public:
     // Turn off the L1 and L2 regularization
     void DisableRegInBatchNormalization()
     {
-        let scaleNode   = dynamic_pointer_cast<LearnableParameter<ElemType>>(Input(1));
-        let biasNode    = dynamic_pointer_cast<LearnableParameter<ElemType>>(Input(2));
-        scaleNode->SetRegMultiplier(0.f);
-        biasNode->SetRegMultiplier(0.f);
+        Input(1)->SetRegularizationMultiplier(0.f);
+        Input(2)->SetRegularizationMultiplier(0.f);
     }
     double NormalizationTimeConstant() const { return m_normTimeConst; }
     double BlendTimeConstant() const { return m_blendTimeConst; }

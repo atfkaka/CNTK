@@ -290,10 +290,9 @@ public:
     // -----------------------------------------------------------------------
 
     ComputationNodeBase(DEVICEID_TYPE deviceId, const wstring& name) :
-        m_deviceId(deviceId), m_outputNeededDuringBackprop(true), m_learningRateMultiplier(0),
+        m_deviceId(deviceId), m_outputNeededDuringBackprop(true),
         m_gradientInitialized(false), m_nodeName(name == L"" ? CreateUniqNodeName() : name)
     {
-        // TODO: should m_learningRateMultiplier be set to 0? Or should every node have a way to add its own say on the learning rate for all its inputs?
         // we store a unique numeric number for every node that is constructed, as a debugging aid
         static size_t uniqueNumericId = 0;
         m_uniqueNumericId = uniqueNumericId++;
@@ -313,7 +312,6 @@ public:
         if (flags & CopyNodeFlags::copyNodeValue)
         {
             node->m_deviceId = m_deviceId;
-            node->m_learningRateMultiplier = m_learningRateMultiplier;
             node->m_nodeName = newName;
 
             node->m_sampleLayout = m_sampleLayout;
@@ -628,14 +626,11 @@ public:
 
     bool NeedsGradient() const { return m_needsGradient; }
 
-    void SetLearningRateMultiplier(float f) 
-    { 
-        if (f < 0)
-            InvalidArgument("%ls: LearningRateMultiplier should be non-negative. You are tring to set it to %f.", NodeDescription().c_str(), f);
-        m_learningRateMultiplier = f; 
-    }
-    float GetLearningRateMultiplier() const { return m_learningRateMultiplier; }
-    bool IsParameterUpdateRequired() const { return m_learningRateMultiplier > 0; }
+    virtual void SetLearningRateMultiplier(float) { NOT_IMPLEMENTED }
+    virtual float GetLearningRateMultiplier() const { NOT_IMPLEMENTED }
+    virtual bool IsParameterUpdateRequired()  const { return false; }
+    virtual void SetRegularizationMultiplier(float) { NOT_IMPLEMENTED }
+    virtual float GetRegularizationMultiplier() const { NOT_IMPLEMENTED }
 
     // return true if the node's value should be computed before the normal training. e.g., mean and invStd of input features.
     virtual bool /*IComputationNode::*/ RequiresPreCompute() const { return false; }
@@ -896,7 +891,6 @@ protected:
     ComputationEnvironmentPtr m_environment;
 
     // flags related to gradient propagation
-    float m_learningRateMultiplier;    // update parameters? Only used for LearnableParameters.    --TODO: Should we make this a member of LearnableParameters actually? And require a type cast? Currently it is read out for all leaves.
     bool m_gradientInitialized;        // indicates whether the gradient matrix has been resized and initialized to 0
     bool m_outputNeededDuringBackprop; // indicates whether the output value of the node is needed during backprop
 };
@@ -2310,8 +2304,7 @@ protected:                                                                      
     using Base::m_gradient;                                                                                                                              \
     using Base::m_inputs;                                                                                                                                \
     using Base::m_nodeName;                                                                                                                              \
-    using Base::m_pMBLayout;                                                                                                                             \
-    using Base::m_learningRateMultiplier;                                                                                                                \
+    using Base::m_pMBLayout;                                                                                                                              \
     using Base::m_sampleLayout;                                                                                                                          \
     using Base::m_value;                                                                                                                                 \
     using Base::m_valueSharable;                                                                                                                         \

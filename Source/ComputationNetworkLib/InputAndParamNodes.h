@@ -44,10 +44,10 @@ public:
         Base(deviceId, name)
     {
         SetLearningRateMultiplier(1.0f); // enable normal learning by default
+        SetRegularizationMultiplier(1.0f);
         MarkValueNonSharable();
         m_initString = L"fromValue"; // default init is with 0; typically overwritten
         m_initValue = 0;
-        m_regMultiplier = 1.0f; // enable reg in update by default
     }
     LearnableParameter(DEVICEID_TYPE deviceId, const wstring& name, const TensorShape& shape) :
         LearnableParameter(deviceId, name)
@@ -144,12 +144,25 @@ public:
     virtual void FreezeParameters() override; // from IFreezable
 
     // Setting the reg multiplier for a learnable node, effecting L1Reg and L2Reg both.
-    void SetRegMultiplier(float regMultiplier)
+    virtual void SetRegularizationMultiplier(float f) override
     {
-        m_regMultiplier = regMultiplier;
+        if (f < 0)
+            InvalidArgument("%ls: RegularizationMultiplier should be non-negative. You are tring to set it to %f.",
+                NodeDescription().c_str(), f);
+        m_regularizationMultiplier = f;
     }
     // called from SGD UpdateWeights, to adjust the reg for each node
-    float GetRegMultiplier() const { return m_regMultiplier; }
+    virtual float GetRegularizationMultiplier() const override { return m_regularizationMultiplier; }
+
+    virtual void SetLearningRateMultiplier(float f) override 
+    {
+        if (f < 0) 
+            InvalidArgument("%ls: LearningRateMultiplier should be non-negative. You are tring to set it to %f.", 
+                NodeDescription().c_str(), f);
+        m_learningRateMultiplier = f;
+    }
+    virtual float GetLearningRateMultiplier() const override { return m_learningRateMultiplier; }
+    virtual bool IsParameterUpdateRequired() const override { return GetLearningRateMultiplier() ? 1 : 0; }
 
 private:
     // init parameters for deferred initialization (which happens in Validate())
@@ -162,7 +175,8 @@ private:
     ElemType m_initValue;
 
     // flags related to gradient update
-    float m_regMultiplier; // The multiplier to adjust the L1Reg and L2Reg for Learnable node
+    float m_regularizationMultiplier; // The multiplier to adjust the L1Reg and L2Reg for Learnable node
+    float m_learningRateMultiplier;
 };
 
 // -----------------------------------------------------------------------
@@ -363,10 +377,21 @@ public:
         }
     }
 
+    virtual void SetLearningRateMultiplier(float f) override
+    {
+        if (f < 0)
+            InvalidArgument("%ls: LearningRateMultiplier should be non-negative. You are tring to set it to %f.",
+                NodeDescription().c_str(), f);
+        m_learningRateMultiplier = f;
+    }
+    virtual float GetLearningRateMultiplier() const override { return m_learningRateMultiplier; }
+    virtual bool IsParameterUpdateRequired() const override { return GetLearningRateMultiplier() ? 1 : 0; }
+
 private:
     bool m_isSparse = false;
     std::wstring m_dynamicAxisNodeName;
     ComputationNodeBase* m_dynamicAxisNode;
+    float m_learningRateMultiplier;
 
     void ConvertToSparseMatrix()
     {
