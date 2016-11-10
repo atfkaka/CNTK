@@ -17,7 +17,7 @@ namespace CNTK
     class LearnerBase : public Learner
     {
     public:
-        virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) override final;
+        virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, const MinibatchInfo& minibatchInfo) override final;
 
         virtual Dictionary Serialize() const override final;
 

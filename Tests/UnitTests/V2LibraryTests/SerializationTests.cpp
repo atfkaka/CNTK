@@ -427,7 +427,7 @@ void TestFunctionSerializationDuringTraining(const FunctionPtr& function, const 
 
     Dictionary model = classifierOutput1->Serialize();
 
-    trainer1.TrainMinibatch({ { classifierOutput1->Arguments()[0], minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer1.TrainMinibatch({ { classifierOutput1->Arguments()[0], minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
     auto classifierOutput2 = Function::Deserialize(model, device);
 
@@ -451,8 +451,8 @@ void TestFunctionSerializationDuringTraining(const FunctionPtr& function, const 
 
         for (int j = 0; j < 3; ++j)
         {
-            trainer1.TrainMinibatch({ { classifierOutput1->Arguments()[0], minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
-            trainer2.TrainMinibatch({ { classifierOutput2->Arguments()[0], minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+            trainer1.TrainMinibatch({ { classifierOutput1->Arguments()[0], minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
+            trainer2.TrainMinibatch({ { classifierOutput2->Arguments()[0], minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
             double mbLoss1 = trainer1.PreviousMinibatchLossAverage();
             double mbLoss2 = trainer2.PreviousMinibatchLossAverage();
@@ -496,7 +496,7 @@ void TestTrainingWithCheckpointing(const FunctionPtr& function1, const FunctionP
 
     const size_t minibatchSize = 50;
     auto minibatchData = minibatchSource->GetNextMinibatch(minibatchSize, device);
-     auto actualMBSize = minibatchData[labelStreamInfo].m_numSamples;
+    auto actualMBSize = minibatchData[labelStreamInfo].numberOfSamples;
 
     LearningRateSchedule learningRateSchedule({ { 2, 0.005 }, { 2, 0.0025 }, { 2, 0.0005 }, { 2, 0.00025 } }, actualMBSize);
     MomentumAsTimeConstantSchedule momentumValues({ { 2, 100 }, { 2, 200 }, { 2, 400 }, { 2, 800 } }, actualMBSize);
@@ -515,14 +515,14 @@ void TestTrainingWithCheckpointing(const FunctionPtr& function1, const FunctionP
         throw std::runtime_error("TestModelSerialization: reloaded function is not identical to the original.");
     }
 
-    trainer1.TrainMinibatch({ { function1->Arguments()[0], minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer1.TrainMinibatch({ { function1->Arguments()[0], minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
     if (AreEqual(function1, function2))
     {
         throw std::runtime_error("TestModelSerialization: reloaded function is still identical to the original after it was trained.");
     }
 
-    trainer2.TrainMinibatch({ { function2->Arguments()[0], minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer2.TrainMinibatch({ { function2->Arguments()[0], minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
     if (!AreEqual(function1, function2))
     {
@@ -541,8 +541,8 @@ void TestTrainingWithCheckpointing(const FunctionPtr& function1, const FunctionP
       
         for (int j = 0; j < 3; ++j)
         {
-            trainer1.TrainMinibatch({ { function1->Arguments()[0], minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
-            trainer2.TrainMinibatch({ { function2->Arguments()[0], minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+            trainer1.TrainMinibatch({ { function1->Arguments()[0], minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
+            trainer2.TrainMinibatch({ { function2->Arguments()[0], minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
             double mbLoss1 = trainer1.PreviousMinibatchLossAverage();
             double mbLoss2 = trainer2.PreviousMinibatchLossAverage();
@@ -631,36 +631,36 @@ void TestLegacyModelSaving(const DeviceDescriptor& device)
 
     const size_t minibatchSize = 50;
     auto minibatchData = minibatchSource->GetNextMinibatch(minibatchSize, device);
-    auto actualMBSize = minibatchData[labelStreamInfo].m_numSamples;
+    auto actualMBSize = minibatchData[labelStreamInfo].numberOfSamples;
 
     LearningRateSchedule learningRateSchedule({ { 2, 0.0005 }, { 2, 0.00025 } }, actualMBSize);
     auto learner = SGDLearner(classifierOutput->Parameters(), learningRateSchedule);
     Trainer trainer(classifierOutput, trainingLoss, prediction, { learner });
 
-    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
     const wchar_t* modelFile = L"seq2seq.model";
     classifierOutput->SaveModel(modelFile);
 
-    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
     auto MB2Loss = trainer.PreviousMinibatchLossAverage();
-    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
     classifierOutput->RestoreModel(modelFile);
 
-    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
     auto postRestoreMB2Loss = trainer.PreviousMinibatchLossAverage();
     FloatingPointCompare(postRestoreMB2Loss, MB2Loss, "Post checkpoint restoration training loss does not match expectation");
 
     classifierOutput->RestoreModel(modelFile);
     classifierOutput->SaveModel(modelFile);
 
-    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
-    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
+    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
 
     classifierOutput->RestoreModel(modelFile);
 
-    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo].m_data }, { labels, minibatchData[labelStreamInfo].m_data } }, device);
+    trainer.TrainMinibatch({ { features, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
     postRestoreMB2Loss = trainer.PreviousMinibatchLossAverage();
     FloatingPointCompare(postRestoreMB2Loss, MB2Loss, "Post checkpoint restoration training loss does not match expectation");
 }

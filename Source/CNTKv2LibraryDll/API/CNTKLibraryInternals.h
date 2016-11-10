@@ -33,7 +33,6 @@
 #include <atomic>
 #include <type_traits>
 #include <unordered_set>
-#include <set>
 #include <unordered_map>
 #include <stdlib.h>
 #include <string.h>
@@ -159,6 +158,9 @@ namespace CNTK
     enum class PrimitiveOpType : unsigned int;
     enum class DataType : unsigned int;
 
+    struct MinibatchInfo;
+    struct MinibatchData;
+
     class Serializer;
 
     // Similar to make_shared except that it associates a custom deleter with the shared_ptr to ensure
@@ -256,64 +258,5 @@ namespace CNTK
                              std::unordered_map<Microsoft::MSR::CNTK::ComputationNodeBasePtr, ::CNTK::Variable>& nodeToVariableMap,
                              std::unordered_map<::CNTK::Variable, ::CNTK::Variable>& placeholderReplacements,
                              std::unordered_set<::CNTK::FunctionPtr>& allPrimitiveFunctions);
-    }
-
-    namespace Internal 
-    {
-        enum EventType
-        {
-            EndOfSweep = 1,
-        };
-
-        template <typename EventType E>
-        class IEventListener
-        {
-            template <typename EventType ET>
-            friend class IEventDispatcher;
-        protected:
-            IEventListener() {}
-
-            CNTK_API virtual void OnEvent() = 0;
-
-            virtual ~IEventListener() {}
-        };
-        
-        template <typename EventType E>
-        using ListenerSet = std::set<std::weak_ptr<IEventListener<E>>, std::owner_less<std::weak_ptr<IEventListener<E>>>>;
-
-        template <typename EventType E>
-        class IEventDispatcher
-        {
-        public:
-            void PublishEvent() const
-            {
-                std::unique_lock<std::mutex> lock(m_mutex);
-                ListenerSet<E> listeners(m_listeners);
-                lock.unlock();
-
-                for (auto& listener : listeners)
-                {
-                    auto ptr = listener.lock();
-                    if (ptr != nullptr)
-                    {
-                        ptr->OnEvent();
-                    }
-                }
-            }
-            
-            void AddEventListener(std::weak_ptr<IEventListener<E>> listener)
-            {
-                std::unique_lock<std::mutex> lock(m_mutex);
-                m_listeners.insert(listener);
-            }
-
-        protected:
-            IEventDispatcher() {}
-            virtual ~IEventDispatcher() {}
-
-        private:
-            ListenerSet<E>  m_listeners;
-            mutable std::mutex m_mutex;
-        };
     }
 }

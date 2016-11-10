@@ -155,15 +155,10 @@ namespace CNTK
     {
         m_minibatchData.clear();
 
-
-        if (m_epochEndReached)
+        if (m_epochEndReached && m_epochSize == MinibatchSource::InfinitelyRepeat)
         {
-            if (m_epochSize == MinibatchSource::InfinitelyRepeat)
-            {
-                m_epochEndReached = false;
-                m_prevMinibatchSize = 0; // force-start a new epoch (sweep)
-            }
-            OnReachingSweepEnd();
+            m_epochEndReached = false;
+            m_prevMinibatchSize = 0; // force-start a new epoch (sweep)
         }
 
         if (!m_epochEndReached)
@@ -234,6 +229,7 @@ namespace CNTK
 
             auto compositeReaderMinibatchDataEmpty = m_shim->GetMinibatch(m_matrices);
             m_epochEndReached = m_shim->IsEndOfEpoch();
+            bool hasReachedSweepEnd = m_epochEndReached && (m_epochSize == MinibatchSource::FullDataSweep || m_epochSize == MinibatchSource::InfinitelyRepeat);
 
             for (const auto& s: m_streamInfos)
             {
@@ -260,7 +256,7 @@ namespace CNTK
                     size_t numSamples = input.pMBLayout->GetActualNumSamples();
                     size_t numSequences = input.pMBLayout->GetNumSequences();
 
-                    m_minibatchData[currentStreamInfo] = { numSequences, numSamples, minibatchValuePtr };
+                    m_minibatchData[currentStreamInfo] = { numSequences, numSamples, minibatchValuePtr, hasReachedSweepEnd };
                 }
                 else
                     LogicError("Input data of type other than DataType::Float is currently unsupported by the CNTK built-in composite MinibatchSource!");

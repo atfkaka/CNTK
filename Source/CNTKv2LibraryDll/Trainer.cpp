@@ -68,7 +68,6 @@ namespace CNTK
         {
             InvalidArgument("Trainer ctor: Union of the parameters covered by the specified parameterLearners should match the specified model's parameters");
         }
-            
     }
 
     Trainer::Trainer(const FunctionPtr& model, const FunctionPtr& lossFunction, const FunctionPtr& evaluationFunction, const std::vector<LearnerPtr>& parameterLearners)
@@ -119,26 +118,37 @@ namespace CNTK
         return (numSamplesInDataArrayView - numMaskedSamples);
     }
 
-    double Trainer::TestMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, const DeviceDescriptor& computeDevice /*= DeviceDescriptor::UseDefaultDevice()*/)
+    static std::unordered_map<Variable, ValuePtr> GetInputs(const std::unordered_map<Variable, MinibatchData>& arguments)
+    {
+        std::unordered_map<Variable, ValuePtr> inputs(arguments.size());
+        for (const auto& kv : arguments)
+        {
+            inputs[kv.first] = kv.second.data;
+        }
+        return inputs;
+    }
+
+    double Trainer::TestMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, const DeviceDescriptor& computeDevice /*= DeviceDescriptor::UseDefaultDevice()*/)
     {
         if (!m_aggregatedEvaluationFunction)
             InvalidArgument("Trainer::TestMinibatch: Cannot test when no evaluation function was specified during 'this' trainer's construction");
 
         // TODO: Should we refactor this code that is somewhat similar to the prologue of the TrainMinibatch function
         std::unordered_map<Variable, ValuePtr> outputs = { { m_aggregatedEvaluationFunction, nullptr }, { m_testSampleCountVar, nullptr } };
-        m_combinedTrainingFunction->Forward(arguments, outputs, computeDevice);
+        
+        m_combinedTrainingFunction->Forward(GetInputs(arguments), outputs, computeDevice);
 
         auto sampleCount = GetSampleCount(m_testSampleCountVar, outputs[m_testSampleCountVar]);
         return (GetScalarValue(outputs[m_aggregatedEvaluationFunction]) / sampleCount);
     }
 
-    bool Trainer::TrainMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, const DeviceDescriptor& computeDevice /*= DeviceDescriptor::UseDefaultDevice()*/)
+    bool Trainer::TrainMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, const DeviceDescriptor& computeDevice /*= DeviceDescriptor::UseDefaultDevice()*/)
     {
         std::unordered_map<Variable, ValuePtr> outputsToFetch = {};
         return TrainMinibatch(arguments, outputsToFetch, computeDevice);
     }
 
-    bool Trainer::TrainMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, std::unordered_map<Variable, ValuePtr>& outputsToFetch, const DeviceDescriptor& computeDevice /*= DeviceDescriptor::UseDefaultDevice()*/)
+    bool Trainer::TrainMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, std::unordered_map<Variable, ValuePtr>& outputsToFetch, const DeviceDescriptor& computeDevice /*= DeviceDescriptor::UseDefaultDevice()*/)
     {
         std::unordered_map<Variable, ValuePtr> outputs = { { m_aggregatedLossFunction, nullptr }, { m_trainingSampleCountVar, nullptr } };
         if (m_aggregatedEvaluationFunction)
@@ -149,7 +159,7 @@ namespace CNTK
         if (m_distributedTrainer)
             m_distributedTrainer->PreMinibatchCallback(*this);
 
-        auto backPropSate = m_combinedTrainingFunction->Forward(arguments, outputs, computeDevice, { m_aggregatedLossFunction });
+        auto backPropSate = m_combinedTrainingFunction->Forward(GetInputs(arguments), outputs, computeDevice, { m_aggregatedLossFunction });
         m_prevMinibatchAggregateTrainingLossValue = outputs[m_aggregatedLossFunction];
         if (m_aggregatedEvaluationFunction)
             m_prevMinibatchAggregateEvalCriterionValue = outputs[m_aggregatedEvaluationFunction];
@@ -185,7 +195,7 @@ namespace CNTK
             for (const auto& parameter : modelParameters)
                 gradients.push_back(std::make_pair(parameter, parameterGradients[parameter]->Data()));
 
-            MinibatchInfo info
+            ExtendedMinibatchInfo info
             {
                 m_prevMinibatchNumSamples,
                 m_prevMinibatchAggregateTrainingLossValue->Data(),
@@ -197,6 +207,11 @@ namespace CNTK
         }
 
         bool anyUpdatesPerformed = false;
+        bool sweepEnd = std::any_of(arguments.begin(), arguments.end(), [](const std::pair<const Variable, MinibatchData>& kv)
+        {
+            return kv.second.sweepEnd;
+        });
+
         for (auto learner : m_parameterLearners)
         {
             std::unordered_map<Parameter, NDArrayViewPtr> learnerParameterGradients;
@@ -209,7 +224,7 @@ namespace CNTK
                     LogicError("The gradient value for a Parameter cannot have an associated mask!");
             }
 
-            anyUpdatesPerformed |= learner->Update(learnerParameterGradients, m_prevMinibatchNumSamples);
+            anyUpdatesPerformed |= learner->Update(learnerParameterGradients, { m_prevMinibatchNumSamples, sweepEnd });
         }
 
         return anyUpdatesPerformed;

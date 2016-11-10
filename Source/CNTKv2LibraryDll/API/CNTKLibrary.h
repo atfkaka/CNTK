@@ -3122,14 +3122,14 @@ namespace CNTK
     /// For e.g momentum, AdaGrad, RMSProp etc. are different types of learners with their own algorithms for
     /// learning parameter values using first order gradients.
     ///
-    class Learner : public std::enable_shared_from_this<Learner>, public IDictionarySerializable, public Internal::IEventListener<Internal::EventType::EndOfSweep>
+    class Learner : public std::enable_shared_from_this<Learner>, public IDictionarySerializable
     {
     public:
         //
         // Method to update the parameters associated with this learner. By returning false, this method indicates that
         // learning has stopped for all of the parameters associated with this learner
         //
-        virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) = 0;
+        virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, const MinibatchInfo& minibatchInfo) = 0;
 
         ///
         /// Returns the set of parameters associated with this learner.
@@ -3199,14 +3199,6 @@ namespace CNTK
             {
                 return schedule[m_sampleCount];
             }
-        }
-
-        ///
-        /// This method is invoked by the IEventDispatcher<EventType:EndOfSweep> (MinibatchSource), to which this 
-        /// learner is subscribed, to notify that the current sweep has just ended.
-        ///
-        void OnEvent() override {
-            m_sweepCount++;
         }
 
         Learner(const std::vector<Parameter>& parameters, const LearningRateSchedule& learningRateSchedule)
@@ -3309,7 +3301,7 @@ namespace CNTK
         /// Optimize model parameters using the specified 'arguments' minibatch of training samples.
         /// Returns false if all parameter learners indicate end of learning (through their Update method's return value).
         ///
-        CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
+        CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
 
         ///
         /// Optimize model parameters using the specified 'arguments' minibatch of training samples.
@@ -3318,13 +3310,13 @@ namespace CNTK
         /// for the 'outputs' for which the ValuePtr mapping was left null by the caller.
         /// Returns false if all parameter learners indicate end of learning (through their Update method's return value).
         ///
-        CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, std::unordered_map<Variable, ValuePtr>& outputsToFetch, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
+        CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, std::unordered_map<Variable, ValuePtr>& outputsToFetch, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
 
         ///
         /// Test the model on the specified batch of samples using the evaluation Function specified during construction of the Trainer
         /// Returns the average evaluation criterion value per sample for the tested minibatch of samples
         ///
-        CNTK_API double TestMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
+        CNTK_API double TestMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
 
         ///
         /// Checkpoint the model and other Trainer state at the specified file location
@@ -3423,17 +3415,58 @@ namespace std {
 
 namespace CNTK
 {
-    struct MinibatchData
+    ///
+    /// Minibatch meta-data that includes the number of sequences and samples in the minibatch,
+    /// as well as the sweep-end flag, which is set to true to indicate that the minibatch 
+    /// concludes a data sweep (i.e, it's the last minibatch at the end of the sweep).
+    ///
+    struct MinibatchInfo
     {
-        size_t m_numSequences;
-        size_t m_numSamples;
-        ValuePtr m_data;
+        MinibatchInfo() : numberOfSequences(0), numberOfSamples(0), sweepEnd(false) {}
+
+        MinibatchInfo(size_t numSamples, bool sweepEnd = false) 
+            : numberOfSequences(numSamples), numberOfSamples(numSamples), sweepEnd(sweepEnd) 
+        {}
+
+        MinibatchInfo(size_t numSequnces, size_t numSamples, bool sweepEnd = false) 
+            : numberOfSequences(numSequnces), numberOfSamples(numSamples), sweepEnd(sweepEnd) 
+        {}
+
+        size_t numberOfSequences;
+        size_t numberOfSamples;
+        bool sweepEnd; 
+    };
+
+    ///
+    /// A struct that combines the minibatch meta-data with the actual minibatch data.
+    ///
+    struct MinibatchData : public MinibatchInfo
+    {
+        MinibatchData() 
+            : MinibatchInfo(), data(nullptr)
+        {}
+
+        // a convenience constructor to allow passing ValuePtr arguments in place 
+        // of MinibatchData parameter (e.g., in Trainer::TrainMinibatch)
+        MinibatchData(ValuePtr value) 
+            : MinibatchInfo(), data(value)
+        {}
+
+        MinibatchData(size_t numSamples, ValuePtr value, bool sweepEnd) 
+            : MinibatchInfo(numSamples, sweepEnd), data(value)
+        {}
+
+        MinibatchData(size_t numSequnces, size_t numSamples, ValuePtr value, bool sweepEnd) 
+            : MinibatchInfo(numSequnces, numSamples, sweepEnd), data(value)
+        {}
+
+        ValuePtr data;
     };
 
     ///
     /// Abstraction for generating minibatches of samples for training/evaluation.
     ///
-    class MinibatchSource : public std::enable_shared_from_this<MinibatchSource>, public Internal::IEventDispatcher<Internal::EventType::EndOfSweep>
+    class MinibatchSource : public std::enable_shared_from_this<MinibatchSource>
     {
     public:
         static const size_t InfinitelyRepeat = SIZE_MAX;
@@ -3498,14 +3531,6 @@ namespace CNTK
 
     protected:
         MinibatchSource() {}
-
-        ///
-        /// Notifies all of the subscribed listeners that an end of a sweep has been reached.
-        ///
-        void OnReachingSweepEnd() const
-        {
-            PublishEvent();
-        }
     };
 
     ///
@@ -3681,9 +3706,12 @@ namespace CNTK
     CNTK_API QuantizedDistributedCommunicatorPtr QuantizedMPICommunicator(bool zeroThresholdFor1Bit, bool useQuantizationForSelfStripe, size_t numQuantizationBits);
 
     /// A collection of additional information needed for the distributed trainer to aggregate the gradients
-    struct MinibatchInfo
+    struct ExtendedMinibatchInfo : public MinibatchInfo
     {
-        size_t numberOfSamples;
+        ExtendedMinibatchInfo(size_t numSamples, NDArrayViewPtr trainingLossValue, NDArrayViewPtr evalCriterionValue) 
+            : MinibatchInfo(numSamples), trainingLossValue(trainingLossValue), evalCriterionValue(evalCriterionValue)
+        {}
+
         NDArrayViewPtr trainingLossValue;
         NDArrayViewPtr evalCriterionValue;
     };
@@ -3698,7 +3726,7 @@ namespace CNTK
         CNTK_API virtual void PreMinibatchCallback(const Trainer& trainer) = 0;
 
         // Optional override that gets called per minibatch after finishing gradient computation but before updating model parameters
-        CNTK_API virtual void PreParameterUpdateCallback(const Trainer& trainer, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info) = 0;
+        CNTK_API virtual void PreParameterUpdateCallback(const Trainer& trainer, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, ExtendedMinibatchInfo& info) = 0;
 
         // Optionally overridable method to get checkpoint state associated with this Distributed train method
         CNTK_API virtual Dictionary GetCheckpointState() const = 0;

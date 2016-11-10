@@ -224,26 +224,49 @@ void TestTrainingParametersSchedule()
     assert(schedule16[99999] == exp(-1.0 / 3.0));
 }
 
-class MockEventDispatcher : public Internal::IEventDispatcher<Internal::EventType::EndOfSweep>
+
+void TestSweepBasedSchedule(const DeviceDescriptor& device)
 {
-public:
-    void PublishMockEvent() const { PublishEvent(); }
-};
+    auto schedule = LearningRatePerSampleSchedule({ 1, 2, 3, 4, 5 }, LearningRateSchedule::FullDataSweep);
 
+    auto learner1 = SGDLearner({}, schedule);
+    assert(1 == learner1->LearningRate());
 
-void TestSweepBasedSchedule()
-{
-    auto learner = SGDLearner({}, LearningRatePerSampleSchedule({1,2,3,4,5}, LearningRateSchedule::FullDataSweep));
-    
-    MockEventDispatcher dispatcher;
-    dispatcher.AddEventListener(learner);
-
-    assert(1 == learner->LearningRate());
+    MinibatchInfo mockMBInfo = { 1, true };
 
     for (auto i : {2, 3, 4, 5 })
     {
-        dispatcher.PublishMockEvent();
-        assert(i == learner->LearningRate());
+        learner1->Update({}, mockMBInfo);
+        assert(i == learner1->LearningRate());
+    }
+
+
+    const size_t inputDim = 2;
+    const size_t numOutputClasses = 2;
+    auto minibatchSource = TextFormatMinibatchSource(L"SimpleDataTest_cntk_text.txt", { { L"features", inputDim }, { L"labels", numOutputClasses } });
+
+    auto minibatchSize = 400; // full data size is 603
+    auto featureStreamInfo = minibatchSource->StreamInfo(L"features");
+    auto labelStreamInfo = minibatchSource->StreamInfo(L"labels");
+
+    auto input = InputVariable({ inputDim }, DataType::Float, L"features");
+    auto labels = InputVariable({ numOutputClasses }, DataType::Float, L"labels");
+
+
+    auto classifierOutput = FullyConnectedLinearLayer(input, numOutputClasses, device);
+    auto trainingLoss = CNTK::CrossEntropyWithSoftmax(classifierOutput, labels, L"lossFunction");
+    auto prediction = CNTK::ClassificationError(classifierOutput, labels, L"classificationError");
+    auto learner2 = SGDLearner(classifierOutput->Parameters(), schedule);
+    Trainer trainer(classifierOutput, trainingLoss, prediction, { learner2 });
+
+    for (auto i = 1; i <= 10; ++i)
+    {
+         auto minibatchData = minibatchSource->GetNextMinibatch(minibatchSize, device);
+         assert(minibatchData[featureStreamInfo].sweepEnd == minibatchData[labelStreamInfo].sweepEnd);
+         assert((i % 2 == 0) == minibatchData[labelStreamInfo].sweepEnd);
+         trainer.TrainMinibatch({ { input, minibatchData[featureStreamInfo] }, { labels, minibatchData[labelStreamInfo] } }, device);
+         auto expectedLR = std::min(((i/2) + 1), 5);
+         assert(expectedLR == learner2->LearningRate());
     }
 }
 
@@ -254,7 +277,7 @@ void LearnerTests()
 
     TestTrainingParametersSchedule();
 
-    TestSweepBasedSchedule();
+    TestSweepBasedSchedule(DeviceDescriptor::CPUDevice());
 
     TestSGDLearner<double>(5, 3, DeviceDescriptor::CPUDevice());
 
