@@ -11,10 +11,10 @@
 
 public class Function : global::System.IDisposable {
   private global::System.Runtime.InteropServices.HandleRef swigCPtr;
-  protected bool swigCMemOwn;
+  private bool swigCMemOwnBase;
 
   internal Function(global::System.IntPtr cPtr, bool cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
+    swigCMemOwnBase = cMemoryOwn;
     swigCPtr = new global::System.Runtime.InteropServices.HandleRef(this, cPtr);
   }
 
@@ -29,14 +29,49 @@ public class Function : global::System.IDisposable {
   public virtual void Dispose() {
     lock(this) {
       if (swigCPtr.Handle != global::System.IntPtr.Zero) {
-        if (swigCMemOwn) {
-          swigCMemOwn = false;
+        if (swigCMemOwnBase) {
+          swigCMemOwnBase = false;
           CSEvalPINVOKE.delete_Function(swigCPtr);
         }
         swigCPtr = new global::System.Runtime.InteropServices.HandleRef(null, global::System.IntPtr.Zero);
       }
       global::System.GC.SuppressFinalize(this);
     }
+  }
+
+  public virtual BackPropState Forward(SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t arguments, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t outputs, DeviceDescriptor computeDevice, SWIGTYPE_p_std__unordered_setT_std__wstring_t outputsToRetainBackwardStateFor) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Function_Forward__SWIG_0(swigCPtr, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(arguments), SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(outputs), (int)computeDevice, SWIGTYPE_p_std__unordered_setT_std__wstring_t.getCPtr(outputsToRetainBackwardStateFor));
+    BackPropState ret = (cPtr == global::System.IntPtr.Zero) ? null : new BackPropState(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public virtual BackPropState Forward(SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t arguments, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t outputs, DeviceDescriptor computeDevice) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Function_Forward__SWIG_1(swigCPtr, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(arguments), SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(outputs), (int)computeDevice);
+    BackPropState ret = (cPtr == global::System.IntPtr.Zero) ? null : new BackPropState(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public virtual BackPropState Forward(SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t arguments, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t outputs) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Function_Forward__SWIG_2(swigCPtr, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(arguments), SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(outputs));
+    BackPropState ret = (cPtr == global::System.IntPtr.Zero) ? null : new BackPropState(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public static Function LoadModel(DataType dataType, string modelFile, DeviceDescriptor computeDevice) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Function_LoadModel__SWIG_0((int)dataType, modelFile, (int)computeDevice);
+    Function ret = (cPtr == global::System.IntPtr.Zero) ? null : new Function(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public static Function LoadModel(DataType dataType, string modelFile) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Function_LoadModel__SWIG_1((int)dataType, modelFile);
+    Function ret = (cPtr == global::System.IntPtr.Zero) ? null : new Function(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
   }
 
 }

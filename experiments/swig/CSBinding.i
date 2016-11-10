@@ -36,9 +36,9 @@
 %template() std::vector<std::shared_ptr<CNTK::Learner>>;
 %template() std::pair<size_t, double>;
 %template() std::vector<std::pair<size_t, double>>;
-%shared_ptr(BackPropStatePtr);
-%shared_ptr(FunctionPtr);
-%shared_ptr(ValuePtr);
+%shared_ptr(BackPropState);
+%shared_ptr(Function);
+%shared_ptr(Value);
 
 // %feature ("noabstract") Function
 
@@ -46,9 +46,4 @@
 
 %template(SparseSequenceDataFloat) SparseSequenceData<float>;
 %template(SparseSequenceDataDouble) SparseSequenceData<double>;
-
-%shared_ptr(BackPropStatePtr);
-%shared_ptr(FunctionPtr);
-%shared_ptr(ValuePtr);
-
 

@@ -396,6 +396,16 @@ SWIGINTERN void SWIG_CSharpException(int code, const char *msg) {
 #include <stdio.h>
 
 
+struct SWIG_null_deleter {
+  void operator() (void const *) const {
+  }
+};
+#define SWIG_NO_NULL_DELETER_0 , SWIG_null_deleter()
+#define SWIG_NO_NULL_DELETER_1
+#define SWIG_NO_NULL_DELETER_SWIG_POINTER_NEW
+#define SWIG_NO_NULL_DELETER_SWIG_POINTER_OWN
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -475,11 +485,68 @@ SWIGEXPORT void * SWIGSTDCALL CSharp_final_get() {
 }
 
 
+SWIGEXPORT void * SWIGSTDCALL CSharp_Value_Create__SWIG_0(void * jarg1, void * jarg2, int jarg3, unsigned int jarg4) {
+  void * jresult ;
+  NDShape *arg1 = 0 ;
+  std::vector< std::vector< float > > *arg2 = 0 ;
+  DeviceDescriptor *arg3 = 0 ;
+  bool arg4 ;
+  DeviceDescriptor temp3 ;
+  ValuePtr result;
+  
+  arg1 = (NDShape *)jarg1;
+  if (!arg1) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "NDShape const & type is null", 0);
+    return 0;
+  } 
+  arg2 = (std::vector< std::vector< float > > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< std::vector< float > > const & type is null", 0);
+    return 0;
+  } 
+  temp3 = (DeviceDescriptor)jarg3; 
+  arg3 = &temp3; 
+  arg4 = jarg4 ? true : false; 
+  result = Value::Create((NDShape const &)*arg1,(std::vector< std::vector< float > > const &)*arg2,(enum DeviceDescriptor const &)*arg3,arg4);
+  jresult = result ? new ValuePtr(result) : 0; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_Value_Create__SWIG_1(void * jarg1, void * jarg2, int jarg3) {
+  void * jresult ;
+  NDShape *arg1 = 0 ;
+  std::vector< std::vector< float > > *arg2 = 0 ;
+  DeviceDescriptor *arg3 = 0 ;
+  DeviceDescriptor temp3 ;
+  ValuePtr result;
+  
+  arg1 = (NDShape *)jarg1;
+  if (!arg1) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "NDShape const & type is null", 0);
+    return 0;
+  } 
+  arg2 = (std::vector< std::vector< float > > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::vector< std::vector< float > > const & type is null", 0);
+    return 0;
+  } 
+  temp3 = (DeviceDescriptor)jarg3; 
+  arg3 = &temp3; 
+  result = Value::Create((NDShape const &)*arg1,(std::vector< std::vector< float > > const &)*arg2,(enum DeviceDescriptor const &)*arg3);
+  jresult = result ? new ValuePtr(result) : 0; 
+  return jresult;
+}
+
+
 SWIGEXPORT void SWIGSTDCALL CSharp_delete_Value(void * jarg1) {
   Value *arg1 = (Value *) 0 ;
+  std::shared_ptr< Value > *smartarg1 = 0 ;
   
-  arg1 = (Value *)jarg1; 
-  delete arg1;
+  
+  smartarg1 = (std::shared_ptr<  Value > *)jarg1;
+  arg1 = (Value *)(smartarg1 ? smartarg1->get() : 0); 
+  (void)arg1; delete smartarg1;
 }
 
 
@@ -488,7 +555,9 @@ SWIGEXPORT void * SWIGSTDCALL CSharp_new_Value() {
   Value *result = 0 ;
   
   result = (Value *)new Value();
-  jresult = (void *)result; 
+  
+  jresult = result ? new std::shared_ptr<  Value >(result SWIG_NO_NULL_DELETER_1) : 0;
+  
   return jresult;
 }
 
@@ -496,28 +565,299 @@ SWIGEXPORT void * SWIGSTDCALL CSharp_new_Value() {
 SWIGEXPORT void * SWIGSTDCALL CSharp_BackPropState_Function(void * jarg1) {
   void * jresult ;
   BackPropState *arg1 = (BackPropState *) 0 ;
-  SwigValueWrapper< std::shared_ptr< Function > > result;
+  std::shared_ptr< BackPropState const > *smartarg1 = 0 ;
+  FunctionPtr result;
   
-  arg1 = (BackPropState *)jarg1; 
+  
+  smartarg1 = (std::shared_ptr< const BackPropState > *)jarg1;
+  arg1 = (BackPropState *)(smartarg1 ? smartarg1->get() : 0); 
   result = ((BackPropState const *)arg1)->Function();
-  jresult = new std::shared_ptr<  FunctionPtr >(new FunctionPtr((FunctionPtr &)result)); 
+  jresult = result ? new FunctionPtr(result) : 0; 
   return jresult;
 }
 
 
 SWIGEXPORT void SWIGSTDCALL CSharp_delete_BackPropState(void * jarg1) {
   BackPropState *arg1 = (BackPropState *) 0 ;
+  std::shared_ptr< BackPropState > *smartarg1 = 0 ;
   
-  arg1 = (BackPropState *)jarg1; 
-  delete arg1;
+  
+  smartarg1 = (std::shared_ptr<  BackPropState > *)jarg1;
+  arg1 = (BackPropState *)(smartarg1 ? smartarg1->get() : 0); 
+  (void)arg1; delete smartarg1;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_Function_Forward__SWIG_0(void * jarg1, void * jarg2, void * jarg3, int jarg4, void * jarg5) {
+  void * jresult ;
+  Function *arg1 = (Function *) 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg2 = 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg3 = 0 ;
+  DeviceDescriptor *arg4 = 0 ;
+  std::unordered_set< std::wstring > *arg5 = 0 ;
+  std::shared_ptr< Function > *smartarg1 = 0 ;
+  DeviceDescriptor temp4 ;
+  BackPropStatePtr result;
+  
+  
+  smartarg1 = (std::shared_ptr<  Function > *)jarg1;
+  arg1 = (Function *)(smartarg1 ? smartarg1->get() : 0); 
+  arg2 = (std::unordered_map< std::wstring,ValuePtr > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > const & type is null", 0);
+    return 0;
+  } 
+  arg3 = (std::unordered_map< std::wstring,ValuePtr > *)jarg3;
+  if (!arg3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > & type is null", 0);
+    return 0;
+  } 
+  temp4 = (DeviceDescriptor)jarg4; 
+  arg4 = &temp4; 
+  arg5 = (std::unordered_set< std::wstring > *)jarg5;
+  if (!arg5) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_set< std::wstring > const & type is null", 0);
+    return 0;
+  } 
+  result = (arg1)->Forward((std::unordered_map< std::wstring,ValuePtr > const &)*arg2,*arg3,(DeviceDescriptor const &)*arg4,(std::unordered_set< std::wstring > const &)*arg5);
+  jresult = result ? new BackPropStatePtr(result) : 0; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_Function_Forward__SWIG_1(void * jarg1, void * jarg2, void * jarg3, int jarg4) {
+  void * jresult ;
+  Function *arg1 = (Function *) 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg2 = 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg3 = 0 ;
+  DeviceDescriptor *arg4 = 0 ;
+  std::shared_ptr< Function > *smartarg1 = 0 ;
+  DeviceDescriptor temp4 ;
+  BackPropStatePtr result;
+  
+  
+  smartarg1 = (std::shared_ptr<  Function > *)jarg1;
+  arg1 = (Function *)(smartarg1 ? smartarg1->get() : 0); 
+  arg2 = (std::unordered_map< std::wstring,ValuePtr > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > const & type is null", 0);
+    return 0;
+  } 
+  arg3 = (std::unordered_map< std::wstring,ValuePtr > *)jarg3;
+  if (!arg3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > & type is null", 0);
+    return 0;
+  } 
+  temp4 = (DeviceDescriptor)jarg4; 
+  arg4 = &temp4; 
+  result = (arg1)->Forward((std::unordered_map< std::wstring,ValuePtr > const &)*arg2,*arg3,(DeviceDescriptor const &)*arg4);
+  jresult = result ? new BackPropStatePtr(result) : 0; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_Function_Forward__SWIG_2(void * jarg1, void * jarg2, void * jarg3) {
+  void * jresult ;
+  Function *arg1 = (Function *) 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg2 = 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg3 = 0 ;
+  std::shared_ptr< Function > *smartarg1 = 0 ;
+  BackPropStatePtr result;
+  
+  
+  smartarg1 = (std::shared_ptr<  Function > *)jarg1;
+  arg1 = (Function *)(smartarg1 ? smartarg1->get() : 0); 
+  arg2 = (std::unordered_map< std::wstring,ValuePtr > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > const & type is null", 0);
+    return 0;
+  } 
+  arg3 = (std::unordered_map< std::wstring,ValuePtr > *)jarg3;
+  if (!arg3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > & type is null", 0);
+    return 0;
+  } 
+  result = (arg1)->Forward((std::unordered_map< std::wstring,ValuePtr > const &)*arg2,*arg3);
+  jresult = result ? new BackPropStatePtr(result) : 0; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_Function_LoadModel__SWIG_0(int jarg1, wchar_t * jarg2, int jarg3) {
+  void * jresult ;
+  DataType arg1 ;
+  std::wstring *arg2 = 0 ;
+  DeviceDescriptor *arg3 = 0 ;
+  DeviceDescriptor temp3 ;
+  FunctionPtr result;
+  
+  arg1 = (DataType)jarg1; 
+  if (!jarg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null wstring", 0);
+    return 0;
+  }
+  std::wstring arg2_str(jarg2);
+  arg2 = &arg2_str; 
+  temp3 = (DeviceDescriptor)jarg3; 
+  arg3 = &temp3; 
+  result = Function::LoadModel(arg1,(std::wstring const &)*arg2,(enum DeviceDescriptor const &)*arg3);
+  jresult = result ? new FunctionPtr(result) : 0; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_Function_LoadModel__SWIG_1(int jarg1, wchar_t * jarg2) {
+  void * jresult ;
+  DataType arg1 ;
+  std::wstring *arg2 = 0 ;
+  FunctionPtr result;
+  
+  arg1 = (DataType)jarg1; 
+  if (!jarg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null wstring", 0);
+    return 0;
+  }
+  std::wstring arg2_str(jarg2);
+  arg2 = &arg2_str; 
+  result = Function::LoadModel(arg1,(std::wstring const &)*arg2);
+  jresult = result ? new FunctionPtr(result) : 0; 
+  return jresult;
 }
 
 
 SWIGEXPORT void SWIGSTDCALL CSharp_delete_Function(void * jarg1) {
   Function *arg1 = (Function *) 0 ;
+  std::shared_ptr< Function > *smartarg1 = 0 ;
   
-  arg1 = (Function *)jarg1; 
-  delete arg1;
+  
+  smartarg1 = (std::shared_ptr<  Function > *)jarg1;
+  arg1 = (Function *)(smartarg1 ? smartarg1->get() : 0); 
+  (void)arg1; delete smartarg1;
+}
+
+
+SWIGEXPORT void SWIGSTDCALL CSharp_CompositeFunciton_name_set(void * jarg1, wchar_t * jarg2) {
+  CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
+  std::wstring *arg2 = 0 ;
+  
+  arg1 = (CompositeFunciton *)jarg1; 
+  if (!jarg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null wstring", 0);
+    return ;
+  }
+  std::wstring arg2_str(jarg2);
+  arg2 = &arg2_str; 
+  if (arg1) (arg1)->name = *arg2;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_CompositeFunciton_name_get(void * jarg1) {
+  void * jresult ;
+  CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
+  std::wstring *result = 0 ;
+  
+  arg1 = (CompositeFunciton *)jarg1; 
+  result = (std::wstring *) & ((arg1)->name);
+  jresult = SWIG_csharp_wstring_callback(result->c_str()); 
+  return jresult;
+}
+
+
+SWIGEXPORT int SWIGSTDCALL CSharp_CompositeFunciton_getName(void * jarg1) {
+  int jresult ;
+  CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
+  int result;
+  
+  arg1 = (CompositeFunciton *)jarg1; 
+  result = (int)(arg1)->getName();
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_CompositeFunciton_Forward__SWIG_0(void * jarg1, void * jarg2, void * jarg3, int jarg4, void * jarg5) {
+  void * jresult ;
+  CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg2 = 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg3 = 0 ;
+  DeviceDescriptor *arg4 = 0 ;
+  std::unordered_set< std::wstring > *arg5 = 0 ;
+  DeviceDescriptor temp4 ;
+  BackPropStatePtr result;
+  
+  arg1 = (CompositeFunciton *)jarg1; 
+  arg2 = (std::unordered_map< std::wstring,ValuePtr > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > const & type is null", 0);
+    return 0;
+  } 
+  arg3 = (std::unordered_map< std::wstring,ValuePtr > *)jarg3;
+  if (!arg3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > & type is null", 0);
+    return 0;
+  } 
+  temp4 = (DeviceDescriptor)jarg4; 
+  arg4 = &temp4; 
+  arg5 = (std::unordered_set< std::wstring > *)jarg5;
+  if (!arg5) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_set< std::wstring > const & type is null", 0);
+    return 0;
+  } 
+  result = (arg1)->Forward((std::unordered_map< std::wstring,ValuePtr > const &)*arg2,*arg3,(DeviceDescriptor const &)*arg4,(std::unordered_set< std::wstring > const &)*arg5);
+  jresult = result ? new BackPropStatePtr(result) : 0; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_CompositeFunciton_Forward__SWIG_1(void * jarg1, void * jarg2, void * jarg3, int jarg4) {
+  void * jresult ;
+  CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg2 = 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg3 = 0 ;
+  DeviceDescriptor *arg4 = 0 ;
+  DeviceDescriptor temp4 ;
+  BackPropStatePtr result;
+  
+  arg1 = (CompositeFunciton *)jarg1; 
+  arg2 = (std::unordered_map< std::wstring,ValuePtr > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > const & type is null", 0);
+    return 0;
+  } 
+  arg3 = (std::unordered_map< std::wstring,ValuePtr > *)jarg3;
+  if (!arg3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > & type is null", 0);
+    return 0;
+  } 
+  temp4 = (DeviceDescriptor)jarg4; 
+  arg4 = &temp4; 
+  result = (arg1)->Forward((std::unordered_map< std::wstring,ValuePtr > const &)*arg2,*arg3,(DeviceDescriptor const &)*arg4);
+  jresult = result ? new BackPropStatePtr(result) : 0; 
+  return jresult;
+}
+
+
+SWIGEXPORT void * SWIGSTDCALL CSharp_CompositeFunciton_Forward__SWIG_2(void * jarg1, void * jarg2, void * jarg3) {
+  void * jresult ;
+  CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg2 = 0 ;
+  std::unordered_map< std::wstring,ValuePtr > *arg3 = 0 ;
+  BackPropStatePtr result;
+  
+  arg1 = (CompositeFunciton *)jarg1; 
+  arg2 = (std::unordered_map< std::wstring,ValuePtr > *)jarg2;
+  if (!arg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > const & type is null", 0);
+    return 0;
+  } 
+  arg3 = (std::unordered_map< std::wstring,ValuePtr > *)jarg3;
+  if (!arg3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::unordered_map< std::wstring,ValuePtr > & type is null", 0);
+    return 0;
+  } 
+  result = (arg1)->Forward((std::unordered_map< std::wstring,ValuePtr > const &)*arg2,*arg3);
+  jresult = result ? new BackPropStatePtr(result) : 0; 
+  return jresult;
 }
 
 
@@ -535,7 +875,7 @@ SWIGEXPORT void SWIGSTDCALL CSharp_delete_CompositeFunciton(void * jarg1) {
   CompositeFunciton *arg1 = (CompositeFunciton *) 0 ;
   
   arg1 = (CompositeFunciton *)jarg1; 
-  delete arg1;
+  (void)arg1; delete smartarg1;
 }
 
 

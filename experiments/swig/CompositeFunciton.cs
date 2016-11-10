@@ -38,6 +38,44 @@ public class CompositeFunciton : Function {
     }
   }
 
+  public string name {
+    set {
+      CSEvalPINVOKE.CompositeFunciton_name_set(swigCPtr, value);
+      if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    } 
+    get {
+      string ret = CSEvalPINVOKE.CompositeFunciton_name_get(swigCPtr);
+      if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+      return ret;
+    } 
+  }
+
+  public int getName() {
+    int ret = CSEvalPINVOKE.CompositeFunciton_getName(swigCPtr);
+    return ret;
+  }
+
+  public override BackPropState Forward(SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t arguments, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t outputs, DeviceDescriptor computeDevice, SWIGTYPE_p_std__unordered_setT_std__wstring_t outputsToRetainBackwardStateFor) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.CompositeFunciton_Forward__SWIG_0(swigCPtr, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(arguments), SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(outputs), (int)computeDevice, SWIGTYPE_p_std__unordered_setT_std__wstring_t.getCPtr(outputsToRetainBackwardStateFor));
+    BackPropState ret = (cPtr == global::System.IntPtr.Zero) ? null : new BackPropState(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public override BackPropState Forward(SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t arguments, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t outputs, DeviceDescriptor computeDevice) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.CompositeFunciton_Forward__SWIG_1(swigCPtr, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(arguments), SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(outputs), (int)computeDevice);
+    BackPropState ret = (cPtr == global::System.IntPtr.Zero) ? null : new BackPropState(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public override BackPropState Forward(SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t arguments, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t outputs) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.CompositeFunciton_Forward__SWIG_2(swigCPtr, SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(arguments), SWIGTYPE_p_std__unordered_mapT_std__wstring_std__shared_ptrT_Value_t_t.getCPtr(outputs));
+    BackPropState ret = (cPtr == global::System.IntPtr.Zero) ? null : new BackPropState(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
   public CompositeFunciton() : this(CSEvalPINVOKE.new_CompositeFunciton(), true) {
   }
 

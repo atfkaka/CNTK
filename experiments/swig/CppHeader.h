@@ -106,8 +106,8 @@ public:
     /// Create a new Value object containing a collection of variable length sequences.
     /// The created Value object contains a copy of the specified 'sequences' data.
     ///
-    template <typename ElementType>
-    CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<std::vector<ElementType>>& sequences, const DeviceDescriptor& device, bool readOnly = false);
+   /* template <typename ElementType>*/
+    CNTK_API static ValuePtr Create(const NDShape& sampleShape, const std::vector<std::vector<float>>& sequences, const DeviceDescriptor& device, bool readOnly = false);
 
     ///
     /// Create a new Value object containing a collection of variable length sequences of one hot vectors
@@ -152,6 +152,7 @@ typedef std::shared_ptr<BackPropState> BackPropStatePtr;
 
 class Function : public std::enable_shared_from_this<Function>
 {
+public:
     /*virtual BackPropStatePtr Forward(const std::unordered_map<Variable, ValuePtr>& arguments,
                                      std::unordered_map<Variable, ValuePtr>& outputs,
                                      const DeviceDescriptor& computeDevice = DeviceDescriptor::CPUOnly,
@@ -170,7 +171,9 @@ class Function : public std::enable_shared_from_this<Function>
 
 class CompositeFunciton : public Function
 {
+public:
     std::wstring name;
+    int getName();
     virtual BackPropStatePtr Forward(const std::unordered_map<std::wstring, ValuePtr>& arguments,
                                      std::unordered_map<std::wstring, ValuePtr>& outputs,
                                      const DeviceDescriptor& computeDevice = DeviceDescriptor::CPUOnly,

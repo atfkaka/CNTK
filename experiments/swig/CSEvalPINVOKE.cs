@@ -225,6 +225,12 @@ class CSEvalPINVOKE {
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_final_get")]
   public static extern global::System.IntPtr final_get();
 
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Value_Create__SWIG_0")]
+  public static extern global::System.IntPtr Value_Create__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3, bool jarg4);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Value_Create__SWIG_1")]
+  public static extern global::System.IntPtr Value_Create__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3);
+
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_Value")]
   public static extern void delete_Value(global::System.Runtime.InteropServices.HandleRef jarg1);
 
@@ -237,8 +243,41 @@ class CSEvalPINVOKE {
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_BackPropState")]
   public static extern void delete_BackPropState(global::System.Runtime.InteropServices.HandleRef jarg1);
 
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Function_Forward__SWIG_0")]
+  public static extern global::System.IntPtr Function_Forward__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3, int jarg4, global::System.Runtime.InteropServices.HandleRef jarg5);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Function_Forward__SWIG_1")]
+  public static extern global::System.IntPtr Function_Forward__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3, int jarg4);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Function_Forward__SWIG_2")]
+  public static extern global::System.IntPtr Function_Forward__SWIG_2(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Function_LoadModel__SWIG_0")]
+  public static extern global::System.IntPtr Function_LoadModel__SWIG_0(int jarg1, [global::System.Runtime.InteropServices.MarshalAs(global::System.Runtime.InteropServices.UnmanagedType.LPWStr)]string jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Function_LoadModel__SWIG_1")]
+  public static extern global::System.IntPtr Function_LoadModel__SWIG_1(int jarg1, [global::System.Runtime.InteropServices.MarshalAs(global::System.Runtime.InteropServices.UnmanagedType.LPWStr)]string jarg2);
+
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_Function")]
   public static extern void delete_Function(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_name_set")]
+  public static extern void CompositeFunciton_name_set(global::System.Runtime.InteropServices.HandleRef jarg1, [global::System.Runtime.InteropServices.MarshalAs(global::System.Runtime.InteropServices.UnmanagedType.LPWStr)]string jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_name_get")]
+  public static extern string CompositeFunciton_name_get(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_getName")]
+  public static extern int CompositeFunciton_getName(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_Forward__SWIG_0")]
+  public static extern global::System.IntPtr CompositeFunciton_Forward__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3, int jarg4, global::System.Runtime.InteropServices.HandleRef jarg5);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_Forward__SWIG_1")]
+  public static extern global::System.IntPtr CompositeFunciton_Forward__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3, int jarg4);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_Forward__SWIG_2")]
+  public static extern global::System.IntPtr CompositeFunciton_Forward__SWIG_2(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_CompositeFunciton")]
   public static extern global::System.IntPtr new_CompositeFunciton();

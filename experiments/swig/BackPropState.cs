@@ -11,10 +11,10 @@
 
 public class BackPropState : global::System.IDisposable {
   private global::System.Runtime.InteropServices.HandleRef swigCPtr;
-  protected bool swigCMemOwn;
+  private bool swigCMemOwnBase;
 
   internal BackPropState(global::System.IntPtr cPtr, bool cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
+    swigCMemOwnBase = cMemoryOwn;
     swigCPtr = new global::System.Runtime.InteropServices.HandleRef(this, cPtr);
   }
 
@@ -29,8 +29,8 @@ public class BackPropState : global::System.IDisposable {
   public virtual void Dispose() {
     lock(this) {
       if (swigCPtr.Handle != global::System.IntPtr.Zero) {
-        if (swigCMemOwn) {
-          swigCMemOwn = false;
+        if (swigCMemOwnBase) {
+          swigCMemOwnBase = false;
           CSEvalPINVOKE.delete_BackPropState(swigCPtr);
         }
         swigCPtr = new global::System.Runtime.InteropServices.HandleRef(null, global::System.IntPtr.Zero);
@@ -39,8 +39,10 @@ public class BackPropState : global::System.IDisposable {
     }
   }
 
-  public SWIGTYPE_p_std__shared_ptrT_Function_t Function() {
-    SWIGTYPE_p_std__shared_ptrT_Function_t ret = new SWIGTYPE_p_std__shared_ptrT_Function_t(CSEvalPINVOKE.BackPropState_Function(swigCPtr), true);
+  public Function Function() {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.BackPropState_Function(swigCPtr);
+    Function ret = (cPtr == global::System.IntPtr.Zero) ? null : new Function(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
     return ret;
   }
 

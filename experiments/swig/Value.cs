@@ -11,10 +11,10 @@
 
 public class Value : global::System.IDisposable {
   private global::System.Runtime.InteropServices.HandleRef swigCPtr;
-  protected bool swigCMemOwn;
+  private bool swigCMemOwnBase;
 
   internal Value(global::System.IntPtr cPtr, bool cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
+    swigCMemOwnBase = cMemoryOwn;
     swigCPtr = new global::System.Runtime.InteropServices.HandleRef(this, cPtr);
   }
 
@@ -29,14 +29,28 @@ public class Value : global::System.IDisposable {
   public virtual void Dispose() {
     lock(this) {
       if (swigCPtr.Handle != global::System.IntPtr.Zero) {
-        if (swigCMemOwn) {
-          swigCMemOwn = false;
+        if (swigCMemOwnBase) {
+          swigCMemOwnBase = false;
           CSEvalPINVOKE.delete_Value(swigCPtr);
         }
         swigCPtr = new global::System.Runtime.InteropServices.HandleRef(null, global::System.IntPtr.Zero);
       }
       global::System.GC.SuppressFinalize(this);
     }
+  }
+
+  public static Value Create(SWIGTYPE_p_NDShape sampleShape, SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t sequences, DeviceDescriptor device, bool readOnly) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_0(SWIGTYPE_p_NDShape.getCPtr(sampleShape), SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t.getCPtr(sequences), (int)device, readOnly);
+    Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public static Value Create(SWIGTYPE_p_NDShape sampleShape, SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t sequences, DeviceDescriptor device) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_1(SWIGTYPE_p_NDShape.getCPtr(sampleShape), SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t.getCPtr(sequences), (int)device);
+    Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
   }
 
   public Value() : this(CSEvalPINVOKE.new_Value(), true) {
