@@ -39,15 +39,43 @@ public class Value : global::System.IDisposable {
     }
   }
 
-  public static Value Create(SWIGTYPE_p_NDShape sampleShape, SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t sequences, DeviceDescriptor device, bool readOnly) {
-    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_0(SWIGTYPE_p_NDShape.getCPtr(sampleShape), SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t.getCPtr(sequences), (int)device, readOnly);
+  public static Value Create(SWIGTYPE_p_NDShape sampleShape, FloatVector sequences, DeviceDescriptor device, bool readOnly) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_0(SWIGTYPE_p_NDShape.getCPtr(sampleShape), FloatVector.getCPtr(sequences), (int)device, readOnly);
     Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
     if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
     return ret;
   }
 
-  public static Value Create(SWIGTYPE_p_NDShape sampleShape, SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t sequences, DeviceDescriptor device) {
-    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_1(SWIGTYPE_p_NDShape.getCPtr(sampleShape), SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t.getCPtr(sequences), (int)device);
+  public static Value Create(SWIGTYPE_p_NDShape sampleShape, FloatVector sequences, DeviceDescriptor device) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_1(SWIGTYPE_p_NDShape.getCPtr(sampleShape), FloatVector.getCPtr(sequences), (int)device);
+    Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public static Value Create(SWIGTYPE_p_NDShape sampleShape, FloatVectorVector sequences, DeviceDescriptor device, bool readOnly) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_2(SWIGTYPE_p_NDShape.getCPtr(sampleShape), FloatVectorVector.getCPtr(sequences), (int)device, readOnly);
+    Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public static Value Create(SWIGTYPE_p_NDShape sampleShape, FloatVectorVector sequences, DeviceDescriptor device) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_3(SWIGTYPE_p_NDShape.getCPtr(sampleShape), FloatVectorVector.getCPtr(sequences), (int)device);
+    Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public static Value Create(uint vocabularySize, SizeTVector oneHotSequences, DeviceDescriptor device, bool readOnly) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_4(vocabularySize, SizeTVector.getCPtr(oneHotSequences), (int)device, readOnly);
+    Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
+    if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public static Value Create(uint vocabularySize, SizeTVector oneHotSequences, DeviceDescriptor device) {
+    global::System.IntPtr cPtr = CSEvalPINVOKE.Value_Create__SWIG_5(vocabularySize, SizeTVector.getCPtr(oneHotSequences), (int)device);
     Value ret = (cPtr == global::System.IntPtr.Zero) ? null : new Value(cPtr, true);
     if (CSEvalPINVOKE.SWIGPendingException.Pending) throw CSEvalPINVOKE.SWIGPendingException.Retrieve();
     return ret;

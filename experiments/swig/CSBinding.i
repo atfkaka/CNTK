@@ -14,16 +14,16 @@
 %include <std_shared_ptr.i>
 
 
-%template() std::vector<SparseSequenceData<float>>;
-%template() std::vector<SparseSequenceData<float>>;
+// %template() std::vector<SparseSequenceData<float>>;
+// %template() std::vector<SparseSequenceData<float>>;
 
 %template() std::vector<size_t>;
 %template() std::vector<bool>;
-%template() std::vector<double>;
-%template() std::vector<float>;
-%template() std::vector<std::vector<size_t>>;
-%template() std::vector<std::vector<float>>;
-%template() std::vector<std::vector<double>>;
+%template(DoubleVector) std::vector<double>;
+%template(FloatVector) std::vector<float>;
+%template(SizeTVector) std::vector<std::vector<size_t>>;
+%template(FloatVectorVector) std::vector<std::vector<float>>;
+%template(DoubleVectorVector) std::vector<std::vector<double>>;
 
 %template() std::vector<CNTK::Variable>;
 %template() std::vector<CNTK::Parameter>;
@@ -38,12 +38,15 @@
 %template() std::vector<std::pair<size_t, double>>;
 %shared_ptr(BackPropState);
 %shared_ptr(Function);
+%shared_ptr(CompositeFunction);
 %shared_ptr(Value);
+%shared_ptr(NDShape);
+%shared_ptr(std::vector<float>);
 
 // %feature ("noabstract") Function
 
 %include "CppHeader.h" 
 
-%template(SparseSequenceDataFloat) SparseSequenceData<float>;
-%template(SparseSequenceDataDouble) SparseSequenceData<double>;
+//%template(SparseSequenceDataFloat) SparseSequenceData<float>;
+//%template(SparseSequenceDataDouble) SparseSequenceData<double>;
 

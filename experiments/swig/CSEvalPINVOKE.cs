@@ -207,6 +207,360 @@ class CSEvalPINVOKE {
   static protected SWIGWStringHelper swigWStringHelper = new SWIGWStringHelper();
 
 
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Clear")]
+  public static extern void DoubleVector_Clear(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Add")]
+  public static extern void DoubleVector_Add(global::System.Runtime.InteropServices.HandleRef jarg1, double jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_size")]
+  public static extern uint DoubleVector_size(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_capacity")]
+  public static extern uint DoubleVector_capacity(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_reserve")]
+  public static extern void DoubleVector_reserve(global::System.Runtime.InteropServices.HandleRef jarg1, uint jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_DoubleVector__SWIG_0")]
+  public static extern global::System.IntPtr new_DoubleVector__SWIG_0();
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_DoubleVector__SWIG_1")]
+  public static extern global::System.IntPtr new_DoubleVector__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_DoubleVector__SWIG_2")]
+  public static extern global::System.IntPtr new_DoubleVector__SWIG_2(int jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_getitemcopy")]
+  public static extern double DoubleVector_getitemcopy(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_getitem")]
+  public static extern double DoubleVector_getitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_setitem")]
+  public static extern void DoubleVector_setitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, double jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_AddRange")]
+  public static extern void DoubleVector_AddRange(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_GetRange")]
+  public static extern global::System.IntPtr DoubleVector_GetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Insert")]
+  public static extern void DoubleVector_Insert(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, double jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_InsertRange")]
+  public static extern void DoubleVector_InsertRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_RemoveAt")]
+  public static extern void DoubleVector_RemoveAt(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_RemoveRange")]
+  public static extern void DoubleVector_RemoveRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Repeat")]
+  public static extern global::System.IntPtr DoubleVector_Repeat(double jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Reverse__SWIG_0")]
+  public static extern void DoubleVector_Reverse__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Reverse__SWIG_1")]
+  public static extern void DoubleVector_Reverse__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_SetRange")]
+  public static extern void DoubleVector_SetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Contains")]
+  public static extern bool DoubleVector_Contains(global::System.Runtime.InteropServices.HandleRef jarg1, double jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_IndexOf")]
+  public static extern int DoubleVector_IndexOf(global::System.Runtime.InteropServices.HandleRef jarg1, double jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_LastIndexOf")]
+  public static extern int DoubleVector_LastIndexOf(global::System.Runtime.InteropServices.HandleRef jarg1, double jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVector_Remove")]
+  public static extern bool DoubleVector_Remove(global::System.Runtime.InteropServices.HandleRef jarg1, double jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_DoubleVector")]
+  public static extern void delete_DoubleVector(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Clear")]
+  public static extern void FloatVector_Clear(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Add")]
+  public static extern void FloatVector_Add(global::System.Runtime.InteropServices.HandleRef jarg1, float jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_size")]
+  public static extern uint FloatVector_size(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_capacity")]
+  public static extern uint FloatVector_capacity(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_reserve")]
+  public static extern void FloatVector_reserve(global::System.Runtime.InteropServices.HandleRef jarg1, uint jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_FloatVector__SWIG_0")]
+  public static extern global::System.IntPtr new_FloatVector__SWIG_0();
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_FloatVector__SWIG_1")]
+  public static extern global::System.IntPtr new_FloatVector__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_FloatVector__SWIG_2")]
+  public static extern global::System.IntPtr new_FloatVector__SWIG_2(int jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_getitemcopy")]
+  public static extern float FloatVector_getitemcopy(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_getitem")]
+  public static extern float FloatVector_getitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_setitem")]
+  public static extern void FloatVector_setitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, float jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_AddRange")]
+  public static extern void FloatVector_AddRange(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_GetRange")]
+  public static extern global::System.IntPtr FloatVector_GetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Insert")]
+  public static extern void FloatVector_Insert(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, float jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_InsertRange")]
+  public static extern void FloatVector_InsertRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_RemoveAt")]
+  public static extern void FloatVector_RemoveAt(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_RemoveRange")]
+  public static extern void FloatVector_RemoveRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Repeat")]
+  public static extern global::System.IntPtr FloatVector_Repeat(float jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Reverse__SWIG_0")]
+  public static extern void FloatVector_Reverse__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Reverse__SWIG_1")]
+  public static extern void FloatVector_Reverse__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_SetRange")]
+  public static extern void FloatVector_SetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Contains")]
+  public static extern bool FloatVector_Contains(global::System.Runtime.InteropServices.HandleRef jarg1, float jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_IndexOf")]
+  public static extern int FloatVector_IndexOf(global::System.Runtime.InteropServices.HandleRef jarg1, float jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_LastIndexOf")]
+  public static extern int FloatVector_LastIndexOf(global::System.Runtime.InteropServices.HandleRef jarg1, float jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVector_Remove")]
+  public static extern bool FloatVector_Remove(global::System.Runtime.InteropServices.HandleRef jarg1, float jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_FloatVector")]
+  public static extern void delete_FloatVector(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_Clear")]
+  public static extern void SizeTVector_Clear(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_Add")]
+  public static extern void SizeTVector_Add(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_size")]
+  public static extern uint SizeTVector_size(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_capacity")]
+  public static extern uint SizeTVector_capacity(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_reserve")]
+  public static extern void SizeTVector_reserve(global::System.Runtime.InteropServices.HandleRef jarg1, uint jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_SizeTVector__SWIG_0")]
+  public static extern global::System.IntPtr new_SizeTVector__SWIG_0();
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_SizeTVector__SWIG_1")]
+  public static extern global::System.IntPtr new_SizeTVector__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_SizeTVector__SWIG_2")]
+  public static extern global::System.IntPtr new_SizeTVector__SWIG_2(int jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_getitemcopy")]
+  public static extern global::System.IntPtr SizeTVector_getitemcopy(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_getitem")]
+  public static extern global::System.IntPtr SizeTVector_getitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_setitem")]
+  public static extern void SizeTVector_setitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_AddRange")]
+  public static extern void SizeTVector_AddRange(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_GetRange")]
+  public static extern global::System.IntPtr SizeTVector_GetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_Insert")]
+  public static extern void SizeTVector_Insert(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_InsertRange")]
+  public static extern void SizeTVector_InsertRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_RemoveAt")]
+  public static extern void SizeTVector_RemoveAt(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_RemoveRange")]
+  public static extern void SizeTVector_RemoveRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_Repeat")]
+  public static extern global::System.IntPtr SizeTVector_Repeat(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_Reverse__SWIG_0")]
+  public static extern void SizeTVector_Reverse__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_Reverse__SWIG_1")]
+  public static extern void SizeTVector_Reverse__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SizeTVector_SetRange")]
+  public static extern void SizeTVector_SetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_SizeTVector")]
+  public static extern void delete_SizeTVector(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_Clear")]
+  public static extern void FloatVectorVector_Clear(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_Add")]
+  public static extern void FloatVectorVector_Add(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_size")]
+  public static extern uint FloatVectorVector_size(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_capacity")]
+  public static extern uint FloatVectorVector_capacity(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_reserve")]
+  public static extern void FloatVectorVector_reserve(global::System.Runtime.InteropServices.HandleRef jarg1, uint jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_FloatVectorVector__SWIG_0")]
+  public static extern global::System.IntPtr new_FloatVectorVector__SWIG_0();
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_FloatVectorVector__SWIG_1")]
+  public static extern global::System.IntPtr new_FloatVectorVector__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_FloatVectorVector__SWIG_2")]
+  public static extern global::System.IntPtr new_FloatVectorVector__SWIG_2(int jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_getitemcopy")]
+  public static extern global::System.IntPtr FloatVectorVector_getitemcopy(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_getitem")]
+  public static extern global::System.IntPtr FloatVectorVector_getitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_setitem")]
+  public static extern void FloatVectorVector_setitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_AddRange")]
+  public static extern void FloatVectorVector_AddRange(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_GetRange")]
+  public static extern global::System.IntPtr FloatVectorVector_GetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_Insert")]
+  public static extern void FloatVectorVector_Insert(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_InsertRange")]
+  public static extern void FloatVectorVector_InsertRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_RemoveAt")]
+  public static extern void FloatVectorVector_RemoveAt(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_RemoveRange")]
+  public static extern void FloatVectorVector_RemoveRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_Repeat")]
+  public static extern global::System.IntPtr FloatVectorVector_Repeat(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_Reverse__SWIG_0")]
+  public static extern void FloatVectorVector_Reverse__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_Reverse__SWIG_1")]
+  public static extern void FloatVectorVector_Reverse__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_FloatVectorVector_SetRange")]
+  public static extern void FloatVectorVector_SetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_FloatVectorVector")]
+  public static extern void delete_FloatVectorVector(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_Clear")]
+  public static extern void DoubleVectorVector_Clear(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_Add")]
+  public static extern void DoubleVectorVector_Add(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_size")]
+  public static extern uint DoubleVectorVector_size(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_capacity")]
+  public static extern uint DoubleVectorVector_capacity(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_reserve")]
+  public static extern void DoubleVectorVector_reserve(global::System.Runtime.InteropServices.HandleRef jarg1, uint jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_DoubleVectorVector__SWIG_0")]
+  public static extern global::System.IntPtr new_DoubleVectorVector__SWIG_0();
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_DoubleVectorVector__SWIG_1")]
+  public static extern global::System.IntPtr new_DoubleVectorVector__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_DoubleVectorVector__SWIG_2")]
+  public static extern global::System.IntPtr new_DoubleVectorVector__SWIG_2(int jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_getitemcopy")]
+  public static extern global::System.IntPtr DoubleVectorVector_getitemcopy(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_getitem")]
+  public static extern global::System.IntPtr DoubleVectorVector_getitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_setitem")]
+  public static extern void DoubleVectorVector_setitem(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_AddRange")]
+  public static extern void DoubleVectorVector_AddRange(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_GetRange")]
+  public static extern global::System.IntPtr DoubleVectorVector_GetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_Insert")]
+  public static extern void DoubleVectorVector_Insert(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_InsertRange")]
+  public static extern void DoubleVectorVector_InsertRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_RemoveAt")]
+  public static extern void DoubleVectorVector_RemoveAt(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_RemoveRange")]
+  public static extern void DoubleVectorVector_RemoveRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_Repeat")]
+  public static extern global::System.IntPtr DoubleVectorVector_Repeat(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_Reverse__SWIG_0")]
+  public static extern void DoubleVectorVector_Reverse__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_Reverse__SWIG_1")]
+  public static extern void DoubleVectorVector_Reverse__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_DoubleVectorVector_SetRange")]
+  public static extern void DoubleVectorVector_SetRange(global::System.Runtime.InteropServices.HandleRef jarg1, int jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_DoubleVectorVector")]
+  public static extern void delete_DoubleVectorVector(global::System.Runtime.InteropServices.HandleRef jarg1);
+
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_Variable")]
   public static extern global::System.IntPtr new_Variable([global::System.Runtime.InteropServices.MarshalAs(global::System.Runtime.InteropServices.UnmanagedType.LPWStr)]string jarg1);
 
@@ -230,6 +584,18 @@ class CSEvalPINVOKE {
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Value_Create__SWIG_1")]
   public static extern global::System.IntPtr Value_Create__SWIG_1(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Value_Create__SWIG_2")]
+  public static extern global::System.IntPtr Value_Create__SWIG_2(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3, bool jarg4);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Value_Create__SWIG_3")]
+  public static extern global::System.IntPtr Value_Create__SWIG_3(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Value_Create__SWIG_4")]
+  public static extern global::System.IntPtr Value_Create__SWIG_4(uint jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3, bool jarg4);
+
+  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_Value_Create__SWIG_5")]
+  public static extern global::System.IntPtr Value_Create__SWIG_5(uint jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3);
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_Value")]
   public static extern void delete_Value(global::System.Runtime.InteropServices.HandleRef jarg1);
@@ -284,54 +650,6 @@ class CSEvalPINVOKE {
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_CompositeFunciton")]
   public static extern void delete_CompositeFunciton(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_SparseSequenceDataFloat")]
-  public static extern global::System.IntPtr new_SparseSequenceDataFloat(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_data_set")]
-  public static extern void SparseSequenceDataFloat_m_data_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_data_get")]
-  public static extern global::System.IntPtr SparseSequenceDataFloat_m_data_get(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_indices_set")]
-  public static extern void SparseSequenceDataFloat_m_indices_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_indices_get")]
-  public static extern global::System.IntPtr SparseSequenceDataFloat_m_indices_get(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_nnzCounts_set")]
-  public static extern void SparseSequenceDataFloat_m_nnzCounts_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataFloat_m_nnzCounts_get")]
-  public static extern global::System.IntPtr SparseSequenceDataFloat_m_nnzCounts_get(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_SparseSequenceDataFloat")]
-  public static extern void delete_SparseSequenceDataFloat(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_new_SparseSequenceDataDouble")]
-  public static extern global::System.IntPtr new_SparseSequenceDataDouble(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_data_set")]
-  public static extern void SparseSequenceDataDouble_m_data_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_data_get")]
-  public static extern global::System.IntPtr SparseSequenceDataDouble_m_data_get(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_indices_set")]
-  public static extern void SparseSequenceDataDouble_m_indices_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_indices_get")]
-  public static extern global::System.IntPtr SparseSequenceDataDouble_m_indices_get(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_nnzCounts_set")]
-  public static extern void SparseSequenceDataDouble_m_nnzCounts_set(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_SparseSequenceDataDouble_m_nnzCounts_get")]
-  public static extern global::System.IntPtr SparseSequenceDataDouble_m_nnzCounts_get(global::System.Runtime.InteropServices.HandleRef jarg1);
-
-  [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_delete_SparseSequenceDataDouble")]
-  public static extern void delete_SparseSequenceDataDouble(global::System.Runtime.InteropServices.HandleRef jarg1);
 
   [global::System.Runtime.InteropServices.DllImport("CSEval", EntryPoint="CSharp_CompositeFunciton_SWIGUpcast")]
   public static extern global::System.IntPtr CompositeFunciton_SWIGUpcast(global::System.IntPtr jarg1);

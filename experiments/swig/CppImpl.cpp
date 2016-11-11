@@ -5,16 +5,6 @@
 
 using std::vector;
 
-
-//template <typename ElementType>
-///*static*/ ValuePtr Value::Create(const NDShape& sampleShape, const std::vector<std::tuple<std::vector<ElementType>, std::vector<SparseIndexType>, std::vector<SparseIndexType>>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/)
-template <typename ElementType>
-/*static*/ ValuePtr Value::Create(const NDShape& sampleShape, const std::vector<SparseSequenceData<ElementType>>& SparseSequences, const DeviceDescriptor& device, bool readOnly /*= false*/)
-{
-    // Todo: add implementation.
-    return nullptr;
-}
-
 template <typename ElementType>
 /*static*/ ValuePtr Create(const NDShape& sampleShape, const std::vector<std::vector<ElementType>>& sequences, const DeviceDescriptor& device, bool readOnly /* = false */)
 {

@@ -47,6 +47,8 @@
     <Compile Include="CSEvalPINVOKE.cs" />
     <Compile Include="DataType.cs" />
     <Compile Include="DeviceDescriptor.cs" />
+    <Compile Include="FloatVector.cs" />
+    <Compile Include="FloatVectorVector.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
