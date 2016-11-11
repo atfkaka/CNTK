@@ -657,12 +657,6 @@ void GPUSparseMatrix<ElemType>::Reshape(const size_t numRows, const size_t numCo
     SetBuffer(pArray, bufferSizeNeeded);
     SetNumRows(numRows);
     SetNumCols(numCols);
-
-    // following are generated dynamically and no need to save
-    if (GetRowToIdMap() != nullptr)
-        TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), GetRowToIdMap());
-
-    SetRowToIdMap(TracingGPUMemoryAllocator::Allocate<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), GetSizeAllocated()));
 }
 
 // WARNING: When memory is reallocated, existing information will be lost.
@@ -705,11 +699,6 @@ void GPUSparseMatrix<ElemType>::Allocate(const size_t numRows, const size_t numC
             }
             TracingGPUMemoryAllocator::Free<ElemType>(GetComputeDeviceId(), Buffer());
         }
-        // following are generated dynamically and no need to save
-        if (GetRowToIdMap() != nullptr)
-            TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), GetRowToIdMap());
-
-        SetRowToIdMap(TracingGPUMemoryAllocator::Allocate<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), numNZElemToReserve));
 
         SetBuffer(pArray, bufferSizeNeeded);
         SetSizeAllocated(numNZElemToReserve);
