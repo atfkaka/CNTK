@@ -639,7 +639,7 @@ GPUSparseMatrix<ElemType>& GPUSparseMatrix<ElemType>::InplaceSoftThreshold(const
 }
 
 template <class ElemType>
-size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
+size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues((GPUSPARSE_INDEX_TYPE*)& row2IdMap) const
 {
     return 0;
 }

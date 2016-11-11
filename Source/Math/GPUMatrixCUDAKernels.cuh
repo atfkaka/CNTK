@@ -3122,11 +3122,11 @@ __global__ void _denseMulSparseCSCTransposeToSparseBlockCol(
     {
         CUDA_LONG rhsRow = rhsRows[p];
         ElemType rhsVal = rhsNZValues[p];
-        CUDA_LONG blockId = rhsRowIdx[p]; // resultCol == rhsRow maps to columnid
+        CUDA_LONG blockId = rhsRowIdx[p]; // resultCol == blockId
         blockId2Col[blockId] = rhsRow;    // indicate which colmn it actually points to
 
         // assume resultValues are 0-initialized
-        atomicAdd(&resultValues[IDX2C(lhsRow, resultCol, numRowsLhs)], lhsValue * rhsVal);
+        atomicAdd(&resultValues[IDX2C(lhsRow, blockId, numRowsLhs)], lhsValue * rhsVal);
     }
 }
 
