@@ -1234,8 +1234,7 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
 
         // based on the size of m_nz in rhs and numCols in the resulted matrix we use different approaches
         size_t rhs_nz = rhs.NzCount();
-        //if (n * 10 < GridDim::maxThreadsPerBlock * rhs_nz)
-        if (n>0)
+        if (n * 10 < GridDim::maxThreadsPerBlock * rhs_nz)
         {
             c.RequireSizeAndAllocate(m, n, 1, true, false); // reserve memory for BlockId2ColOrRow() and ColOrRow2BlockId()
 
