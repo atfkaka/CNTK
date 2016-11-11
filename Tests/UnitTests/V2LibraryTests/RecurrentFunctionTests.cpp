@@ -136,7 +136,7 @@ void TestSimpleRecurrence(size_t inputDim,
 
     auto inputVar = InputVariable({ inputDim }, useSparseInputs, AsDataType<ElementType>(), true, L"input");
 
-    auto placeholder = PlaceholderVariable({ outputDim });
+    auto placeholder = PlaceholderVariable(std::initializer_list<size_t>({ outputDim }));
     auto plusOutput = Plus(plusParam, Plus(placeholder, Times(timesParam, inputVar)), L"plusOutput");
     FunctionPtr placeholderReplacement;
     if (useFutureValue)
@@ -223,7 +223,7 @@ void TestSimpleRecurrence(size_t inputDim,
                 inputValueData = sparseInputValueData->Alias(true);
             }
 
-            NDMaskPtr inputMask = MakeSharedObject<NDMask>(NDShape({ maxActualSequenceLength, numSequences }), DeviceDescriptor::CPUDevice());
+            NDMaskPtr inputMask = MakeSharedObject<NDMask>(NDShape({ maxActualSequenceLength, numSequences }));
             for (size_t i = 0; i < numSequences; ++i)
             {
                 inputMask->MarkSequenceBegin({0, i});
@@ -238,8 +238,8 @@ void TestSimpleRecurrence(size_t inputDim,
         ValuePtr reducedOutputValue = MakeSharedObject<Value>(MakeSharedObject<NDArrayView>(reducedOutputShape, reducedOutputData.data(), reducedOutputData.size(), DeviceDescriptor::CPUDevice(), false));
 
         NDShape plusOutputShape = plusOutput->Output().Shape().AppendShape({ maxActualSequenceLength, numSequences });
-        std::vector<ElementType> plusOutputData(plusOutputShape.TotalSize());
-        ValuePtr plusOutputValue = MakeSharedObject<Value>(MakeSharedObject<NDArrayView>(plusOutputShape, plusOutputData.data(), plusOutputData.size(), DeviceDescriptor::CPUDevice(), false), MakeSharedObject<NDMask>(inputValue->Mask()->Shape(), inputValue->Mask()->Device()));
+        std::vector<ElementType> plusOutputData(plusOutputShape.TotalSize(), 0);
+        ValuePtr plusOutputValue = MakeSharedObject<Value>(MakeSharedObject<NDArrayView>(plusOutputShape, plusOutputData.data(), plusOutputData.size(), DeviceDescriptor::CPUDevice(), false), MakeSharedObject<NDMask>(inputValue->Mask()->Shape()));
 
         std::unordered_map<Variable, ValuePtr> outputs = { { reducedOutput, reducedOutputValue }, { plusOutput, plusOutputValue } };
         auto backpropState = rootFunc->Forward({ { inputVar, inputValue } }, outputs, device, { plusOutput });
@@ -380,6 +380,8 @@ void TestSimpleRecurrence(size_t inputDim,
 
 void RecurrentFunctionTests()
 {
+    fprintf(stderr, "\nRecurrentFunctionTests..\n");
+
     TestSimpleRecurrence<float>(2, 1, 4, 1, DeviceDescriptor::CPUDevice(), true, 3, false, false);
     if (IsGPUAvailable())
     {
