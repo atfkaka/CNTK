@@ -147,6 +147,14 @@ ifdef CUDA_PATH
     LIBS_LIST += cudnn
     COMMON_FLAGS +=-DUSE_CUDNN
   endif
+
+# Set up NCCL if needed
+  ifdef NCCL_PATH
+    INCLUDEPATH += $(NCCL_PATH)/include
+    LIBPATH += $(NCCL_PATH)/lib
+    LIBS_LIST += nccl
+    COMMON_FLAGS += -DUSE_NCCL
+  endif
 else
   DEVICE = cpu
 
@@ -313,6 +321,7 @@ MATH_SRC =\
 	$(SOURCEDIR)/Math/DataTransferer.cpp \
 	$(SOURCEDIR)/Math/RNGHandle.cpp \
 	$(SOURCEDIR)/Math/TensorView.cpp \
+	$(SOURCEDIR)/Math/NcclComm.cpp \
 
 ifdef SUPPORT_AVX2
 MATH_SRC +=\
@@ -409,13 +418,13 @@ CNTKLIBRARY_COMMON_SRC =\
 	$(SOURCEDIR)/CNTKv2LibraryDll/Learner.cpp \
 	$(SOURCEDIR)/CNTKv2LibraryDll/Serialization.cpp \
 	$(SOURCEDIR)/CNTKv2LibraryDll/DistributedCommunicator.cpp \
+	$(SOURCEDIR)/CNTKv2LibraryDll/DistributedTrainerBase.cpp \
 	$(SOURCEDIR)/CNTKv2LibraryDll/DataParallelDistributedTrainer.cpp \
 	$(SOURCEDIR)/CNTKv2LibraryDll/proto/CNTK.pb.cc \
 
 CNTKLIBRARY_SRC =\
 	$(SOURCEDIR)/CNTKv2LibraryDll/ComputeInputStatistics.cpp \
 	$(SOURCEDIR)/CNTKv2LibraryDll/MinibatchSource.cpp \
-	$(SOURCEDIR)/CNTKv2LibraryDll/Globals.cpp \
 
 CNTKLIBRARY_SRC+=$(CNTKLIBRARY_COMMON_SRC)
 CNTKLIBRARY_SRC+=$(CNTK_COMMON_SRC)
@@ -484,6 +493,7 @@ $(CNTKLIBRARY_TESTS): $(CNTKLIBRARY_TESTS_OBJ) | $(CNTKLIBRARY_LIB)
 CNTKLIBRARY_DISTRIBUTION_TESTS_SRC =\
 	$(CNTKLIBRARY_TESTS_SRC_PATH)/Common.cpp \
 	Tests/UnitTests/V2LibraryDistributionTests/Main.cpp \
+	Tests/UnitTests/V2LibraryDistributionTests/FrameModeTests.cpp \
 
 CNTKLIBRARY_DISTRIBUTION_TESTS:=$(BINDIR)/v2librarydistributiontests
 CNTKLIBRARY_DISTRIBUTION_TESTS_OBJ := $(patsubst %.cu, $(OBJDIR)/%.o, $(patsubst %.cpp, $(OBJDIR)/%.o, $(CNTKLIBRARY_DISTRIBUTION_TESTS_SRC)))
@@ -544,24 +554,39 @@ $(EVAL_LIB): $(EVAL_OBJ) | $(CNTKMATH_LIB)
 	$(CXX) $(LDFLAGS) -shared $(patsubst %,-L%, $(LIBDIR) $(LIBPATH) $(GDK_NVML_LIB_PATH)) $(patsubst %,$(RPATH)%, $(ORIGINDIR) $(LIBPATH)) -o $@ $^ $(LIBS) -l$(CNTKMATH) $(PROTOBUF_PATH)/lib/libprotobuf.a
 
 ########################################
-# Eval Sample client
+# Eval Sample clients
 ########################################
-EVAL_SAMPLE_CLIENT:=$(BINDIR)/cppevalclient
+EVAL_CLIENT:=$(BINDIR)/cppevalclient
 
-EVAL_SAMPLE_CLIENT_SRC=\
+EVAL_CLIENT_SRC=\
 	$(SOURCEDIR)/../Examples/Evaluation/CPPEvalClient/CPPEvalClient.cpp 
 
-EVAL_SAMPLE_CLIENT_OBJ:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(EVAL_SAMPLE_CLIENT_SRC))
+EVAL_CLIENT_OBJ:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(EVAL_CLIENT_SRC))
 
-ALL+=$(EVAL_SAMPLE_CLIENT)
-SRC+=$(EVAL_SAMPLE_CLIENT_SRC)
+ALL+=$(EVAL_CLIENT)
+SRC+=$(EVAL_CLIENT_SRC)
 
-$(EVAL_SAMPLE_CLIENT): $(EVAL_SAMPLE_CLIENT_OBJ) | $(EVAL_LIB)
+$(EVAL_CLIENT): $(EVAL_CLIENT_OBJ) | $(EVAL_LIB)
 	@echo $(SEPARATOR)
 	@mkdir -p $(dir $@)
-	@echo building $(EVAL_SAMPLE_CLIENT) for $(ARCH) with build type $(BUILDTYPE)
+	@echo building $(EVAL_CLIENT) for $(ARCH) with build type $(BUILDTYPE)
 	$(CXX) $(LDFLAGS) $(patsubst %,-L%, $(LIBDIR) $(LIBPATH) $(GDK_NVML_LIB_PATH)) $(patsubst %,$(RPATH)%, $(ORIGINLIBDIR) $(LIBPATH)) -o $@ $^ $(LIBS) -l$(EVAL) -l$(CNTKMATH)
 
+EVAL_EXTENDED_CLIENT:=$(BINDIR)/cppevalextendedclient
+
+EVAL_EXTENDED_CLIENT_SRC=\
+	$(SOURCEDIR)/../Examples/Evaluation/CPPEvalExtendedClient/CPPEvalExtendedClient.cpp 
+
+EVAL_EXTENDED_CLIENT_OBJ:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(EVAL_EXTENDED_CLIENT_SRC))
+
+ALL+=$(EVAL_EXTENDED_CLIENT)
+SRC+=$(EVAL_EXTENDED_CLIENT_SRC)
+
+$(EVAL_EXTENDED_CLIENT): $(EVAL_EXTENDED_CLIENT_OBJ) | $(EVAL_LIB)
+	@echo $(SEPARATOR)
+	@mkdir -p $(dir $@)
+	@echo building $(EVAL_EXTENDED_CLIENT) for $(ARCH) with build type $(BUILDTYPE)
+	$(CXX) $(LDFLAGS) $(patsubst %,-L%, $(LIBDIR) $(LIBPATH) $(GDK_NVML_LIB_PATH)) $(patsubst %,$(RPATH)%, $(ORIGINLIBDIR) $(LIBPATH)) -o $@ $^ $(LIBS) -l$(EVAL) -l$(CNTKMATH)
 
 ########################################
 # Eval V2 Sample client
@@ -1087,7 +1112,7 @@ python: $(ALL_LIBS)
             declare -A py_paths; \
             py_paths[34]=$(PYTHON34_PATH); \
             py_paths[35]=$(PYTHON35_PATH); \
-            export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$(echo $(LIBPATH) $(KALDI_LIBPATH) | tr " " :); \
+            export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$(echo $(GDK_NVML_LIB_PATH) $(LIBPATH) $(KALDI_LIBPATH) | tr " " :); \
             ldd $(LIBDIR)/* | grep "not found" && false; \
             export CNTK_EXTRA_LIBRARIES=$$(ldd $(LIBDIR)/* | grep "^\s.*=> " | cut -d ">" -f 2- --only-delimited | cut -d "(" -f 1 --only-delimited | sort -u | grep -Ff <(echo $(EXTRA_LIBS_BASENAMES) | xargs -n1)); \
             test -x $(SWIG_PATH); \
