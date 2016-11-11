@@ -64,6 +64,9 @@ LearnableParameter<ElemType>::LearnableParameter(const ScriptableObjects::IConfi
     else if (configp->Exists(L"needsGradient") || configp->Exists(L"needGradient") || configp->Exists(L"computeGradient"))
         InvalidArgument("Deprecated parameter names needsGradient|needGradient|computeGradient are not supported in BrainScript. Use learningRateMultiplier instead.");
 
+    if (configp->Exists(L"regularizationMultiplier"))
+        SetRegularizationMultiplier(configp->Get(L"regularizationMultiplier"));
+
     // initialization
     wstring initString = configp->Get(L"init");
     wstring initFromFilePath = configp->Get(L"initFromFilePath");
@@ -413,6 +416,7 @@ void LearnableParameter<ElemType>::Save(File& fstream) const /*override*/
         LogicError("LearnableParameter: Cannot Save() before deferred initialization has completed.");
     Base::Save(fstream);
     fstream << m_learningRateMultiplier;
+    fstream << m_regularizationMultiplier;
     m_sampleLayout.Save(fstream);
     fstream << Value();
 }
@@ -427,6 +431,7 @@ void LearnableParameter<ElemType>::Load(File& fstream, size_t modelVersion) /*ov
     if (modelVersion >= CNTK_MODEL_VERSION_3)
     {
         fstream >> m_learningRateMultiplier;
+        fstream >> m_regularizationMultiplier;
         sampleLayout.Load(fstream);
     }
     else // legacy format(s)
@@ -434,7 +439,7 @@ void LearnableParameter<ElemType>::Load(File& fstream, size_t modelVersion) /*ov
         bool parameterUpdateRequired;
         fstream >> parameterUpdateRequired;
         SetLearningRateMultiplier((float)parameterUpdateRequired);
-
+        SetRegularizationMultiplier(1.f);
         size_t rows, cols;
         fstream >> rows >> cols;
         if (rows != 0) // legacy file format
@@ -616,7 +621,8 @@ template <class ElemType>
         char str[4096];
         sprintf(str, "[%lu,%lu]  ", GetAsMatrixNumRows(), GetAsMatrixNumCols());
         fstream << string(str);
-        sprintf(str, "learningRateMultiplier=%f  NeedsGradient=%s", m_learningRateMultiplier, m_learningRateMultiplier>0 ? "true" : "false"); // TODO: update NDL to accept a better matching name as well
+        sprintf(str, "learningRateMultiplier=%f regularizationMultiplier=%f NeedsGradient=%s", 
+            m_learningRateMultiplier, m_regularizationMultiplier, m_learningRateMultiplier>0 ? "true" : "false"); // TODO: update NDL to accept a better matching name as well
         fstream << string(str);
     }
 

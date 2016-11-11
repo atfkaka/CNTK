@@ -2653,8 +2653,8 @@ public:
     {
         let scaleNode   = dynamic_pointer_cast<LearnableParameter<ElemType>>(Input(1));
         let biasNode    = dynamic_pointer_cast<LearnableParameter<ElemType>>(Input(2));
-        scaleNode->SetRegMultiplier(0.f);
-        biasNode->SetRegMultiplier(0.f);
+        scaleNode->SetRegularizationMultiplier(0.f);
+        biasNode->SetRegularizationMultiplier(0.f);
     }
     double NormalizationTimeConstant() const { return m_normTimeConst; }
     double BlendTimeConstant() const { return m_blendTimeConst; }

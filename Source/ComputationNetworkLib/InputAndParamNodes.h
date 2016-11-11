@@ -44,10 +44,10 @@ public:
         Base(deviceId, name)
     {
         SetLearningRateMultiplier(1.0f); // enable normal learning by default
+        SetRegularizationMultiplier(1.0f);
         MarkValueNonSharable();
         m_initString = L"fromValue"; // default init is with 0; typically overwritten
         m_initValue = 0;
-        m_regMultiplier = 1.0f; // enable reg in update by default
     }
     LearnableParameter(DEVICEID_TYPE deviceId, const wstring& name, const TensorShape& shape) :
         LearnableParameter(deviceId, name)
@@ -144,12 +144,12 @@ public:
     virtual void FreezeParameters() override; // from IFreezable
 
     // Setting the reg multiplier for a learnable node, effecting L1Reg and L2Reg both.
-    void SetRegMultiplier(float regMultiplier)
+    void SetRegularizationMultiplier(float f)
     {
-        m_regMultiplier = regMultiplier;
+        m_regularizationMultiplier = f;
     }
     // called from SGD UpdateWeights, to adjust the reg for each node
-    float GetRegMultiplier() const { return m_regMultiplier; }
+    float GetRegularizationMultiplier() const { return m_regularizationMultiplier; }
 
 private:
     // init parameters for deferred initialization (which happens in Validate())
@@ -162,7 +162,7 @@ private:
     ElemType m_initValue;
 
     // flags related to gradient update
-    float m_regMultiplier; // The multiplier to adjust the L1Reg and L2Reg for Learnable node
+    float m_regularizationMultiplier; // The multiplier to adjust the L1Reg and L2Reg for Learnable node
 };
 
 // -----------------------------------------------------------------------
