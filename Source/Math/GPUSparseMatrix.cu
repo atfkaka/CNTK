@@ -657,12 +657,6 @@ void GPUSparseMatrix<ElemType>::Reshape(const size_t numRows, const size_t numCo
     SetBuffer(pArray, bufferSizeNeeded);
     SetNumRows(numRows);
     SetNumCols(numCols);
-
-    // following are generated dynamically and no need to save
-    if (GetRowToIdMap() != nullptr)
-        TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), GetRowToIdMap());
-
-    SetRowToIdMap(TracingGPUMemoryAllocator::Allocate<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), GetSizeAllocated()));
 }
 
 // WARNING: When memory is reallocated, existing information will be lost.
@@ -1276,7 +1270,8 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
         }
         else
         {
-            c.SetBlockSize( rhs.IdentifyRowsWithValues());
+            GPUSPARSE_INDEX_TYPE* row2idMap = TracingGPUMemoryAllocator::Allocate<GPUSPARSE_INDEX_TYPE>(c.GetComputeDeviceId(), rhs.NzCount());
+            c.SetBlockSize(rhs.IdentifyRowsWithValues(row2idMap));
             size_t nnz = m * c.GetBlockSize();
             c.RequireSizeAndAllocate(m, n, nnz, true, false);
             CUDA_CALL(cudaMemset(c.Data(), 0, sizeof(ElemType) * (c.GetSizeAllocated())));
@@ -1292,9 +1287,12 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
                 rhs.Data(),
                 rhs.RowLocation(),
                 rhs.ColLocation(),
-                rhs.GetRowToIdMap(),
+                row2idMap,
                 c.Data(),
                 c.BlockId2ColOrRow());
+
+            if (row2idMap != nullptr)
+                TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(c.GetComputeDeviceId(), row2idMap);
         }
 
     }
@@ -1337,7 +1335,7 @@ size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
 
 // used for gradients udpate
 template <class ElemType>
-void GPUSparseMatrix<ElemType>::ScaleAndAdd(const ElemType alpha, const GPUSparseMatrix<ElemType>& lhs, GPUMatrix<ElemType>& rhs)
+size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues(GPUSPARSE_INDEX_TYPE* row2IdMap) const
 {
     if (lhs.GetNumRows() != rhs.GetNumRows() || lhs.GetNumCols() != rhs.GetNumCols())
         LogicError("ScaleAndAdd: dimension mismatch");
