@@ -638,12 +638,6 @@ GPUSparseMatrix<ElemType>& GPUSparseMatrix<ElemType>::InplaceSoftThreshold(const
     return (*this);
 }
 
-template <class ElemType>
-size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
-{
-    return 0;
-}
-
 #pragma endregion
 
 #pragma region Helper Functions
