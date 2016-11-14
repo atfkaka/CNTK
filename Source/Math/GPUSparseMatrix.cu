@@ -699,11 +699,6 @@ void GPUSparseMatrix<ElemType>::Allocate(const size_t numRows, const size_t numC
             }
             TracingGPUMemoryAllocator::Free<ElemType>(GetComputeDeviceId(), Buffer());
         }
-        // following are generated dynamically and no need to save
-        if (GetRowToIdMap() != nullptr)
-            TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), GetRowToIdMap());
-
-        SetRowToIdMap(TracingGPUMemoryAllocator::Allocate<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), numNZElemToReserve));
 
         SetBuffer(pArray, bufferSizeNeeded);
         SetSizeAllocated(numNZElemToReserve);
@@ -1308,7 +1303,7 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
 
 // find the rows of rhs with values
 template <class ElemType>
-size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
+size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues(GPUSPARSE_INDEX_TYPE* row2IdMap) const
 {
     if (GetFormat() != matrixFormatSparseCSC)
         NOT_IMPLEMENTED;
@@ -1316,6 +1311,9 @@ size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
     let nz = NzCount();
     map<size_t, GPUSPARSE_INDEX_TYPE> indexer;
     GPUSPARSE_INDEX_TYPE* rowToId = (GPUSPARSE_INDEX_TYPE*) ReserveTempHostBuffer(sizeof(GPUSPARSE_INDEX_TYPE) * nz * 2);
+
+    // In the first nnz values of the 'rowToId' we will store the block ids of the nonzero-values (to be computed below).
+    // In the next nnz values of 'rowToId' we store the row-ids of the non-zero values (copied from GPU).
     GPUSPARSE_INDEX_TYPE* h_Row = rowToId + nz;
     CUDA_CALL(cudaMemcpy(h_Row, RowLocation(), sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyDeviceToHost));
 
@@ -1329,13 +1327,13 @@ size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
         }
         rowToId[i] = indexer[row];
     }
-    CUDA_CALL(cudaMemcpy(GetRowToIdMap(), rowToId, sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyHostToDevice));
+    CUDA_CALL(cudaMemcpy(row2IdMap, rowToId, sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyHostToDevice));
     return indexer.size();
 }
 
 // used for gradients udpate
 template <class ElemType>
-size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues(GPUSPARSE_INDEX_TYPE* row2IdMap) const
+void GPUSparseMatrix<ElemType>::ScaleAndAdd(const ElemType alpha, const GPUSparseMatrix<ElemType>& lhs, GPUMatrix<ElemType>& rhs)
 {
     if (lhs.GetNumRows() != rhs.GetNumRows() || lhs.GetNumCols() != rhs.GetNumCols())
         LogicError("ScaleAndAdd: dimension mismatch");
