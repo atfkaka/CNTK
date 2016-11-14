@@ -105,7 +105,7 @@ namespace CNTK
     }
 
     // Optional override that gets called per minibatch after finishing gradient computation but before updating model parameters
-    void DataParallelDistributedTrainer::PreParameterUpdateCallback(const Trainer& /*trainer*/, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, ExtendedMinibatchInfo& info)
+    void DataParallelDistributedTrainer::PreParameterUpdateCallback(const Trainer& /*trainer*/, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info)
     {
         std::vector<NDArrayViewPtr> valuesToAggregate;
         for (const auto& i : gradientValues)

@@ -2970,7 +2970,7 @@ namespace CNTK
         /// schedule[0] is used for the first 'epochSize' samples, schedule[1] -- for the second,
         /// and so on. The last value is then used repeatedly until the end of training.
         ///
-        CNTK_API TrainingParameterSchedule(const std::vector<T>& schedule, size_t epochSize = 1, UnitType unit = UnitType::Sample);
+        CNTK_API TrainingParameterSchedule(const std::vector<T>& schedule, size_t epochSize = FullDataSweep, UnitType unit = UnitType::Sample);
 
         ///
         /// Create a schedule using the list of key-value pairs, where the key specifies 
@@ -2981,7 +2981,7 @@ namespace CNTK
         /// the first 100 samples, then '0.1' is used for the second 200 samples, 
         /// after which the values is switched to '0.005'.
         ///
-        CNTK_API TrainingParameterSchedule(const std::vector<std::pair<size_t, T>>& schedule, size_t epochSize = 1, UnitType unit = UnitType::Sample);
+        CNTK_API TrainingParameterSchedule(const std::vector<std::pair<size_t, T>>& schedule, size_t epochSize = FullDataSweep, UnitType unit = UnitType::Sample);
 
         ///
         /// Returns a value corresponding to the absolute sample (or sweep) 
@@ -3032,11 +3032,11 @@ namespace CNTK
             : TrainingParameterSchedule<T>::TrainingParameterSchedule(value, U)
         { }
         
-        TrainingParameterPerUnitSchedule(const std::vector<double>& schedule, size_t epochSize = 1) 
+        TrainingParameterPerUnitSchedule(const std::vector<double>& schedule, size_t epochSize = FullDataSweep) 
             : TrainingParameterSchedule<T>::TrainingParameterSchedule(schedule, epochSize, U)
         { }
         
-        TrainingParameterPerUnitSchedule(const std::vector<std::pair<size_t, double>>& schedule, size_t epochSize = 1) 
+        TrainingParameterPerUnitSchedule(const std::vector<std::pair<size_t, double>>& schedule, size_t epochSize = FullDataSweep) 
             : TrainingParameterSchedule<T>::TrainingParameterSchedule(schedule, epochSize, U)
         { }
 
@@ -3082,13 +3082,13 @@ namespace CNTK
             ConvertToPerSampleValues();
         }
         
-        MomentumAsTimeConstantSchedule(const std::vector<double>& schedule, size_t epochSize = 1) 
+        MomentumAsTimeConstantSchedule(const std::vector<double>& schedule, size_t epochSize = FullDataSweep) 
             : TrainingParameterSchedule<double>::TrainingParameterSchedule(schedule, epochSize) 
         { 
             ConvertToPerSampleValues();
         }
         
-        MomentumAsTimeConstantSchedule(const std::vector<std::pair<size_t, double>>& schedule, size_t epochSize = 1) 
+        MomentumAsTimeConstantSchedule(const std::vector<std::pair<size_t, double>>& schedule, size_t epochSize = FullDataSweep) 
             : TrainingParameterSchedule<double>::TrainingParameterSchedule(schedule, epochSize)
         { 
             ConvertToPerSampleValues();
@@ -3105,9 +3105,10 @@ namespace CNTK
         CNTK_API void ConvertToPerSampleValues();
     };
 
-
+    ///
     /// A collection of additional options that affect parameter updates and 
     /// are applicable for all standard learners 
+    ///
     struct AdditionalLearningOptions
     {
         double l1RegularizationWeight = 0.0;
@@ -3115,6 +3116,21 @@ namespace CNTK
         TrainingParameterSchedule<double> gaussianNoiseInjectionStdDev = 0.0;
         double gradientClippingThresholdPerSample = std::numeric_limits<double>::infinity();
         bool gradientClippingWithTruncation = true;
+    };
+
+    ///
+    /// A struct that combines a number of minibatch properties required by the learner.
+    ///
+    struct MinibatchInfo
+    {
+        MinibatchInfo(size_t numSamples, bool sweepEnd = false, NDArrayViewPtr trainingLossValue = nullptr, NDArrayViewPtr evalCriterionValue = nullptr) 
+            : numberOfSamples(numSamples), sweepEnd(sweepEnd),  trainingLossValue(trainingLossValue), evalCriterionValue(evalCriterionValue)
+        {}
+
+        size_t numberOfSamples;
+        bool sweepEnd; 
+        NDArrayViewPtr trainingLossValue;
+        NDArrayViewPtr evalCriterionValue;
     };
 
     ///
@@ -3416,51 +3432,35 @@ namespace std {
 namespace CNTK
 {
     ///
-    /// Minibatch meta-data that includes the number of sequences and samples in the minibatch,
+    /// A struct that combines the minibatch meta-data with the actual minibatch data.
+    /// The former includes the number of sequences and samples in the minibatch,
     /// as well as the sweep-end flag, which is set to true to indicate that the minibatch 
     /// concludes a data sweep (i.e, it's the last minibatch at the end of the sweep).
     ///
-    struct MinibatchInfo
-    {
-        MinibatchInfo() : numberOfSequences(0), numberOfSamples(0), sweepEnd(false) {}
-
-        MinibatchInfo(size_t numSamples, bool sweepEnd = false) 
-            : numberOfSequences(numSamples), numberOfSamples(numSamples), sweepEnd(sweepEnd) 
-        {}
-
-        MinibatchInfo(size_t numSequnces, size_t numSamples, bool sweepEnd = false) 
-            : numberOfSequences(numSequnces), numberOfSamples(numSamples), sweepEnd(sweepEnd) 
-        {}
-
-        size_t numberOfSequences;
-        size_t numberOfSamples;
-        bool sweepEnd; 
-    };
-
-    ///
-    /// A struct that combines the minibatch meta-data with the actual minibatch data.
-    ///
-    struct MinibatchData : public MinibatchInfo
+    struct MinibatchData
     {
         MinibatchData() 
-            : MinibatchInfo(), data(nullptr)
+            : data(nullptr), numberOfSequences(0), numberOfSamples(0), sweepEnd(false)
         {}
 
         // a convenience constructor to allow passing ValuePtr arguments in place 
         // of MinibatchData parameter (e.g., in Trainer::TrainMinibatch)
         MinibatchData(ValuePtr value) 
-            : MinibatchInfo(), data(value)
+            : data(value), numberOfSequences(0), numberOfSamples(0), sweepEnd(false)
         {}
 
-        MinibatchData(size_t numSamples, ValuePtr value, bool sweepEnd) 
-            : MinibatchInfo(numSamples, sweepEnd), data(value)
+        MinibatchData(ValuePtr value, size_t numSamples, bool sweepEnd = false) 
+            : data(value), numberOfSequences(numSamples), numberOfSamples(numSamples), sweepEnd(sweepEnd) 
         {}
 
-        MinibatchData(size_t numSequnces, size_t numSamples, ValuePtr value, bool sweepEnd) 
-            : MinibatchInfo(numSequnces, numSamples, sweepEnd), data(value)
+        MinibatchData(ValuePtr value, size_t numSequnces, size_t numSamples, bool sweepEnd) 
+            : data(value), numberOfSequences(numSequnces), numberOfSamples(numSamples), sweepEnd(sweepEnd) 
         {}
 
         ValuePtr data;
+        size_t numberOfSequences;
+        size_t numberOfSamples;
+        bool sweepEnd; 
     };
 
     ///
@@ -3705,17 +3705,6 @@ namespace CNTK
     ///
     CNTK_API QuantizedDistributedCommunicatorPtr QuantizedMPICommunicator(bool zeroThresholdFor1Bit, bool useQuantizationForSelfStripe, size_t numQuantizationBits);
 
-    /// A collection of additional information needed for the distributed trainer to aggregate the gradients
-    struct ExtendedMinibatchInfo : public MinibatchInfo
-    {
-        ExtendedMinibatchInfo(size_t numSamples, NDArrayViewPtr trainingLossValue, NDArrayViewPtr evalCriterionValue) 
-            : MinibatchInfo(numSamples), trainingLossValue(trainingLossValue), evalCriterionValue(evalCriterionValue)
-        {}
-
-        NDArrayViewPtr trainingLossValue;
-        NDArrayViewPtr evalCriterionValue;
-    };
-
     ///
     /// Distributed Trainer.
     ///
@@ -3726,7 +3715,7 @@ namespace CNTK
         CNTK_API virtual void PreMinibatchCallback(const Trainer& trainer) = 0;
 
         // Optional override that gets called per minibatch after finishing gradient computation but before updating model parameters
-        CNTK_API virtual void PreParameterUpdateCallback(const Trainer& trainer, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, ExtendedMinibatchInfo& info) = 0;
+        CNTK_API virtual void PreParameterUpdateCallback(const Trainer& trainer, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info) = 0;
 
         // Optionally overridable method to get checkpoint state associated with this Distributed train method
         CNTK_API virtual Dictionary GetCheckpointState() const = 0;

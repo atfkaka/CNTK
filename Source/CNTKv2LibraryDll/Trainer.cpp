@@ -187,6 +187,19 @@ namespace CNTK
 
         m_prevMinibatchNumSamples = GetSampleCount(m_trainingSampleCountVar, outputs[m_trainingSampleCountVar]);
 
+        bool sweepEnd = std::any_of(arguments.begin(), arguments.end(), [](const std::pair<const Variable, MinibatchData>& kv)
+        {
+            return kv.second.sweepEnd;
+        });
+
+        MinibatchInfo info
+        {
+            m_prevMinibatchNumSamples,
+            sweepEnd,
+            m_prevMinibatchAggregateTrainingLossValue->Data(),
+            m_prevMinibatchAggregateEvalCriterionValue->Data()
+        };
+
         if (m_distributedTrainer)
         {
             // Aggregation should happen in the same order, the order of parmaters is guaranteed to be the same.
@@ -195,22 +208,11 @@ namespace CNTK
             for (const auto& parameter : modelParameters)
                 gradients.push_back(std::make_pair(parameter, parameterGradients[parameter]->Data()));
 
-            ExtendedMinibatchInfo info
-            {
-                m_prevMinibatchNumSamples,
-                m_prevMinibatchAggregateTrainingLossValue->Data(),
-                m_prevMinibatchAggregateEvalCriterionValue->Data()
-            };
-
             m_distributedTrainer->PreParameterUpdateCallback(*this, gradients, info);
             m_prevMinibatchNumSamples = info.numberOfSamples;
         }
 
         bool anyUpdatesPerformed = false;
-        bool sweepEnd = std::any_of(arguments.begin(), arguments.end(), [](const std::pair<const Variable, MinibatchData>& kv)
-        {
-            return kv.second.sweepEnd;
-        });
 
         for (auto learner : m_parameterLearners)
         {
@@ -224,7 +226,7 @@ namespace CNTK
                     LogicError("The gradient value for a Parameter cannot have an associated mask!");
             }
 
-            anyUpdatesPerformed |= learner->Update(learnerParameterGradients, { m_prevMinibatchNumSamples, sweepEnd });
+            anyUpdatesPerformed |= learner->Update(learnerParameterGradients, info);
         }
 
         return anyUpdatesPerformed;
