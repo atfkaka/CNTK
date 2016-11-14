@@ -29,14 +29,14 @@ class WorkerDescriptor(cntk_py.DistributedWorkerDescriptor):
         '''
         The global rank of the worker.
         '''
-        return super().m_global_rank
+        return super(WorkerDescriptor, self).m_global_rank
 
     @property
     def host_id(self):
         '''
         The host id of the worker.
         '''
-        return super().m_host_id
+        return super(WorkerDescriptor, self).m_host_id
 
 class Communicator(cntk_py.DistributedCommunicator):
     '''
@@ -52,7 +52,7 @@ class Communicator(cntk_py.DistributedCommunicator):
         Returns:
             (`list`) of :class:`WorkerDescriptor`: workers in this communicator.
         '''
-        return super().workers()
+        return super(Communicator, self).workers()
 
     @typemap
     def current_worker(self):
@@ -62,13 +62,13 @@ class Communicator(cntk_py.DistributedCommunicator):
         Returns:
             :class:`WorkerDescriptor`: descriptor of current process.
         '''
-        return super().current_worker()
+        return super(Communicator, self).current_worker()
 
     def barrier(self):
         '''
         sync point to make sure all workers reach the same state
         '''
-        super().barrier()
+        super(Communicator, self).barrier()
         
     @staticmethod
     def finalize():
