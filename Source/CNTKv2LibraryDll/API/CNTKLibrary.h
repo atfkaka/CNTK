@@ -3123,12 +3123,15 @@ namespace CNTK
     ///
     struct MinibatchInfo
     {
-        MinibatchInfo(size_t numSamples, bool sweepEnd = false, NDArrayViewPtr trainingLossValue = nullptr, NDArrayViewPtr evalCriterionValue = nullptr) 
-            : numberOfSamples(numSamples), sweepEnd(sweepEnd),  trainingLossValue(trainingLossValue), evalCriterionValue(evalCriterionValue)
+        MinibatchInfo(size_t numSamples, bool sweepEnd = false, bool atEndOfData = false, 
+                      NDArrayViewPtr trainingLossValue = nullptr, NDArrayViewPtr evalCriterionValue = nullptr) 
+                      : numberOfSamples(numSamples), sweepEnd(sweepEnd), atEndOfData(atEndOfData),
+                      trainingLossValue(trainingLossValue), evalCriterionValue(evalCriterionValue)
         {}
 
         size_t numberOfSamples;
         bool sweepEnd; 
+        bool atEndOfData;
         NDArrayViewPtr trainingLossValue;
         NDArrayViewPtr evalCriterionValue;
     };
@@ -3293,7 +3296,7 @@ namespace CNTK
     /// using the specified learners and training data either explicitly supplied as Value objects or from
     /// a MinibatchSource object.
     ///
-    class Trainer 
+    class Trainer
     {
     public:
         ///
@@ -3318,6 +3321,12 @@ namespace CNTK
         /// Returns false if all parameter learners indicate end of learning (through their Update method's return value).
         ///
         CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
+        
+        ///
+        /// An overload of the TrainMinibatch above that takes a map of variables and their values (as its first argument), 
+        /// as well as the end-of-sweep flag (second argument, defaults to false).
+        ///
+        CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, bool sweepEnd = false, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
 
         ///
         /// Optimize model parameters using the specified 'arguments' minibatch of training samples.
@@ -3329,10 +3338,21 @@ namespace CNTK
         CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, std::unordered_map<Variable, ValuePtr>& outputsToFetch, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
 
         ///
+        /// An overload of the TrainMinibatch above that takes a map of variables and their values (as its first argument), 
+        /// as well as the end-of-sweep flag (third argument, defaults to false).
+        ///
+        CNTK_API bool TrainMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, std::unordered_map<Variable, ValuePtr>& outputsToFetch, bool sweepEnd = false, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
+
+        ///
         /// Test the model on the specified batch of samples using the evaluation Function specified during construction of the Trainer
         /// Returns the average evaluation criterion value per sample for the tested minibatch of samples
         ///
         CNTK_API double TestMinibatch(const std::unordered_map<Variable, MinibatchData>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
+
+        ///
+        /// An overload of the TestMinibatch above that takes a map of variables and their values (as its first argument).
+        ///
+        CNTK_API double TestMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
 
         ///
         /// Checkpoint the model and other Trainer state at the specified file location
@@ -3380,6 +3400,8 @@ namespace CNTK
         const std::vector<LearnerPtr>& ParameterLearners() const { return m_parameterLearners; }
 
     private:
+        void Save(const std::wstring& modelFilePath, bool usingLegacyModelFormat, const Dictionary& state);
+
         FunctionPtr m_combinedTrainingFunction;
         FunctionPtr m_model;
         FunctionPtr m_lossFunction;
@@ -3639,10 +3661,19 @@ namespace CNTK
         CNTK_API virtual DistributedCommunicatorPtr SubGroup(const std::unordered_set<DistributedWorkerDescriptor>& subGroupWorkers) const = 0;
 
         // A collective communication API to concatenate values across each worker of this communicator. The concatenated values are only sent to the specified workers; for all others the returned Values are null
-        // TODO: Add an async variant of the Concatenate method
         CNTK_API virtual void Concatenate(
             const std::vector<ValuePtr>& values,
             std::vector<ValuePtr>& outputValues,
+            const std::unordered_set<DistributedWorkerDescriptor>& sendToWorkers) = 0;
+
+        CNTK_API virtual void Concatenate(
+            const std::vector<NDArrayViewPtr>& input,
+            std::vector<NDArrayViewPtr>& output,
+            const std::unordered_set<DistributedWorkerDescriptor>& sendToWorkers) = 0;
+
+        CNTK_API virtual void Gather(
+            const Dictionary& input,
+            std::vector<DictionaryPtr>& output,
             const std::unordered_set<DistributedWorkerDescriptor>& sendToWorkers) = 0;
 
         // A collective communication API to aggregate values across each worker of this communicator. 
@@ -3714,14 +3745,15 @@ namespace CNTK
         // Optional override that gets called before each minibatch during training
         CNTK_API virtual void PreMinibatchCallback(const Trainer& trainer) = 0;
 
-        // Optional override that gets called per minibatch after finishing gradient computation but before updating model parameters
-        CNTK_API virtual void PreParameterUpdateCallback(const Trainer& trainer, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info) = 0;
+        // Optional override that gets called per minibatch after finishing gradient computation but before updating model parameters.
+        CNTK_API virtual bool PreParameterUpdateCallback(const Trainer& trainer, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info) = 0;
 
         // Optionally overridable method to get checkpoint state associated with this Distributed train method
-        CNTK_API virtual Dictionary GetCheckpointState() const = 0;
+        CNTK_API virtual Dictionary CreateCheckpoint(const Trainer& trainer, const Dictionary& localStateToShare) = 0;
 
         // Optionally overridable method to restore state pertaining this distributed training method from a previous checkpoint
-        CNTK_API virtual void RestoreFromCheckpoint(const Dictionary& checkpoint) = 0;
+        // Returns local state that corresponds to this worker.
+        CNTK_API virtual Dictionary RestoreFromCheckpoint(const Dictionary& checkpoint) = 0;
 
         // Return the distributed communicator used in the distributed trainer
         CNTK_API virtual DistributedCommunicatorPtr GetCommunicator() = 0;

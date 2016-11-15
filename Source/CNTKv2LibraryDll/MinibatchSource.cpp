@@ -270,7 +270,6 @@ namespace CNTK
     {
         Dictionary checkpointState;
         checkpointState[MinibatchSourcePositionAttributeName] = m_shim->GetCurrentSamplePosition();
-
         return checkpointState;
     }
 
