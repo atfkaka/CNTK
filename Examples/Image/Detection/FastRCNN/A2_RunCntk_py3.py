@@ -7,7 +7,7 @@
 from __future__ import print_function
 import numpy as np
 import os, sys, importlib
-from cntk import Trainer, load_model
+from cntk import * # Trainer, load_model, UnitType
 from cntk.device import cpu, set_default_device
 from cntk.learner import sgd
 from cntk.blocks import Placeholder, Constant
@@ -23,7 +23,6 @@ locals().update(importlib.import_module("PARAMETERS").__dict__)
 
 abs_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(abs_path, "..", ".."))
-from examples.common.nn import print_training_progress
 
 TRAIN_MAP_FILENAME = 'train.txt'
 TEST_MAP_FILENAME = 'test.txt'
@@ -57,6 +56,14 @@ def visit(root_node, visitor):
 def find_nodes_by_name(root_node, node_name):
     return visit(root_node, lambda x: x.name == node_name)
 
+def print_training_progress(trainer, mb, frequency):
+
+    if mb % frequency == 0:
+        training_loss = get_train_loss(trainer)
+        eval_crit = get_train_eval_criterion(trainer)
+        print("Minibatch: {}, Train Loss: {}, Train Evaluation Criterion: {}".format(
+            mb, training_loss, eval_crit))
+
 
 # Instantiates a composite minibatch source for reading images, roi coordinates and roi labels for training Fast R-CNN
 # The minibatch source is configured using a hierarchical dictionary of key:value pairs
@@ -66,7 +73,10 @@ def create_mb_source(features_stream_name, rois_stream_name, labels_stream_name,
     label_dim = num_classes * num_rois
 
     path = os.path.normpath(os.path.join(abs_path, data_path))
-    map_file = os.path.join(path, TRAIN_MAP_FILENAME)
+    if (data_set == 'test'):
+        map_file = os.path.join(path, TEST_MAP_FILENAME)
+    else:
+        map_file = os.path.join(path, TRAIN_MAP_FILENAME)
     roi_file = os.path.join(path, data_set + ROIS_FILENAME_POSTFIX)
     label_file = os.path.join(path, data_set + ROILABELS_FILENAME_POSTFIX)
 
@@ -96,7 +106,7 @@ def create_mb_source(features_stream_name, rois_stream_name, labels_stream_name,
 # Defines the Fast R-CNN network model for detecting objects in images
 def frcn_predictor(features, rois, num_classes):
     # Load the pretrained model and find nodes
-    loaded_model = load_model("../../../../../PretrainedModels/AlexNetBS.model", 'float')
+    loaded_model = load_model("../../../../../PretrainedModels/AlexNetBS.model") #, 'float')
     feature_node = find_nodes_by_name(loaded_model, "features")
     conv5_node   = find_nodes_by_name(loaded_model, "z.x._.x._.x.x_output")
     pool3_node   = find_nodes_by_name(loaded_model, "z.x._.x._.x_output")
@@ -159,8 +169,7 @@ def frcn_grocery(base_path, debug_output=False):
     l2_reg_weight = 0.0005
 
     lr_per_mb = [0.00001] * 10 + [0.000001] * 5 + [0.0000001]
-    lr_per_sample = [lr / mb_size for lr in lr_per_mb]
-    lr_schedule = learning_rate_schedule(lr_per_sample, epoch_size=epoch_size)
+    lr_schedule = learning_rate_schedule(lr_per_mb, unit=UnitType.minibatch)
     mm_schedule = momentum_as_time_constant_schedule(momentum_time_constant)
 
     # Instantiate the trainer object to drive the model training

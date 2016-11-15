@@ -91,7 +91,7 @@ Train = {
 
     SGD = {
         epochSize = 0
-        minibatchSize = 1
+        minibatchSize = 2
         maxEpochs = 17
         
         #momentumAsTimeConstant = 0*5:10
