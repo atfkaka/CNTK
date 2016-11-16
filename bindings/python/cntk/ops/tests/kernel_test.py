@@ -8,6 +8,7 @@
 Unit tests for kernel operations, tested for the forward and the backward pass
 """
 
+from __future__ import division
 import numpy as np
 import pytest
 from .ops_test_utils import unittest_helper, AA, I, precision, PRECISION_TO_TYPE, constant
