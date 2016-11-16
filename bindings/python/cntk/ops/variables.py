@@ -3,7 +3,7 @@ from cntk import cntk_py, utils
 from ..tensor import TensorOpsMixin
 from ..utils import typemap, sanitize_precision, sanitize_value, sanitize_dtype_cntk
 
-class VariableMixin:
+class VariableMixin(object):
     '''
     Standard properties for :class:`Variable` and its derived classes
     :class:`Parameter` and :class:`Constant`.
