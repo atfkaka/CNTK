@@ -52,13 +52,14 @@ makebuildinfo()
     local MATHLIB=$3
     local GIT_COMMIT=$4
     local GIT_BRANCH=$5
-    local CUDA_PATH=$6
-    local CUB_PATH=$7
-    local WITH_1BITSGD=$8
-    local WITH_ASGD=$9
-    local BUILDER=$10
-    local BUILDMACHINE=${11}
-    local BUILDPATH=${12}
+    local GIT_TAG=$6
+    local CUDA_PATH=$7
+    local CUB_PATH=$8
+    local WITH_1BITSGD=$9
+    local WITH_ASGD=${10}
+    local BUILDER=${11}
+    local BUILDMACHINE=${12}
+    local BUILDPATH=${13}
 
     (
         printf "#ifndef _BUILDINFO_H\n"
@@ -67,6 +68,7 @@ makebuildinfo()
         printf "#define _MATHLIB_ \"%s\"\n" "$MATHLIB"
         printf "#define _BUILDSHA1_ \"%s\"\n" "$GIT_COMMIT"
         printf "#define _BUILDBRANCH_ \"%s\"\n" "$GIT_BRANCH"
+        printf "#define _BUILDTAG_ \"%s\"\n" "$GIT_TAG"
         if [ -z "$CUDA_PATH" ]; then
             printf "#define _BUILDTARGET_ \"CPU-only\"\n"
         else
@@ -112,6 +114,7 @@ GIT_STATUS=' (modified)'
 git diff --quiet && git diff --cached --quiet && GIT_STATUS=''
 GIT_COMMIT=`git rev-parse HEAD`$GIT_STATUS
 GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+GIT_TAG=`git rev-parse HEAD | git describe --abbrev=0 --tags`
 
 # Looking into Config.make
 if [ ! -e $config ] ; then
@@ -155,6 +158,7 @@ makebuildinfo \
     "$MATHLIB" \
     "$GIT_COMMIT" \
     "$GIT_BRANCH" \
+    "$GIT_TAG" \
     "$CUDAPATH" \
     "$CUBPATH" \
     "$CNTK_ENABLE_1BitSGD" \

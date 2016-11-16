@@ -38,12 +38,14 @@ if not errorlevel 1 (
         echo #define _GIT_EXIST >> buildinfo.h$$
         FOR /F %%i IN ('call git rev-parse --abbrev-ref HEAD') DO SET l_BRANCH=%%i
         FOR /F %%i IN ('call git rev-parse HEAD') DO SET l_COMMIT=%%i
+        FOR /F %%i IN ('call git describe --abbrev=0 --tags !l_COMMIT!') DO SET l_tag=%%i
         set l_STATUS=
         call git diff --quiet --cached
         if not errorlevel 1 call git diff --quiet
         if errorlevel 1 set l_STATUS= ^(modified^)
         echo #define _BUILDBRANCH_  "!l_BRANCH!"      >> buildinfo.h$$
         echo #define _BUILDSHA1_    "!l_COMMIT!!l_STATUS!">> buildinfo.h$$
+        echo #define _BUILDTAG_    "!l_tag!">> buildinfo.h$$
     )
 )
 
