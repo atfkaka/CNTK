@@ -125,8 +125,8 @@ def getCntkInputPaths(cntkFilesDir, image_set):
     cntkImgsListPath = cntkFilesDir + image_set + '.txt'
     cntkRoiCoordsPath = cntkFilesDir + image_set + '.rois.txt'
     cntkRoiLabelsPath = cntkFilesDir + image_set + '.roilabels.txt'
-    cntkNrRoisPath = cntkFilesDir + image_set + '.nrRois.txt'
-    return cntkImgsListPath, cntkRoiCoordsPath, cntkRoiLabelsPath, cntkNrRoisPath
+    cntkRegrTargetPath = cntkFilesDir + image_set + '.regrTarget.txt'
+    return cntkImgsListPath, cntkRoiCoordsPath, cntkRoiLabelsPath, cntkRegrTargetPath
 
 def roiTransformPadScaleParams(imgWidth, imgHeight, padWidth, padHeight, boResizeImg = True):
     scale = 1.0
@@ -145,7 +145,7 @@ def roiTransformPadScaleParams(imgWidth, imgHeight, padWidth, padHeight, boResiz
         error
     if (w_offset < 0 or h_offset < 0):
         print ("ERROR: at least one offset is < 0:", imgWidth, imgHeight, w_offset, h_offset, scale)
-    return targetw, targeth, w_offset, h_offset, scale
+    return w_offset, h_offset, scale
 
 def roiTransformPadScale(rect, w_offset, h_offset, scale = 1.0):
     rect = [int(round(scale * d)) for d in rect]
@@ -155,7 +155,7 @@ def roiTransformPadScale(rect, w_offset, h_offset, scale = 1.0):
     rect[3] += h_offset
     return rect
 
-def getCntkRoiCoordsLine(rect, targetw, targeth):
+def getCntkRelativeRoiCoords(rect, targetw, targeth):
     # convert from absolute to relative co-ordinates
     x, y, x2, y2 = rect
     xrel = float(x) / (1.0 * targetw)
@@ -166,25 +166,37 @@ def getCntkRoiCoordsLine(rect, targetw, targeth):
     assert yrel <= 1.0, "Error: yrel should be <= 1 but is " + str(yrel)
     assert wrel >= 0.0, "Error: wrel should be >= 0 but is " + str(wrel)
     assert hrel >= 0.0, "Error: hrel should be >= 0 but is " + str(hrel)
-    return " {} {} {} {}".format(xrel, yrel, wrel, hrel)
+    return [xrel, yrel, wrel, hrel]
 
-def getCntkRoiLabelsLine(overlaps, thres, nrClasses):
+def getBboxRegressionTarget(gt_coords, roi_coords):
+    # compute the regression target as changes relative to widht and height of the proposed ROI.
+    # This will yield regression targets in [-1, 1] for those ROIs that are not mapped to background,
+    # because the corresponding groundt truth box must overlap with the ROI
+    # [Note: x or y might be 0, w and h are always > 0]
+    roi_x, roi_y, roi_w, roi_h = roi_coords
+    v_x = (gt_coords[0] - roi_x) / roi_w
+    v_y = (gt_coords[1] - roi_y) / roi_h
+    v_w = (gt_coords[2] - roi_w) / roi_w
+    v_h = (gt_coords[3] - roi_h) / roi_h
+    return v_x, v_y, v_w, v_h
+
+def getCntkRoiLabels(overlaps, thres, nrClasses):
     # get one hot encoding
     maxgt = np.argmax(overlaps)
     if overlaps[maxgt] < thres: # set to background label if small overlap with GT
         maxgt = 0
     oneHot = np.zeros((nrClasses), dtype=int)
     oneHot[maxgt] = 1
-    oneHotString = " {}".format(" ".join(str(x) for x in oneHot))
-    return oneHotString
+    return oneHot
 
-def cntkPadInputs(currentNrRois, targetNrRois, nrClasses, boxesStr, labelsStr):
+def cntkPadInputs(currentNrRois, targetNrRois, nrClasses, boxesStr, labelsStr, regrStr):
     assert currentNrRois <= targetNrRois, "Current number of rois ({}) should be <= target number of rois ({})".format(currentNrRois, targetNrRois)
     while currentNrRois < targetNrRois:
         boxesStr += " 0 0 0 0"
         labelsStr += " 1" + " 0" * (nrClasses - 1)
+        regrStr += " 0 0 0 0"
         currentNrRois += 1
-    return boxesStr, labelsStr
+    return boxesStr, labelsStr, regrStr
 
 def checkCntkOutputFile(cntkImgsListPath, cntkOutputPath, cntkNrRois, outputDim):
     imgPaths = getColumn(readTable(cntkImgsListPath), 1)

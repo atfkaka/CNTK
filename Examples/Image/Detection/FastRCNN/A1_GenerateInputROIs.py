@@ -22,7 +22,7 @@ boAddRoisOnGrid = True
 # Main
 ####################################
 # generate ROIs using selective search and grid (for pascal we use the precomputed ROIs from Ross)
-#if False: # not datasetName.startswith("pascalVoc"):
+#if False: # for debugging
 if not datasetName.startswith("pascalVoc"):
     # init
     makeDirectory(roiDir)
@@ -96,44 +96,65 @@ for image_set in image_sets:
     makeDirectory(cntkFilesDir)
 
     # open files for writing
-    cntkImgsPath, cntkRoiCoordsPath, cntkRoiLabelsPath, nrRoisPath = getCntkInputPaths(cntkFilesDir, image_set)
-    with open(nrRoisPath, 'w')        as nrRoisFile, \
-         open(cntkImgsPath, 'w')      as cntkImgsFile, \
-         open(cntkRoiCoordsPath, 'w') as cntkRoiCoordsFile, \
-         open(cntkRoiLabelsPath, 'w') as cntkRoiLabelsFile:
+    cntkImgsPath, cntkRoiCoordsPath, cntkRoiLabelsPath, cntkRegrTargetPath = getCntkInputPaths(cntkFilesDir, image_set)
+    with open(cntkImgsPath, 'w')       as cntkImgsFile, \
+         open(cntkRoiCoordsPath, 'w')  as cntkRoiCoordsFile, \
+         open(cntkRoiLabelsPath, 'w')  as cntkRoiLabelsFile, \
+         open(cntkRegrTargetPath, 'w') as regrTargetsFile:
 
-            # for each image, transform rois etc to cntk format
-            for imgIndex in range(0, imdb.num_images):
-                if imgIndex % 50 == 0:
-                    print ("Processing image set '{}', image {} of {}".format(image_set, imgIndex, imdb.num_images))
-                currBoxes = imdb.roidb[imgIndex]['boxes']
-                currGtOverlaps = imdb.roidb[imgIndex]['gt_overlaps']
-                imgPath = imdb.image_path_at(imgIndex)
-                imgWidth, imgHeight = imWidthHeight(imgPath)
+        # for each image, transform rois etc to cntk format
+        for imgIndex in range(0, imdb.num_images):
+            if imgIndex % 50 == 0:
+                print ("Processing image set '{}', image {} of {}".format(image_set, imgIndex, imdb.num_images))
+            currBoxes = imdb.roidb[imgIndex]['boxes']
+            currGtOverlaps = imdb.roidb[imgIndex]['gt_overlaps']
+            gtm = imdb.roidb[imgIndex]['gt_argmaxes']
+            imgPath = imdb.image_path_at(imgIndex)
+            imgWidth, imgHeight = imWidthHeight(imgPath)
 
-                #import pdb
-                #pdb.set_trace()
+            # all rois need to be scaled + padded to cntk input image size
+            w_offset, h_offset, scale = roiTransformPadScaleParams(imgWidth, imgHeight, cntk_padWidth, cntk_padHeight)
 
-                # all rois need to be scaled + padded to cntk input image size
-                targetw, targeth, w_offset, h_offset, scale = roiTransformPadScaleParams(imgWidth, imgHeight,
-                                                                           cntk_padWidth, cntk_padHeight)
-                boxesStr = ""
-                labelsStr = ""
-                nrBoxes = len(currBoxes)
-                for boxIndex, box in enumerate(currBoxes):
-                    rect = roiTransformPadScale(box, w_offset, h_offset, scale)
-                    boxesStr += getCntkRoiCoordsLine(rect, cntk_padWidth, cntk_padHeight)
-                    labelsStr += getCntkRoiLabelsLine(currGtOverlaps[boxIndex, :].toarray()[0],
-                                                   train_posOverlapThres,
-                                                   nrClasses)
+            num_rois = len(currBoxes)
+            rel_coords = np.zeros((num_rois, 4), dtype=np.float32)
+            for boxIndex, box in enumerate(currBoxes):
+                coords = roiTransformPadScale(box, w_offset, h_offset, scale)
+                rel_coords[boxIndex,:] = getCntkRelativeRoiCoords(coords, cntk_padWidth, cntk_padHeight)
 
-                # if less than e.g. 2000 rois per image, then fill in the rest using 'zero-padding'.
-                boxesStr, labelsStr = cntkPadInputs(nrBoxes, cntk_nrRois, nrClasses, boxesStr, labelsStr)
+            boxesStr = ""
+            labelsStr = ""
+            regrStr = ""
+            for boxIndex, box in enumerate(currBoxes):
+                roi_rel_coords = rel_coords[boxIndex]
+                gt_rel_coords = rel_coords[gtm[boxIndex]]
 
-                # update cntk data
-                nrRoisFile.write("{}\n".format(nrBoxes))
-                cntkImgsFile.write("{}\t{}\t0\n".format(imgIndex, imgPath))
-                cntkRoiCoordsFile.write("{} |rois{}\n".format(imgIndex, boxesStr))
-                cntkRoiLabelsFile.write("{} |roiLabels{}\n".format(imgIndex, labelsStr))
+                overlaps = currGtOverlaps[boxIndex, :].toarray()[0]
+                label_wrt_overlap = getCntkRoiLabels(overlaps, train_posOverlapThres, nrClasses)
+
+                regr_target = getBboxRegressionTarget(gt_rel_coords, roi_rel_coords)
+                # if the candidate ROI is mapped to the background class the regression target is zero
+                # [Note: background ROIs are ignored in the multi-task loss of Fast R-CNN]
+                if label_wrt_overlap[0] == 1:
+                    regr_target = (0.0, 0.0, 0.0, 0.0)
+                # debug output
+                #else:
+                #    print(label_wrt_overlap)
+                #    print(roi_rel_coords)
+                #    print(gt_rel_coords)
+                #    print(regr_target)
+                #    print("---")
+
+                boxesStr  += " {}".format(" ".join(str(x) for x in roi_rel_coords))
+                labelsStr += " {}".format(" ".join(str(x) for x in label_wrt_overlap))
+                regrStr   += " {}".format(" ".join(str(x) for x in regr_target))
+
+            # if less than e.g. 2000 rois per image, then fill in the rest using 'zero-padding'.
+            boxesStr, labelsStr, regrStr = cntkPadInputs(num_rois, cntk_nrRois, nrClasses, boxesStr, labelsStr, regrStr)
+
+            # update cntk data
+            cntkImgsFile.write("{}\t{}\t0\n".format(imgIndex, imgPath))
+            cntkRoiCoordsFile.write("{} |rois{}\n".format(imgIndex, boxesStr))
+            cntkRoiLabelsFile.write("{} |roiLabels{}\n".format(imgIndex, labelsStr))
+            regrTargetsFile.write("{} |regrTarget{}\n".format(imgIndex, regrStr))
 
 print ("DONE.")

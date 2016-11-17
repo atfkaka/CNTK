@@ -164,7 +164,7 @@ class imdb(object):
             boxes = box_list[i]
             num_boxes = boxes.shape[0]
             overlaps = np.zeros((num_boxes, self.num_classes), dtype=np.float32)
-            #overlapsArgmax = np.zeros((num_boxes, self.num_classes), dtype=np.float32)
+            overlapsArgmax = np.zeros(num_boxes, dtype=np.float32)
 
             if gt_roidb and gt_roidb[i]:
                 gt_boxes = gt_roidb[i]['boxes']
@@ -177,14 +177,14 @@ class imdb(object):
                     maxes = gt_overlaps.max(axis=1)
                     I = np.where(maxes > 0)[0]
                     overlaps[I, gt_classes[argmaxes[I]]] = maxes[I]
-                    #overlapsArgmax[I, argmaxes[I]] = argmaxes[I]
+                    overlapsArgmax = argmaxes
 
             overlaps = scipy.sparse.csr_matrix(overlaps)
             roidb.append({'boxes' : boxes,
                           'gt_classes' : np.zeros((num_boxes,),
                                                   dtype=np.int32),
                           'gt_overlaps' : overlaps,
-                          #'gt_argmaxes' : argmaxes, #overlapsArgmax,
+                          'gt_argmaxes' : overlapsArgmax,
                           'flipped' : False})
         return roidb
 
@@ -198,6 +198,7 @@ class imdb(object):
                                                 b[i]['gt_classes']))
                 a[i]['gt_overlaps'] = scipy.sparse.vstack([a[i]['gt_overlaps'],
                                                            b[i]['gt_overlaps']])
+                a[i]['gt_argmaxes'] = np.hstack((a[i]['gt_argmaxes'], b[i]['gt_argmaxes']))
             else:
                 a[i] = b[i]
         return a

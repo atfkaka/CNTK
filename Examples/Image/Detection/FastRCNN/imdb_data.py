@@ -124,6 +124,7 @@ class imdb_data(fastRCNN.imdb):
                 roidb[i]['gt_overlaps'] = gt_overlaps
                 roidb[i]['boxes'] = roidb[i]['boxes'][:self._maxNrRois,:]
                 roidb[i]['gt_classes'] = roidb[i]['gt_classes'][:self._maxNrRois]
+                roidb[i]['gt_argmaxes'] = roidb[i]['gt_argmaxes'][:self._maxNrRois]
 
         with open(cache_file, 'wb') as fid:
             cp.dump(roidb, fid, cp.HIGHEST_PROTOCOL)
@@ -164,17 +165,20 @@ class imdb_data(fastRCNN.imdb):
         boxes = np.zeros((num_objs,4), dtype=np.uint16)
         gt_classes = np.zeros(num_objs, dtype=np.int32)
         overlaps = np.zeros((num_objs, self.num_classes), dtype=np.float32)
+        gt_argmaxes = np.zeros(num_objs, dtype=np.int32)
         for bboxIndex,(bbox,label) in enumerate(zip(bboxes,labels)):
             cls = self._class_to_ind[label.decode('utf-8')]
             boxes[bboxIndex, :] = bbox
             gt_classes[bboxIndex] = cls
             overlaps[bboxIndex, cls] = 1.0
+            gt_argmaxes[bboxIndex] = bboxIndex
 
         overlaps = scipy.sparse.csr_matrix(overlaps)
 
         return {'boxes' : boxes,
                 'gt_classes': gt_classes,
                 'gt_overlaps' : overlaps,
+                'gt_argmaxes' : gt_argmaxes,
                 'flipped' : False}
 
     # main call to compute per-calass average precision

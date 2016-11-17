@@ -107,7 +107,7 @@ Train = {
         ## -> with a = x .* x .* 0.5
         ## -> with b = x - 0.5
         ## --> ReduceSum(If(Less(x, 1.0), a, b)
-        # loss = predLoss + IF (argMax(regrGT, axis=1) > 0) regrLoss ELSE 0
+        # loss = predLoss + IF (argMax(roiLabels, axis=1) > 0) regrLoss ELSE 0
         
         featureNodes    = (features:rois)
         labelNodes      = (roiLabels)
