@@ -464,7 +464,16 @@ protected:
     void SetBlockSize(size_t blockSize) { m_blockSize = blockSize; }
 
     GPUSPARSE_INDEX_TYPE* GetRowToIdMap() const { return m_rowToId; }
-    void SetRowToIdMap(GPUSPARSE_INDEX_TYPE* parray) { m_rowToId = parray; }
+    void SetRowToIdMap(size_t minSize) const 
+    { 
+        BaseMatrixStorage<ElemType>* nonConstThis = const_cast<BaseMatrixStorage<ElemType>*>(this);
+        if (minSize > m_rowToIdSize)
+        {
+            TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), nonConstThis->m_rowToId);
+            nonConstThis->m_rowToId = TracingGPUMemoryAllocator::Allocate<GPUSPARSE_INDEX_TYPE>(GetComputeDeviceId(), minSize);
+            nonConstThis->m_rowToIdSize = minSize;
+        }
+    }
 
     void* GetTempHostBuffer() const { return m_tempHostBuffer; }
     void SetTempHostBuffer(void* buffer) const { m_tempHostBuffer = buffer; }
@@ -505,6 +514,7 @@ protected:
         m_totalBufferSizeAllocated = 0;
         m_blockSize                = 0; // block size
         m_rowToId                  = nullptr; // the id showing the order row number is observed in the nnz values.
+        m_rowToIdSize              = 0;
         m_tempHostBuffer           = nullptr; // used to copy values.
         m_tempHostBufferSize       = 0;
         m_colIdx                   = 0; // used to SetValue()
@@ -538,7 +548,8 @@ protected:
 
     // used by the blockCol and blockRow format
     size_t m_blockSize;                      // block size
-    mutable GPUSPARSE_INDEX_TYPE* m_rowToId; // the id showing the order row number is observed in the nnz values.
+    mutable GPUSPARSE_INDEX_TYPE* m_rowToId; // For each nzz value the corresponding block id it's mapped to in block sparse
+    mutable size_t m_rowToIdSize;
 
     mutable void* m_tempHostBuffer; // used to copy values.
     mutable size_t m_tempHostBufferSize;
@@ -654,7 +665,7 @@ protected:
     void SetBlockSize(size_t blockSize) { m_sob->SetBlockSize(blockSize); }
 
     GPUSPARSE_INDEX_TYPE* GetRowToIdMap() const { return m_sob->GetRowToIdMap(); }
-    void SetRowToIdMap(GPUSPARSE_INDEX_TYPE* parray) { m_sob->SetRowToIdMap(parray); }
+    void SetRowToIdMap(size_t minSize) const { m_sob->SetRowToIdMap(minSize); }
 
     void* GetTempHostBuffer() const { return m_sob->GetTempHostBuffer(); }
     void SetTempHostBuffer(void* buffer) const { m_sob->SetTempHostBuffer(buffer); };

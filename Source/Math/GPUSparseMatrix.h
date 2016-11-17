@@ -454,7 +454,7 @@ private:
     size_t ElemCountFromBufferSize(const size_t numRows, const size_t numCols, const MatrixFormat format, const size_t totalBufferSize) const;
     size_t ElemCountFromBufferSize() const;
     DEVICEID_TYPE PrepareDevice(const DEVICEID_TYPE deviceId = -1) const;
-    size_t IdentifyRowsWithValues(GPUSPARSE_INDEX_TYPE* row2IdMap) const;
+    size_t IdentifyRowsWithValues() const;
 };
 
 }}}

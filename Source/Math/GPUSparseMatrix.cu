@@ -1265,8 +1265,7 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
         }
         else
         {
-            GPUSPARSE_INDEX_TYPE* row2idMap = TracingGPUMemoryAllocator::Allocate<GPUSPARSE_INDEX_TYPE>(c.GetComputeDeviceId(), rhs.NzCount());
-            c.SetBlockSize(rhs.IdentifyRowsWithValues(row2idMap));
+            c.SetBlockSize(rhs.IdentifyRowsWithValues());
             size_t nnz = m * c.GetBlockSize();
             c.RequireSizeAndAllocate(m, n, nnz, true, false);
             CUDA_CALL(cudaMemset(c.Data(), 0, sizeof(ElemType) * (c.GetSizeAllocated())));
@@ -1282,14 +1281,10 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
                 rhs.Data(),
                 rhs.RowLocation(),
                 rhs.ColLocation(),
-                row2idMap,
+                rhs.GetRowToIdMap(),
                 c.Data(),
                 c.BlockId2ColOrRow());
-
-            if (row2idMap != nullptr)
-                TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(c.GetComputeDeviceId(), row2idMap);
         }
-
     }
     else if (transposeA && !transposeB)
     {
@@ -1303,12 +1298,13 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
 
 // find the rows of rhs with values
 template <class ElemType>
-size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues(GPUSPARSE_INDEX_TYPE* row2IdMap) const
+size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
 {
     if (GetFormat() != matrixFormatSparseCSC)
         NOT_IMPLEMENTED;
 
     let nz = NzCount();
+    this->SetRowToIdMap(nz);
     map<size_t, GPUSPARSE_INDEX_TYPE> indexer;
     GPUSPARSE_INDEX_TYPE* rowToId = (GPUSPARSE_INDEX_TYPE*) ReserveTempHostBuffer(sizeof(GPUSPARSE_INDEX_TYPE) * nz * 2);
 
@@ -1327,7 +1323,7 @@ size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues(GPUSPARSE_INDEX_TYPE* r
         }
         rowToId[i] = indexer[row];
     }
-    CUDA_CALL(cudaMemcpy(row2IdMap, rowToId, sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyHostToDevice));
+    CUDA_CALL(cudaMemcpy(GetRowToIdMap(), rowToId, sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyHostToDevice));
     return indexer.size();
 }
 
