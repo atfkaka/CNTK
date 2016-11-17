@@ -46,12 +46,12 @@ public:
     using Base::GetTempHostBufferSize;
     using Base::SetTempHostBufferSize;
     using Base::BufferSizeAllocated;
-    using Base::GetRowToIdMap;
+    using Base::GetTempDeviceBuffer;
     using Base::VerifyResizable;
     // without this, base members would require to use thi-> in GCC
 public:
     using Base::VerifyWritable;
-    using Base::SetRowToIdMap;
+    using Base::ReserveTempDeviceBuffer;
     using Base::GetComputeDeviceId;
     using Base::Buffer;
     using Base::GetNumRows;
