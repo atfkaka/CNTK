@@ -18,8 +18,12 @@ from cntk.ops import roipooling
 from cntk.ops.functions import CloneMethod
 from cntk.io import ReaderConfig, ImageDeserializer, CTFDeserializer, StreamConfiguration
 from cntk.initializer import glorot_uniform
+from cntk.graph import find_nodes_by_name
 import PARAMETERS
 locals().update(importlib.import_module("PARAMETERS").__dict__)
+
+from _cntk_py import set_computation_network_trace_level
+set_computation_network_trace_level(1000000)
 
 abs_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(abs_path, "..", ".."))
@@ -29,32 +33,6 @@ TEST_MAP_FILENAME = 'test.txt'
 ROIS_FILENAME_POSTFIX = '.rois.txt'
 ROILABELS_FILENAME_POSTFIX = '.roilabels.txt'
 
-
-#####################################################
-#####################################################
-# helpers for graph traversal
-def dfs_walk(node, visitor, accum, visited):
-    if node in visited:
-        return
-    visited.add(node)
-    print("visiting %s"%node.name)
-    if hasattr(node, 'root_function'):
-        node = node.root_function
-        for child in node.inputs:
-            dfs_walk(child, visitor, accum, visited)
-    elif hasattr(node, 'is_output') and node.is_output:
-        dfs_walk(node.owner, visitor, accum, visited)
-
-    if visitor(node):
-        accum.append(node)
-
-def visit(root_node, visitor):
-    nodes = []
-    dfs_walk(root_node, visitor, nodes, set())
-    return nodes
-
-def find_nodes_by_name(root_node, node_name):
-    return visit(root_node, lambda x: x.name == node_name)
 
 def print_training_progress(trainer, mb, frequency):
 
@@ -90,7 +68,7 @@ def create_mb_source(features_stream_name, rois_stream_name, labels_stream_name,
     image_source.ignore_labels()
     image_source.map_features(features_stream_name,
         [ImageDeserializer.scale(width=image_width, height=image_height, channels=num_channels,
-                                 scaleMode="pad", padValue=114, interpolations='linear')])
+                                 scale_mode="pad", pad_value=114, interpolations='linear')])
 
     # read rois and labels
     roi_source = CTFDeserializer(roi_file)
