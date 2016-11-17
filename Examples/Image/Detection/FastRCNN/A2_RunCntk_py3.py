@@ -22,9 +22,6 @@ from cntk.graph import find_nodes_by_name
 import PARAMETERS
 locals().update(importlib.import_module("PARAMETERS").__dict__)
 
-from _cntk_py import set_computation_network_trace_level
-set_computation_network_trace_level(1000000)
-
 abs_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(abs_path, "..", ".."))
 
