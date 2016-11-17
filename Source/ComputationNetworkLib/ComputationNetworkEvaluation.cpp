@@ -44,6 +44,65 @@ void ComputationNetwork::ForwardProp(const ComputationNodeBasePtr rootNode)
     GetNestedNetwork(rootNode)->ForwardProp(FrameRange(nullptr));
 }
 
+// Excludes nodes from the flow which input doesn't depend on specified start nodes. Returned array represents the order
+// in which forward pass should be performed from specified nodes in the given flow. Specified starting nodes will not
+// be included in result.
+template <class NODESET>
+static std::vector<ComputationNodeBasePtr> GetReducedFlow(std::vector<ComputationNodeBasePtr> flow, const NODESET& from)
+{
+    std::set<ComputationNodeBasePtr> isOnFlowFromAccumulatorNode(from.begin(), from.end());
+    std::vector<ComputationNodeBasePtr> reducedFlow;
+    for (auto& node : flow)
+    {
+        bool isChildNodeOnFlowFromAccumulatorNode = false;
+        for (auto& child : node->GetInputs())
+        {
+            if (isOnFlowFromAccumulatorNode.find(child) != isOnFlowFromAccumulatorNode.end())
+            {
+                isChildNodeOnFlowFromAccumulatorNode = true;
+                break;
+            }
+        }
+
+        if (isChildNodeOnFlowFromAccumulatorNode)
+        {
+            reducedFlow.emplace_back(node);
+            isOnFlowFromAccumulatorNode.insert(node);
+        }
+    }
+
+    return reducedFlow;
+}
+
+// Performs partial forward prop. Forward prop is done on nodes on flow from specified nodes (exclusive) to specified
+// root nodes (inclusive).
+template <class NODESET>
+void ComputationNetwork::ForwardProp(const NODESET& fromNodes, const NODESET& toRootNodes)
+{
+    FrameRange fr(nullptr);
+    for (const ComputationNodeBasePtr root : toRootNodes)
+    {
+        // Get the order in which forward pass should be performed from specified nodes to the current root node.
+        auto controlNode = dynamic_pointer_cast<FlowControlNode>(GetNestedNetwork(root));
+        auto flow = GetReducedFlow(controlNode->m_nestedNodes, fromNodes);
+        // Perform forward pass.
+        for (auto& node : flow)
+        {
+            if (node->IsOutOfDateWrtInputs())
+            {
+                node->BeginForwardProp();
+                node->ForwardProp(fr.WithLayout(node->GetMBLayout()));
+                node->EndForwardProp();
+                node->BumpEvalTimeStamp();
+            }
+        }
+    }
+}
+
+template void ComputationNetwork::ForwardProp<std::set<ComputationNodeBasePtr>>(
+    const std::set<ComputationNodeBasePtr>& from,
+    const std::set<ComputationNodeBasePtr>& to);
+
 // set the gradient matrix of a (root) node 1.0
 // Returns false if the node is not a ComputationNode<ElemType>; see Backprop() below for intended use.
 template <class ElemType>

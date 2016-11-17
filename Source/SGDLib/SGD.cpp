@@ -15,6 +15,7 @@
 #include "DataReaderHelpers.h"
 #include "MatrixQuantizerImpl.h"
 #include "InputAndParamNodes.h"
+#include "AccumulatorAggregation.h"
 
 #ifdef CNTK_PARALLEL_TRAINING_SUPPORT
 //static inline bool operator==(const std::pair<double,size_t>& a, double b) { assert(b==0); return a.first == b; }
@@ -1504,6 +1505,28 @@ size_t SGD<ElemType>::TrainOneEpoch(ComputationNetworkPtr net,
         // 3. modify return value 
         totalEpochSamples = totalEpochSamplesOfAllWorkers;
     }
+
+    if (useGradientAggregation && !evaluationNodesWhichAccumulateResult.empty())
+    {
+        // Each node contains accumulated values for part of the data set, we have to aggregate accumulated values.
+        AggregateAccumulatorValuesAndUpdateEvaluation<ElemType>(net, evaluationNodesWhichAccumulateResult, m_gradHeader,
+                                                                m_mpi);
+
+        // After values of accumulators have been aggregated accross nodes, we have to update evaluation results for
+        // evaluation nodes that accumulate results.
+        for (size_t i = 0; i < epochEvalErrors.size(); i++)
+        {
+            if (ContainsAccumulatedResult(evaluationNodes[i]))
+            {
+                // We don't accumulate error in epoch criterion as this node has already accumulated error for all
+                // samples that passed through network in forward pass.
+                // Since accumulators already average error, we use 1 as number of samples to avoid averaging again.
+                localEpochEvalErrors.Assign(i, 1);
+                epochEvalErrors[i] = localEpochEvalErrors.GetCriterion(i);
+            }
+        }
+    }
+
     return totalEpochSamples;
 }
 
