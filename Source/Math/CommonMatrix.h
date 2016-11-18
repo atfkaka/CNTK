@@ -424,6 +424,7 @@ public:
                 if (m_tempDeviceBuffer != nullptr)
                     TracingGPUMemoryAllocator::Free<GPUSPARSE_INDEX_TYPE>(m_computeDevice, m_tempDeviceBuffer, true);
                 m_tempDeviceBuffer = nullptr;
+                m_tempDeviceBufferSize = 0;
 #endif
 
                 delete[](byte*) m_tempHostBuffer;
