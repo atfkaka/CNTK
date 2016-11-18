@@ -1281,7 +1281,7 @@ void GPUSparseMatrix<ElemType>::MultiplyAndAdd(ElemType alpha, const GPUMatrix<E
                 rhs.Data(),
                 rhs.RowLocation(),
                 rhs.ColLocation(),
-                rhs.GetRowToIdMap(),
+                rhs.GetTempDeviceBuffer(),
                 c.Data(),
                 c.BlockId2ColOrRow());
         }
@@ -1303,17 +1303,17 @@ size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
     if (GetFormat() != matrixFormatSparseCSC)
         NOT_IMPLEMENTED;
 
-    let nz = NzCount();
-    this->SetRowToIdMap(nz);
+    let nnz = NzCount();
+    this->ReserveTempDeviceBuffer(nnz);
     map<size_t, GPUSPARSE_INDEX_TYPE> indexer;
-    GPUSPARSE_INDEX_TYPE* rowToId = (GPUSPARSE_INDEX_TYPE*) ReserveTempHostBuffer(sizeof(GPUSPARSE_INDEX_TYPE) * nz * 2);
+    GPUSPARSE_INDEX_TYPE* rowToId = (GPUSPARSE_INDEX_TYPE*) ReserveTempHostBuffer(sizeof(GPUSPARSE_INDEX_TYPE) * nnz * 2);
 
     // In the first nnz values of the 'rowToId' we will store the block ids of the nonzero-values (to be computed below).
     // In the next nnz values of 'rowToId' we store the row-ids of the non-zero values (copied from GPU).
-    GPUSPARSE_INDEX_TYPE* h_Row = rowToId + nz;
-    CUDA_CALL(cudaMemcpy(h_Row, RowLocation(), sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyDeviceToHost));
+    GPUSPARSE_INDEX_TYPE* h_Row = rowToId + nnz;
+    CUDA_CALL(cudaMemcpy(h_Row, RowLocation(), sizeof(GPUSPARSE_INDEX_TYPE) * nnz, cudaMemcpyDeviceToHost));
 
-    for (size_t i = 0; i < nz; i++)
+    for (size_t i = 0; i < nnz; i++)
     {
         size_t row = h_Row[i];
         if (indexer.find(row) == indexer.end())
@@ -1323,7 +1323,7 @@ size_t GPUSparseMatrix<ElemType>::IdentifyRowsWithValues() const
         }
         rowToId[i] = indexer[row];
     }
-    CUDA_CALL(cudaMemcpy(GetRowToIdMap(), rowToId, sizeof(GPUSPARSE_INDEX_TYPE) * nz, cudaMemcpyHostToDevice));
+    CUDA_CALL(cudaMemcpy(GetTempDeviceBuffer(), rowToId, sizeof(GPUSPARSE_INDEX_TYPE) * nnz, cudaMemcpyHostToDevice));
     return indexer.size();
 }
 
