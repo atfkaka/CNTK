@@ -478,7 +478,7 @@ CNTK2 = [
     # (_new will be removed once the change is made)
     CrossEntropyWithSoftmax_new (L, z, tag='') = Minus (ReduceLogSum (z), TransposeTimes (L,          z),  tag=tag)
     ClassificationError_new (L, z, tag='')     = Minus (BS.Constants.One, TransposeTimes (L, Hardmax (z)), tag=tag)
-	    CrossEntropyWithSampledSoftmax(
+        CrossEntropyWithSampledSoftmax(
         hiddenLayer,                   // [numHidden] Hidden vector feedng into the linear layer before softmax.
         labels,                        // [numClasses] One-hot for the true class (labels).
         randomSampleSelector,          // [numClasses x numSamples] Sparse matrix. Each column is a 1-hot vector representing one sample. From GetRandomSample node.
