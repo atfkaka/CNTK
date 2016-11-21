@@ -23,7 +23,7 @@ TARGET_OUT_PAIRS = [
 ]
 
 @pytest.mark.parametrize("target_vector, output_vector", TARGET_OUT_PAIRS)
-def test_op_cross_entropy_with_soft_max(output_vector, target_vector, device_id, precision):
+def test_op_cross_entropy_with_softmax(output_vector, target_vector, device_id, precision):
     dt = PRECISION_TO_TYPE[precision]
 
     o = AA(output_vector, dtype=dt)
@@ -69,7 +69,7 @@ TARGET_OUT_PAIRS_WITH_AXIS = [
 ]
 
 @pytest.mark.parametrize("target_vector, output_vector, axis", TARGET_OUT_PAIRS_WITH_AXIS)
-def test_op_cross_entropy_with_soft_max_and_axis(output_vector, target_vector, axis, device_id, precision):
+def test_op_cross_entropy_with_softmax_and_axis(output_vector, target_vector, axis, device_id, precision):
     dt = PRECISION_TO_TYPE[precision]
 
     x = AA(output_vector, dtype=dt)
@@ -213,3 +213,37 @@ def test_op_classification_error_with_axis(output_vector, target_vector, axis, d
     _test_binary_op(precision, device_id, classification_error,
                     output_vector, target_vector,
                     expected_forward, expected_backward, op_param_dict={'axis':axis})
+
+TARGET_BINARY_CE_OUT_PAIRS = [
+    # (target_vector, output_vector, weights)
+    ([[0., 1.0, 0.0, 0.0]], [[0.9, 0.9, 0.0001, 0.0001]]),
+    #([[0., 0., 1., 1]], [[0.2, 0.4, 0.6, 0.8]], [[1.0],[2.0],[3.0],[4.0]]),
+    #([[0., 0., 1.0, 0.]], [[0.8, 0.2, 0.75, 0.3]], [[1.5],[2.5],[3.5],[4.5]]),
+]
+
+@pytest.mark.parametrize("target_vector, output_vector", TARGET_BINARY_CE_OUT_PAIRS)
+def test_op_binary_cross_entropy(output_vector, target_vector, device_id, precision):
+    dt = PRECISION_TO_TYPE[precision]
+
+    x = AA(output_vector, dtype=dt)
+    t = AA(target_vector, dtype=dt)
+
+    forward = -np.sum((t*np.log(x))+(1-t)*np.log(1-x))
+
+    expected_forward = AA([[forward]], dtype=dt)
+
+    expected_forward.shape = (1,1) + expected_forward.shape
+
+    expected_backward_left = -np.sum((t/x)+(1-t)/(1-x))
+
+    expected_backward_right = -np.sum(np.log(x)-np.log(1-x))
+
+    expected_backward = {
+        'left_arg':  expected_backward_left,
+        'right_arg': expected_backward_right
+    }
+
+    from .. import binary_cross_entropy
+    _test_binary_op(precision, device_id, binary_cross_entropy,
+                    output_vector, target_vector,
+                    expected_forward, expected_backward)
