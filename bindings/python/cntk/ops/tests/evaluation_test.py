@@ -126,21 +126,30 @@ def test_op_squared_error(output_vector, target_vector, device_id, precision):
                     expected_forward, expected_backward)
 
 TARGET_OUT_PAIRS_CLASSIFICATION = [
-    # (target_vector, output_vector)
-    ([[1., 0., 0., 0]], [[1., 2., 3., 4.]]),
-    ([[0., 0., 0., 1]], [[1., 2., 3., 4.]]),
+    # (target_vector, output_vector, topN)
+    ([[1., 0., 0., 0.]], [[1., 2., 3., 4.]], 1),
+    ([[0., 0., 0., 1.]], [[1., 2., 3., 4.]], 1),
+    ([[0., 1., 0., 0.]], [[1., 2., 3., 4.]], 3),
+    ([[1., 0., 0., 0.]], [[1., 2., 3., 4.]], 3),
 ]
 
-@pytest.mark.parametrize("target_vector, output_vector", TARGET_OUT_PAIRS_CLASSIFICATION)
-def test_op_classification_error(output_vector, target_vector, device_id, precision):
+@pytest.mark.parametrize("target_vector, output_vector, topN", TARGET_OUT_PAIRS_CLASSIFICATION)
+def test_op_classification_error(output_vector, target_vector, topN, device_id, precision):
     dt = PRECISION_TO_TYPE[precision]
 
     o = AA(output_vector, dtype=dt)
     t = AA(target_vector, dtype=dt)
 
-    different_position = np.argmax(t) != np.argmax(o)
+    # loop topN times and compare positions between 1 in target and maximum in output
+    temp_o = np.copy(o)
+    max_in_different_position = False
+    for i in range(topN):
+        max_in_different_position = np.argmax(t) != np.argmax(temp_o)
+        if not max_in_different_position:
+            break
+        temp_o[...,np.argmax(temp_o)] = 0.0
 
-    expected_forward = [[AA([[int(different_position)]], dtype=dt)]]
+    expected_forward = [[AA([[int(max_in_different_position)]], dtype=dt)]]
 
     zero_backward = np.zeros_like(t, dtype=dt)
     left_backward = np.copy(zero_backward)
@@ -156,7 +165,7 @@ def test_op_classification_error(output_vector, target_vector, device_id, precis
     from .. import classification_error
     _test_binary_op(precision, device_id, classification_error,
                     output_vector, target_vector,
-                    expected_forward, expected_backward)
+                    expected_forward, expected_backward, op_param_dict={'topN': topN})
 
 TARGET_OUT_PAIRS_CLASSIFICATION_WITH_AXIS = [
     # (target_vector, output_vector, axis)
@@ -190,8 +199,8 @@ def test_op_classification_error_with_axis(output_vector, target_vector, axis, d
     expected_backward_right = []
 
     for sample, target in zip(x, t):
-        different_position = np.argmax(target) != np.argmax(sample)
-        forward.append([int(different_position)])
+        max_in_different_position = np.argmax(target) != np.argmax(sample)
+        forward.append([int(max_in_different_position)])
 
         zero_backward = np.zeros_like(target, dtype=dt)
 
