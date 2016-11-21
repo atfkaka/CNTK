@@ -82,6 +82,16 @@ const std::vector<size_t> RandomSampleNodeBase<ElemType>::RunSampling(size_t& nT
     std::vector<size_t> samples;
     CPURNGHandle* cpuRNGHandle = dynamic_cast<CPURNGHandle*>(&GetRNGHandle(CPUDEVICE));
 
+    // if the number of expected samples equals the size of the sampled set and m_allowDuplicates = false
+    // do special handling below. This will we usefull for debugging!
+    if (m_sizeOfSampledSet == ValueAsMatrix().GetNumCols())
+    {
+        nTries = m_sizeOfSampledSet;
+        for (int idx = 0; idx < m_sizeOfSampledSet; idx++)
+            samples.push_back(idx);
+        return samples;
+    }
+
     // find random samples using the specified weight
     if (m_allowDuplicates)
         nTries = m_sizeOfSampledSet;
