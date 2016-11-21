@@ -501,7 +501,7 @@ CNTK2 = [
         # The label (true class), might already be among the sampled classes.
         # To get the 'partition function' over the union of label and sampled classes
         # we need to LogPlus zT if the label is not among the sampled classes.
-        labelIsInSampled = ReduceSum (TransposeTimes (labels,randomSampleSelector))
+        labelIsInSampled = ReduceSum (TransposeTimes (labels, randomSampleSelector))
         logSum1 = 
              if labelIsInSampled 
              then zSReduced 
@@ -515,7 +515,7 @@ CNTK2 = [
         ce = logSum - zT
 
         # Check whether the label would have been predicted correctly (among the set of random samples plus label)
-        # error = 1 if the label would have beed predicted wrongly
+        # error = 1 if the label would have been predicted wrongly
         zSMax = ReduceMax (zS)
         error = Less (zT, zSMax)
     }
