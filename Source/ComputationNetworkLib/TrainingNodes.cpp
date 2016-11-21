@@ -21,7 +21,7 @@ void RandomSampleNodeBase<ElemType>::Validate(bool isFinalValidationPass)
         let& shape = Input(0)->GetSampleLayout();
         let dims = shape.GetDims();
         size_t nClasses = dims[0];
-        if (!m_allowDuplicates && nClasses <= m_sizeOfSampledSet)
+        if (!m_allowDuplicates && nClasses < m_sizeOfSampledSet)
             InvalidArgument("For sampling without duplicates the number of requested samples (%lu) needs to be less than the number of classes (%lu).", m_sizeOfSampledSet, nClasses);
     }
 }
