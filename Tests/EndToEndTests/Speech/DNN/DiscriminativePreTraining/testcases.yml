@@ -28,13 +28,13 @@ testCases:
   Epochs must be finished with expected results:
     patterns:
       - Finished Epoch[{{integer}} of {{integer}}]
-      - ce = {{float,tolerance=.1%}}
-      - err = {{float,tolerance=.25%}}
+      - ce = {{float,tolerance=.4%}}
+      - err = {{float,tolerance=.3%}}
       - learningRatePerSample = {{float,tolerance=0.001%}}
 
   Per-minibatch training results must match:
     patterns:
       - Epoch[{{integer}} of {{integer}}]-Minibatch[{{integer}}-{{integer}}
       - " * {{integer}}; "
-      - ce = {{float,tolerance=.2%}}
+      - ce = {{float,tolerance=.9%}}
 
