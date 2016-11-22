@@ -1396,6 +1396,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RNN", "RNN", "{6730F9BE-92A
 		Tests\EndToEndTests\Examples\Text\PennTreebank\RNN\testcases.yml = Tests\EndToEndTests\Examples\Text\PennTreebank\RNN\testcases.yml
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CNTKBinaryReader", "Source\Readers\CNTKBinaryReader\CNTKBinaryReader.vcxproj", "{7FE16CBE-B717-45C9-97FB-FA3191039568}"
+	ProjectSection(ProjectDependencies) = postProject
+		{60BDB847-D0C4-4FD3-A947-0C15C08BCDB5} = {60BDB847-D0C4-4FD3-A947-0C15C08BCDB5}
+		{F0A9637C-20DA-42F0-83D4-23B4704DE602} = {F0A9637C-20DA-42F0-83D4-23B4704DE602}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_CpuOnly|Any CPU = Debug_CpuOnly|Any CPU
@@ -2617,6 +2623,36 @@ Global
 		{5D29C76D-648A-456F-920D-48230F2FB3C8}.Release|Win32.ActiveCfg = Release|x64
 		{5D29C76D-648A-456F-920D-48230F2FB3C8}.Release|x64.ActiveCfg = Release|x64
 		{5D29C76D-648A-456F-920D-48230F2FB3C8}.Release|x64.Build.0 = Release|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug_CpuOnly|Any CPU.ActiveCfg = Debug_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug_CpuOnly|Mixed Platforms.ActiveCfg = Debug_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug_CpuOnly|Mixed Platforms.Build.0 = Debug_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug_CpuOnly|Win32.ActiveCfg = Debug_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug_CpuOnly|x64.ActiveCfg = Debug_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug_CpuOnly|x64.Build.0 = Debug_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug|Win32.ActiveCfg = Debug|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug|x64.ActiveCfg = Debug|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Debug|x64.Build.0 = Debug|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_CpuOnly|Any CPU.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_CpuOnly|Mixed Platforms.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_CpuOnly|Mixed Platforms.Build.0 = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_CpuOnly|Win32.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_CpuOnly|x64.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_CpuOnly|x64.Build.0 = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_NoOpt|Any CPU.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_NoOpt|Mixed Platforms.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_NoOpt|Mixed Platforms.Build.0 = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_NoOpt|Win32.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_NoOpt|x64.ActiveCfg = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release_NoOpt|x64.Build.0 = Release_CpuOnly|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release|Any CPU.ActiveCfg = Release|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release|Mixed Platforms.Build.0 = Release|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release|Win32.ActiveCfg = Release|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release|x64.ActiveCfg = Release|x64
+		{7FE16CBE-B717-45C9-97FB-FA3191039568}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2805,5 +2841,6 @@ Global
 		{80B83483-CCDC-4E59-AB54-B6495E967A11} = {77EAB92C-CDCB-40D2-BD19-6C8C6C876B51}
 		{784A839C-762F-4A85-9EF1-A1E00546AD6C} = {D30B34AF-3618-4C55-900E-8F60A9F39E66}
 		{6730F9BE-92AA-45F7-9F98-CD13E725CCA9} = {784A839C-762F-4A85-9EF1-A1E00546AD6C}
+		{7FE16CBE-B717-45C9-97FB-FA3191039568} = {33EBFE78-A1A8-4961-8938-92A271941F94}
 	EndGlobalSection
 EndGlobal
