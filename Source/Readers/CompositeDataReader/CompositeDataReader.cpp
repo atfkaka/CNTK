@@ -92,7 +92,7 @@ CompositeDataReader::CompositeDataReader(const ConfigParameters& config) :
     // By default do not use omp threads for deserialization of sequences.
     // It makes sense to put it to true for cases when deserialization is CPU intensive,
     // i.e. decompression of images.
-    bool multiThreadedDeserialization = config(L"multiThreadedDeserialization", ContainsDeserializer(config, L"ImageDeserializer"));
+    bool multiThreadedDeserialization = config(L"multiThreadedDeserialization", false);
     if (randomize)
     {
         // By default randomizing the whole data set.
