@@ -1624,7 +1624,7 @@ def reduce_mean(x, axis=None, name=''):
 
     Examples:
         >>> # create 3x2 matrix in a sequence of length 1 in a batch of one sample
-        >>> data = [[10, 20],[30, 40],[50, 60]]
+        >>> data = [[10., 20.],[30., 40.],[50., 60.]]
 
         >>> C.reduce_mean(data, 0).eval()
         array([[ 30.,  40.]], dtype=float32)
