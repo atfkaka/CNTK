@@ -393,21 +393,21 @@ public:
         {
             // currently we only support one combination when the input is sparse
             // If input data is sparse, then gradient is block sparse.
-            if (InputRef(1).Value().GetMatrixType() == SPARSE && InputRef(0).Gradient().GetMatrixType() == DENSE && Gradient().GetMatrixType() == DENSE)
-            {
-                // We need a sparse matrix for the gradient. We allocate a new one instead of switching the type in place
-                // since switching in place may affect other nodes who share this matrix due to memory sharing
-                auto& currentInput0GradientMatrixRef = InputRef(0).Gradient();
-                auto newInput0SparseGradientMatrix = std::make_shared<Matrix<ElemType>>(currentInput0GradientMatrixRef.GetNumRows(),
-                                                                                        currentInput0GradientMatrixRef.GetNumCols(),
-                                                                                        currentInput0GradientMatrixRef.GetPreferredDeviceId(),
-                                                                                        SPARSE,
-                                                                                        MatrixFormat::matrixFormatSparseBlockCol);
+            //if (InputRef(1).Value().GetMatrixType() == SPARSE && InputRef(0).Gradient().GetMatrixType() == DENSE && Gradient().GetMatrixType() == DENSE)
+            //{
+            //    // We need a sparse matrix for the gradient. We allocate a new one instead of switching the type in place
+            //    // since switching in place may affect other nodes who share this matrix due to memory sharing
+            //    auto& currentInput0GradientMatrixRef = InputRef(0).Gradient();
+            //    auto newInput0SparseGradientMatrix = std::make_shared<Matrix<ElemType>>(currentInput0GradientMatrixRef.GetNumRows(),
+            //                                                                            currentInput0GradientMatrixRef.GetNumCols(),
+            //                                                                            currentInput0GradientMatrixRef.GetPreferredDeviceId(),
+            //                                                                            SPARSE,
+            //                                                                            MatrixFormat::matrixFormatSparseBlockCol);
 
-                // BUGBUG: Copy over the current contents since we accumulate into the gradient matrix instead of overwriting the content
-                // newInput0SparseGradientMatrix.AssignValuesOf(currentInput0GradientMatrixRef);
-                InputRef(0).GradientPtrRef() = newInput0SparseGradientMatrix;
-            }
+            //    // BUGBUG: Copy over the current contents since we accumulate into the gradient matrix instead of overwriting the content
+            //    // newInput0SparseGradientMatrix.AssignValuesOf(currentInput0GradientMatrixRef);
+            //    InputRef(0).GradientPtrRef() = newInput0SparseGradientMatrix;
+            //}
 
             auto input0Gradient = OneSampleTensorFor(0,  /*gradient=*/true,  fr.AllowBroadcast());
             auto input1         = OneSampleTensorFor(1,  /*gradient=*/false, fr.AllowBroadcast());
