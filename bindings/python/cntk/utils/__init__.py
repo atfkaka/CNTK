@@ -203,7 +203,10 @@ def has_seq_dim(var, data):
     # Find the innermost data sample
     drill = [data]
     drill_data = data
-    if isinstance(drill_data, np.ndarray) or sparse.issparse(drill_data):
+    if np.isscalar(drill_data) or (isinstance(drill_data, np.ndarray) and drill_data.shape == ()):
+        # case in which either drill_data is scalar or a 0d numpy array
+        return False
+    elif isinstance(drill_data, np.ndarray) or sparse.issparse(drill_data):
         drill_shape = drill_data.shape
     else:
         while isinstance(drill_data, list):
@@ -514,6 +517,10 @@ def sanitize_batch(var, batch, seq_starts=None, dtype=None, device=None):
     if device is None:
         device = use_default_device()
 
+    if np.isscalar(batch):
+        ndav = create_NDArrayView_from_NumPy(np.asarray(batch, dtype), device)
+        return Value(data=ndav)
+
     if isinstance(batch, np.ndarray):
         if np.issubdtype(batch.dtype, int):
             batch = batch.astype(var.dtype)
@@ -729,7 +736,7 @@ def sanitize_var_map(op_arguments, arguments, precision=None,
         else:
             raise ValueError('non-dict argument (%s) is not supported for nodes with more than one input' % type(arguments).__name__)
 
-    sample_sizes = [v.shape[0] if hasattr(v, 'shape') else len(v) for v in arguments.values()]
+    sample_sizes = [np.atleast_1d(v).shape[0] for v in arguments.values()]
     if len(set(sample_sizes)) != 1:
         raise ValueError('not all inputs have the same number of samples: ' +
                          ", ".join([str(s) for s in sample_sizes]))

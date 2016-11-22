@@ -200,17 +200,6 @@ def classification_error(output_vector, target_vector, axis=-1, topN=1, name='')
         >>> C.classification_error([[1., 2., 3., 4.]], [[5., 0., 1., 0.]]).eval()
         array([[ 1.]], dtype=float32)
 
-        >>> output = np.asarray([[1., 2., 3., 4., 5.]], dtype=np.float32)
-        >>> target = np.asarray([[0., 0., 1., 0., 0.]], dtype=np.float32)
-
-        >>> output_variable = C.input_variable(shape=output.shape)
-        >>> target_variable = C.input_variable(shape=target.shape)
-
-        >>> error_func = C.classification_error(output_variable, target_variable, topN=3)
-        >>> # No error reported as prediction is within the top 3
-        >>> error_func.eval({output_variable: output, target_variable: target})
-        array(0.0, dtype=float32)
-
     Args:
         output_vector: the output values from the network
         target_vector: it is one-hot vector where the hot bit corresponds to
