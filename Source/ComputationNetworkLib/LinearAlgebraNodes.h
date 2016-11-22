@@ -553,27 +553,27 @@ public:
 
     virtual void AllocateGradientMatricesForInputs(MatrixPool& matrixPool) override
     {
-        // this is a special handling case. We need to allocate sparse matrix directly instead of from pool.
-        if (Input(0)->NeedsGradient() && Input(1)->Value().GetMatrixType() == SPARSE)
-        {
-            Input(0)->CreateGradientMatrixIfNull();
+        //// this is a special handling case. We need to allocate sparse matrix directly instead of from pool.
+        //if (Input(0)->NeedsGradient() && Input(1)->Value().GetMatrixType() == SPARSE)
+        //{
+        //    Input(0)->CreateGradientMatrixIfNull();
 
-            // We need a sparse matrix for the gradient. We allocate a new one instead of switching the type in place
-            // since switching in place may affect other nodes who share this matrix due to memory sharing
-            auto& currentInput0GradientMatrixRef = InputRef(0).Gradient();
-            if (currentInput0GradientMatrixRef.GetMatrixType() != SPARSE)
-            {
-                auto newInput0SparseGradientMatrix = std::make_shared<Matrix<ElemType>>(currentInput0GradientMatrixRef.GetNumRows(),
-                                                                                        currentInput0GradientMatrixRef.GetNumCols(),
-                                                                                        currentInput0GradientMatrixRef.GetPreferredDeviceId(),
-                                                                                        SPARSE,
-                                                                                        MatrixFormat::matrixFormatSparseBlockCol);
+        //    // We need a sparse matrix for the gradient. We allocate a new one instead of switching the type in place
+        //    // since switching in place may affect other nodes who share this matrix due to memory sharing
+        //    auto& currentInput0GradientMatrixRef = InputRef(0).Gradient();
+        //    if (currentInput0GradientMatrixRef.GetMatrixType() != SPARSE)
+        //    {
+        //        auto newInput0SparseGradientMatrix = std::make_shared<Matrix<ElemType>>(currentInput0GradientMatrixRef.GetNumRows(),
+        //                                                                                currentInput0GradientMatrixRef.GetNumCols(),
+        //                                                                                currentInput0GradientMatrixRef.GetPreferredDeviceId(),
+        //                                                                                SPARSE,
+        //                                                                                MatrixFormat::matrixFormatSparseBlockCol);
 
-                // BUGBUG: Copy over the current contents since we accumulate into the gradient matrix instead of overwriting the content
-                // newInput0SparseGradientMatrix.AssignValuesOf(currentInput0GradientMatrixRef);
-                InputRef(0).GradientPtrRef() = newInput0SparseGradientMatrix;
-            }
-        }
+        //        // BUGBUG: Copy over the current contents since we accumulate into the gradient matrix instead of overwriting the content
+        //        // newInput0SparseGradientMatrix.AssignValuesOf(currentInput0GradientMatrixRef);
+        //        InputRef(0).GradientPtrRef() = newInput0SparseGradientMatrix;
+        //    }
+        //}
 
         // we need to call base allocation at end since we will need to allocate special ones first
         // so that the default allocator will not allocate it again.
