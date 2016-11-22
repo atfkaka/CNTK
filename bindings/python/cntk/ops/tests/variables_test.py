@@ -9,7 +9,7 @@ Unit tests for Variable and its descendents.
 """
 
 from ..variables import *
-from .. import times, placeholder_variable, constant
+from .. import times, placeholder_variable, constant, plus
 import numpy as np
 
 import pytest
@@ -41,6 +41,18 @@ VALUES = [
         [[1],[2]], 
         [[[1,2],[3,4],[5,6]],[[1,2],[3,4],[5,6]]]
         ]
+
+def test_parameter_set_value():
+    p = Parameter(shape=(2,3), init=1);
+    n = np.random.randn(2, 3)
+    p.value = n
+    assert np.all(p.value == n.astype(p.dtype))
+    n = np.reshape(np.arange(6), (2, 3))
+    p.value = n
+    op = plus(p, p)
+    state, output = op.forward({}, op.outputs, op.outputs)
+    value = output[op.output]
+    assert np.all(value == 2*n.astype(p.dtype))
 
 @pytest.mark.parametrize("value", VALUES)
 def test_constant_value(value):

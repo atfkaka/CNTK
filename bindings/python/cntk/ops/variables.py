@@ -1,7 +1,7 @@
 import numpy as np
 from cntk import cntk_py, utils
 from ..tensor import TensorOpsMixin
-from ..utils import typemap, sanitize_precision, sanitize_value, sanitize_dtype_cntk
+from ..utils import typemap, sanitize_precision, sanitize_value, sanitize_dtype_cntk, create_NDArrayView_from_NumPy
 
 class VariableMixin:
     '''
@@ -177,6 +177,11 @@ class Parameter(VariableMixin, TensorOpsMixin, cntk_py.Parameter):
         NumPy array of the value
         '''
         return super().value().to_numpy()
+
+    @value.setter
+    def value(self, val):
+        ndarray = create_NDArrayView_from_NumPy(val.astype(self.dtype))
+        super().set_value(ndarray)
 
 class Constant(VariableMixin, TensorOpsMixin, cntk_py.Constant):
     '''

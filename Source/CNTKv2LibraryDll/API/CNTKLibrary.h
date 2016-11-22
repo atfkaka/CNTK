@@ -2008,6 +2008,16 @@ private:
             return Variable::Value();
         }
 
+        ///
+        /// Copies the contents of the 'value' NDArrayView into the view backing 'this' 
+        /// parameter's value. The shapes of both views must be identical.
+        ///
+        void SetValue(const NDArrayViewPtr& value)
+        {
+            Value()->CopyFrom(*value);
+            RecordValueUpdate();
+        }
+
         size_t CurrentValueTimeStamp() const { return m_dataFields->m_valueTimeStamp.load(); }
 
         void RecordValueUpdate()
