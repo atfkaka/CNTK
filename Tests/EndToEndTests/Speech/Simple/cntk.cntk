@@ -14,6 +14,7 @@ outputNodeNames=ScaledLogLikelihood
 traceLevel=1
 
 initOnCPUOnly=true
+nummbstoshowresult = 1
 
 #######################################
 #  TRAINING CONFIG (Simple, Fixed LR) #
@@ -42,11 +43,11 @@ Simple_Demo=[
         # the training set. Must be evenly divisible 
         # into number of data frames.
         epochSize=0 
-        minibatchSize=128
+        minibatchSize=1
         learningRatesPerSample=0.1
         momentumAsTimeConstant=2500
         dropoutRate=0.0
-        maxEpochs=50
+        maxEpochs=1
         # We are testing checkpointing, keep all checkpoint (.ckp) files
         keepCheckPointFiles = true
     ]
