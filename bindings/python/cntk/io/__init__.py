@@ -255,15 +255,17 @@ class ReaderConfig(dict):
          (:class:`ImageDeserializer` for now).
         randomize (bool, default True): randomize images before every epoch
         epoch_size (int): epoch size
+        multithreaded_deserializer (bool, default True): using multi threaded deserializer
         distributed_after (int): sample count after which reader becomes distributed
     '''
-    def __init__(self, deserializers=None, randomize=True, epoch_size=INFINITELY_REPEAT, distributed_after=INFINITE_SAMPLES):
+    def __init__(self, deserializers=None, randomize=True, epoch_size=INFINITELY_REPEAT, multithreaded_deserializer=True, distributed_after=INFINITE_SAMPLES):
 
         self['epochSize'] = cntk_py.SizeTWrapper(epoch_size) # force to store in size_t
         if not isinstance(deserializers, (list, tuple)):
             deserializers = [deserializers]
         self['deserializers'] = self.deserializers = deserializers or []
         self['randomize'] = randomize
+        self['multiThreadedDeserialization'] = multithreaded_deserializer
         self['distributedAfterSampleCount'] = cntk_py.SizeTWrapper(distributed_after)
 
     @typemap

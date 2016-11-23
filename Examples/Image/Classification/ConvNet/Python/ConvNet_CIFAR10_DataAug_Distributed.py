@@ -48,6 +48,7 @@ def create_reader(map_file, mean_file, train, distributed_after=INFINITE_SAMPLES
         ImageDeserializer(map_file, StreamDefs(
             features = StreamDef(field='image', transforms=transforms), # first column in map file is referred to as 'image'
             labels   = StreamDef(field='label', shape=num_classes))),   # and second as 'label'
+        multithreaded_deserializer = False,  # turn off omp as CIFAR-10 is not heavy for deserializer
         distributed_after = distributed_after)
 
 # Train and evaluate the network.

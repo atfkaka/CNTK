@@ -27,7 +27,7 @@ def test_cifar_convnet_distributed_mpiexec(device_id):
         pytest.skip('test only runs on GPU')
 
     cmd = ["mpiexec", "-n", "2", "python", os.path.join(abs_path, "run_cifar_convnet_distributed.py")]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     try:
         out = p.communicate(timeout=TIMEOUT_SECONDS)[0]  # in case we have a hang
     except subprocess.TimeoutExpired:
