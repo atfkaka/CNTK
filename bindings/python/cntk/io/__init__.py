@@ -81,15 +81,17 @@ class MinibatchSource(cntk_py.MinibatchSource):
         randomize (bool, default True): randomize images before every epoch
         epoch_size (int): epoch size
         distributed_after (int): sample count after which minibatch source becomes distributed
+        multithreaded_deserializer (bool): using multi threaded deserializer
     '''
-    def __init__(self, deserializers=None, randomize=True, epoch_size=INFINITELY_REPEAT, distributed_after=INFINITE_SAMPLES):
+    def __init__(self, deserializers=None, randomize=True, epoch_size=INFINITELY_REPEAT, distributed_after=INFINITE_SAMPLES, multithreaded_deserializer=None):
         if not isinstance(deserializers, (list,tuple)):
             deserializers = [deserializers] # allow passing a single item or a list
         reader_config = ReaderConfig(
             deserializers=deserializers,
             randomize=randomize,
             epoch_size=epoch_size,
-            distributed_after=distributed_after)
+            distributed_after=distributed_after,
+            multithreaded_deserializer=multithreaded_deserializer)
         source = minibatch_source(reader_config)
         # transplant into this class instance
         self.__dict__ = source.__dict__
@@ -255,18 +257,19 @@ class ReaderConfig(dict):
          (:class:`ImageDeserializer` for now).
         randomize (bool, default True): randomize images before every epoch
         epoch_size (int): epoch size
-        multithreaded_deserializer (bool, default True): using multi threaded deserializer
         distributed_after (int): sample count after which reader becomes distributed
+        multithreaded_deserializer (bool): using multi threaded deserializer
     '''
-    def __init__(self, deserializers=None, randomize=True, epoch_size=INFINITELY_REPEAT, multithreaded_deserializer=True, distributed_after=INFINITE_SAMPLES):
+    def __init__(self, deserializers=None, randomize=True, epoch_size=INFINITELY_REPEAT, distributed_after=INFINITE_SAMPLES, multithreaded_deserializer=None):
 
         self['epochSize'] = cntk_py.SizeTWrapper(epoch_size) # force to store in size_t
         if not isinstance(deserializers, (list, tuple)):
             deserializers = [deserializers]
         self['deserializers'] = self.deserializers = deserializers or []
         self['randomize'] = randomize
-        self['multiThreadedDeserialization'] = multithreaded_deserializer
         self['distributedAfterSampleCount'] = cntk_py.SizeTWrapper(distributed_after)
+        if multithreaded_deserializer != None:
+            self['multiThreadedDeserialization'] = multithreaded_deserializer
 
     @typemap
     def minibatch_source(self):
