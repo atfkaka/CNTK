@@ -79,7 +79,10 @@ def train_and_evaluate(reader_train, reader_test, network_name, max_epochs, dist
     # shared training parameters 
     epoch_size = 50000                    # for now we manually specify epoch size
     
-    # NOTE: scale up minibatch_size may require a different set of hyper parameters
+    # NOTE: scaling up minibatch_size increases sample throughput. In 8-GPU machine,
+    # ResNet110 samples-per-second is ~7x of single GPU, comparing to ~3x without scaling
+    # up. However, bigger minimatch size on the same number of samples means less updates, 
+    # thus leads to higher training error. This is a trade-off of speed and accuracy
     minibatch_size = 128 * (len(distributed_trainer.communicator().workers()) if scale_up else 1)
     
     momentum_time_constant = -minibatch_size/np.log(0.9)
