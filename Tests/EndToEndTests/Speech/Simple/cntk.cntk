@@ -5,7 +5,7 @@ DeviceNumber=-1
 
 #stderr=Demo
 
-precision=float
+precision=double
 
 modelPath=$RunDir$/models/simple.dnn
 deviceId=$DeviceNumber$

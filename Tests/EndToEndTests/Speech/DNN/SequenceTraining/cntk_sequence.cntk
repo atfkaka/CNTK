@@ -1,4 +1,4 @@
-precision = "float"
+precision = "double"
 deviceId = $DeviceId$
 command = dptPre1:addLayer2:dptPre2:addLayer3:speechTrain:replaceCriterionNode:sequenceTrain
 
