@@ -56,6 +56,7 @@ Simple_Demo=[
     reader=[
         # reader to use
         readerType=CNTKTextFormatReader
+        randomize = false
         file=$DataDir$/SimpleDataTrain_cntk_text.txt
         input = [
             features=[
