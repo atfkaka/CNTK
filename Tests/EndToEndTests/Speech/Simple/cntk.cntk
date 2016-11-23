@@ -1,20 +1,19 @@
-command=Simple_Demo:Simple_Demo_Output
+command=Simple_Demo
+#:Simple_Demo_Output
 
 # deviceId=-1 for CPU, >=0 for GPU devices
 DeviceNumber=-1
 
-#stderr=Demo
+stderr=$RunDir$/Demo
 
-precision=double
+precision=float
 
 modelPath=$RunDir$/models/simple.dnn
 deviceId=$DeviceNumber$
 
 outputNodeNames=ScaledLogLikelihood
 traceLevel=1
-
-initoncpuonly = true
-nummbstoshowresult = 1
+numMBsToShowResult=1
 
 #######################################
 #  TRAINING CONFIG (Simple, Fixed LR) #
@@ -26,16 +25,48 @@ Simple_Demo=[
     # Notation xxx:yyy*n:zzz is equivalent to xxx,
     #  then yyy repeated n times, then zzz
     # example: 10:20*3:5 is equivalent to 10:20:20:20:5
-    SimpleNetworkBuilder=[
-        # 2 input, 2 50-element hidden, 2 output
+    #SimpleNetworkBuilder=[
+    #    # 2 input, 2 50-element hidden, 2 output
+    #    layerSizes=2:50*2:2
+    #    trainingCriterion=CrossEntropyWithSoftmax
+    #    evalCriterion=ClassificationError
+    #    layerTypes=Sigmoid
+    #    initValueScale=1.0
+    #    applyMeanVarNorm=true
+    #    uniformInit=true
+    #    needPrior=true
+    #]
+
+    BrainScriptNetworkBuilder=[
         layerSizes=2:50*2:2
         trainingCriterion=CrossEntropyWithSoftmax
         evalCriterion=ClassificationError
-        layerTypes=Sigmoid
-        initValueScale=1.0
+        layerTypes[i:1..Length(layerSizes)-2]=Sigmoid
         applyMeanVarNorm=true
+        initValueScale=1.0
         uniformInit=true
-        needPrior=true
+
+
+        BFF(in, rows, cols) = [
+           B = Parameter(rows, 1, init = 'fixedValue', value = 0)
+           W = Parameter(rows, cols, init = 'uniform')
+           z = W*in+B
+        ].z
+        GBFF(f, in, rows, cols) = Trace(f(BFF(in, rows, cols)), say='Whatever')
+
+        L = Length(layerSizes)-1    // number of model layers
+        features = Input(layerSizes[0], tag='feature') ; labels = Input(layerSizes[Length(layerSizes)-1], tag='label')
+        featNorm = MeanVarNorm(features)
+        layers[layer:1..L-1] = if layer > 1
+                               then GBFF(layerTypes[layer], layers[layer-1], layerSizes[layer], layerSizes[layer-1])
+                               else GBFF(layerTypes[layer], featNorm, layerSizes[layer], layerSizes[layer-1])
+        outLayer = BFF(layers[L-1], layerSizes[L], layerSizes[L-1])
+        outZ = outLayer
+        CE = trainingCriterion(labels, outZ, tag='criterion')
+        Err = evalCriterion(labels, outZ, tag='evaluation')
+        logPrior = LogPrior(labels)
+        // TODO: how to add a tag to an infix operation?
+        ScaledLogLikelihood = Minus (outZ, logPrior, tag='output')
     ]
 
     SGD=[
@@ -43,7 +74,7 @@ Simple_Demo=[
         # the training set. Must be evenly divisible 
         # into number of data frames.
         epochSize=0 
-        minibatchSize=1
+        minibatchSize=128
         learningRatesPerSample=0.1
         momentumAsTimeConstant=2500
         dropoutRate=0.0
