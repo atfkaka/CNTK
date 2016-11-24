@@ -43,7 +43,7 @@ Simple_Demo=[
         # the training set. Must be evenly divisible 
         # into number of data frames.
         epochSize=0 
-        minibatchSize=1
+        minibatchSize=128
         learningRatesPerSample=0.1
         momentumAsTimeConstant=2500
         dropoutRate=0.0
