@@ -52,7 +52,7 @@ Simple_Demo=[
            W = Parameter(rows, cols, init = 'uniform')
            z = W*in+B
         ].z
-        GBFF(f, in, rows, cols) = Trace(f(BFF(in, rows, cols)), say='Whatever')
+        GBFF(f, in, rows, cols) = Trace(f(BFF(in, rows, cols)), say='Whatever', logFirst=1000)
 
         L = Length(layerSizes)-1    // number of model layers
         features = Input(layerSizes[0], tag='feature') ; labels = Input(layerSizes[Length(layerSizes)-1], tag='label')
