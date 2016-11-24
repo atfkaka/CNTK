@@ -227,6 +227,11 @@
     <None Include="BrainScript\Doc\BrainScript--extending the CNTK config language, Frank Seide August 2015.pptx" />
     <None Include="prebuild.bat" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Multiverso\src\Multiverso.vcxproj">
+      <Project>{16f14058-b116-49d9-8ba0-209f3affe849}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
