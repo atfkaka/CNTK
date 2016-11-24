@@ -485,7 +485,7 @@ CNTK2 = [
         weights,                       // [numHidden x numClasses] Weight matrix for the linear layer that feeds into the softmax
         bias,                          // [1 x numClasses] Biases for the linear layer that feeds into the softmax.
         logExpectedInSampleFrequeny,   // For each class logarithm of the estimated frequency the class is expected to occur in the set of random samples
-        removeAccidentalHits           // If true then remove occurences of the sampled class from the random samples
+        removeAccidentalHits           // If true then remove occurences of the sampled class from the random samples 
         ) = 
     {
         # Getting the weights matrix wS in the subspace of samples. Dimension: numHidden * nSamples
@@ -502,15 +502,16 @@ CNTK2 = [
         # To get the 'partition function' over the union of label and sampled classes
         # we need to LogPlus zT if the label is not among the sampled classes.
         labelIsInSampled = ReduceSum (TransposeTimes (labels, randomSampleSelector))
-        logSum1 = 
+        
+        logSumUnionLabelAndSamples = 
              if labelIsInSampled 
              then zSReduced 
              else LogPlus (zT, zSReduced)
 
         logSum = 
             if removeAccidentalHits 
-            then logSum1 
-            else LogPlus (zT, zSReduced)
+            then logSumUnionLabelAndSamples # take the version that nakes sure that we don't use the label twice in the 'partition function'
+            else LogPlus (zT, zSReduced)    # potentially count labels twice
 
         ce = logSum - zT
 
@@ -521,7 +522,7 @@ CNTK2 = [
     }
 
     CrossEntropyWithSampledSoftmaxLayer(
-       hiddenLayer,                    // [numHidden] Hidden vector feedng into the linear layer before softmax.
+       hiddenLayer,                    // [numHidden] Hidden vector feeding into the linear layer before softmax.
         labels,                        // [numClasses] One-hot for the true class (labels).
         weights,                       // [numHidden x numClasses] Weight matrix for the linear layer that feeds into the softmax
         bias,                          // [1 x numClasses] Biases for the linear layer that feeds into the softmax.
