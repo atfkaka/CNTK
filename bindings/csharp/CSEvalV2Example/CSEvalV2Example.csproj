@@ -136,6 +136,12 @@
     <Compile Include="..\SwigBinding\StorageFormat.cs">
       <Link>GeneratedFiles\StorageFormat.cs</Link>
     </Compile>
+    <Compile Include="..\SwigBinding\SWIGTYPE_p_std__unordered_setT_CNTK__Variable_t.cs">
+      <Link>GeneratedFiles\SWIGTYPE_p_std__unordered_setT_CNTK__Variable_t.cs</Link>
+    </Compile>
+    <Compile Include="..\SwigBinding\SWIGTYPE_p_void.cs">
+      <Link>GeneratedFiles\SWIGTYPE_p_void.cs</Link>
+    </Compile>
     <Compile Include="..\SwigBinding\UnorderedMapVariableValuePtr.cs">
       <Link>GeneratedFiles\UnorderedMapVariableValuePtr.cs</Link>
     </Compile>
@@ -154,10 +160,6 @@
     <Compile Include="..\SwigBinding\VariableVector.cs">
       <Link>GeneratedFiles\VariableVector.cs</Link>
     </Compile>
-    <Compile Include="GeneratedFiles\SWIGTYPE_p_double.cs" />
-    <Compile Include="GeneratedFiles\SWIGTYPE_p_float.cs" />
-    <Compile Include="GeneratedFiles\SWIGTYPE_p_std__unordered_setT_CNTK__Variable_t.cs" />
-    <Compile Include="GeneratedFiles\SWIGTYPE_p_void.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
