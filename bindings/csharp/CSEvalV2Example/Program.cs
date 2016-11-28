@@ -198,94 +198,96 @@ namespace CSEvalV2Example
             }
         }
 
-        //static void EvaluateUsingCreateValue()
-        //{
-        //    // Load the model
-        //    var myFunc = global::Function.LoadModel("01_OneHidden");
+        static void EvaluateUsingCreateValue()
+        {
+            // Load the model
+            var myFunc = global::Function.LoadModel("01_OneHidden");
 
-        //    // Ouput funciton info.
-        //    var uid = myFunc.Uid();
-        //    System.Console.WriteLine("Function id:" + (string.IsNullOrEmpty(uid) ? "(empty)" : uid));
-        //    var name = myFunc.Name();
-        //    System.Console.WriteLine("Function Name:" + (string.IsNullOrEmpty(name) ? "(empty)" : name));
-        //    // Todo: directly return List() or use a wrapper?
-        //    var argList = myFunc.Arguments().ToList();
-        //    Console.WriteLine("Function arguments:");
-        //    foreach (var arg in argList)
-        //    {
-        //        Console.WriteLine("    name=" + arg.Name() + ", kind=" + arg.Kind() + ", DataType=" + arg.GetDataType());
-        //    }
-        //    var outputList = myFunc.Outputs().ToList();
-        //    Console.WriteLine("Function outputs:");
-        //    foreach (var output in outputList)
-        //    {
-        //        Console.WriteLine("    name=" + output.Name() + ", kind=" + output.Kind() + ", DataType=" + output.GetDataType());
-        //    }
+            // Ouput funciton info.
+            var uid = myFunc.Uid();
+            System.Console.WriteLine("Function id:" + (string.IsNullOrEmpty(uid) ? "(empty)" : uid));
+            var name = myFunc.Name();
+            System.Console.WriteLine("Function Name:" + (string.IsNullOrEmpty(name) ? "(empty)" : name));
+            // Todo: directly return List() or use a wrapper?
+            var argList = myFunc.Arguments().ToList();
+            Console.WriteLine("Function arguments:");
+            foreach (var arg in argList)
+            {
+                Console.WriteLine("    name=" + arg.Name() + ", kind=" + arg.Kind() + ", DataType=" + arg.GetDataType());
+            }
+            var outputList = myFunc.Outputs().ToList();
+            Console.WriteLine("Function outputs:");
+            foreach (var output in outputList)
+            {
+                Console.WriteLine("    name=" + output.Name() + ", kind=" + output.Kind() + ", DataType=" + output.GetDataType());
+            }
 
-        //    // prepare input for evaluation
-        //    uint numOfSamples = 1;
+            // prepare input for evaluation
+            uint numOfSamples = 1;
 
-        //    const string inputNodeName = "features";
-        //    var inputVar = argList.Where(variable => string.Equals(variable.Name(), inputNodeName)).FirstOrDefault();
-        //    // Todo: get size directly from inputVar.
-        //    uint numOfInputData = inputVar.Shape().TotalSize() * numOfSamples;
-        //    var inputData = new List<float>();
-        //    for (uint i = 0; i < numOfInputData; ++i)
-        //    {
-        //        inputData.Add(i % 255);
-        //    }
+            const string inputNodeName = "features";
+            var inputVar = argList.Where(variable => string.Equals(variable.Name(), inputNodeName)).FirstOrDefault();
+            // Todo: get size directly from inputVar.
+            uint numOfInputData = inputVar.Shape().TotalSize() * numOfSamples;
+            var inputData = new List<float>();
+            for (uint i = 0; i < numOfInputData; ++i)
+            {
+                inputData.Add(i % 255);
+            }
 
-        //    // Todo: create value directly from data.
-        //    var dynamicAxisShape = new global::SizeTVector() { 1, numOfSamples };
-        //    var inputShape = inputVar.Shape().AppendShape(new NDShape(dynamicAxisShape));
-        //    var inputNDArrayView = new NDArrayView(inputShape, inputData, numOfInputData, DeviceDescriptor.CPUDevice());
-            
-        //    // var inputValue = Value.CreateDenseFloat(inputVar.Shape(), new FloatVectorVector(inputData)
+            var inputVector = new FloatVector(inputData);
+            var data = new FloatVectorVector() {inputVector};
+            // Create value directly from data.
+            var inputValue = Value.CreateDenseFloat(inputVar.Shape(), data, DeviceDescriptor.CPUDevice());
 
-        //    // Create input map
-        //    // Todo: create a Dictionary wrapper?
-        //    var inputMap = new UnorderedMapVariableValuePtr();
-        //    inputMap.Add(inputVar, inputValue);
+            // Create input map
+            // Todo: create a Dictionary wrapper?
+            var inputMap = new UnorderedMapVariableValuePtr();
+            inputMap.Add(inputVar, inputValue);
 
-        //    // Prepare output
-        //    const string outputNodeName = "out.z_output";
-        //    var outputVar = outputList.Where(variable => string.Equals(variable.Name(), outputNodeName)).FirstOrDefault();
-        //    var outputShape = outputVar.Shape().AppendShape(new NDShape(dynamicAxisShape));
+            // Prepare output
+            const string outputNodeName = "out.z_output";
+            var outputVar = outputList.Where(variable => string.Equals(variable.Name(), outputNodeName)).FirstOrDefault();
 
-        //    // Create output buffer
-        //    // Todo: use the system created buffer?
-        //    uint numOfOutputData = outputVar.Shape().TotalSize() * numOfSamples;
-        //    float[] outputData = new float[numOfOutputData];
-        //    for (uint i = 0; i < numOfOutputData; ++i)
-        //    {
-        //        outputData[i] = (float)0.0;
-        //    }
-        //    var outputNDArrayView = new NDArrayView(outputShape, outputData, numOfOutputData, DeviceDescriptor.CPUDevice());
-        //    var outputValue = new Value(outputNDArrayView);
+            // Create ouput map. Using null as Value to indicate using system allocated memory.
+            var outputMap = new UnorderedMapVariableValuePtr();
+            outputMap.Add(outputVar, null);
 
-        //    // Create ouput map
-        //    var outputMap = new UnorderedMapVariableValuePtr();
-        //    outputMap.Add(outputVar, outputValue);
+            // Evalaute
+            // Todo: test on GPUDevice()?
+            myFunc.Evaluate(inputMap, outputMap, DeviceDescriptor.CPUDevice());
 
-        //    // Evalaute
-        //    // Todo: test on GPUDevice()?
-        //    myFunc.Evaluate(inputMap, outputMap, DeviceDescriptor.CPUDevice());
+            // Get output value after evaluation
+            var outputValue = outputMap[outputVar];
+            var outputNDArrayView = outputValue.Data();
 
-        //    // Output results
-        //    Console.WriteLine("Evaluation results:");
-        //    for (uint i = 0; i < numOfOutputData; ++i)
-        //    {
-        //        Console.WriteLine(outputData[i]);
-        //    }
-        //}
+            var dynamicAxisShape = new global::SizeTVector() { 1, numOfSamples };
+            var outputShape = outputVar.Shape().AppendShape(new NDShape(dynamicAxisShape));
+
+            // Copy the data from the output buffer.
+            // Todo: directly access the data in output buffer if it is on CPU?
+            uint numOfOutputData = outputNDArrayView.Shape().TotalSize();
+            float[] outputData = new float[numOfOutputData];
+            var cpuOutputNDArrayView = new NDArrayView(outputShape, outputData, numOfOutputData, DeviceDescriptor.CPUDevice());
+            cpuOutputNDArrayView.CopyFrom(outputNDArrayView);
+
+            // Output results
+            Console.WriteLine("Evaluation results:");
+            for (uint i = 0; i < numOfOutputData; ++i)
+            {
+                Console.WriteLine(outputData[i]);
+            }
+        }
+
         static void Main(string[] args)
         {
-            Console.WriteLine("======== Evaluate V1 Model ========");
-            EvaluateV1ModelUsingNDView();
-            Console.WriteLine("======== Evaluate V2 Model ========");
-            EvaluateV2ModelUsingNDView();
-            Console.WriteLine("======== Evaluate Model Using System Allocated Memory for Output Value ========");
-            EvaluateUsingSystemAllocatedMemory();
+            EvaluateUsingCreateValue();
+            //Console.WriteLine("======== Evaluate V1 Model ========");
+            //EvaluateV1ModelUsingNDView();
+            //Console.WriteLine("======== Evaluate V2 Model ========");
+            //EvaluateV2ModelUsingNDView();
+            //Console.WriteLine("======== Evaluate Model Using System Allocated Memory for Output Value ========");
+            //EvaluateUsingSystemAllocatedMemory();
         }
 
         private static void OutputFunctionInfo(global::Function func)
