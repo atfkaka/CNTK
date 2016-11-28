@@ -7,7 +7,7 @@ initOnCPUOnly=true
 
 command=TIMIT_TrainAutoEncoder
 
-precision=float
+precision=double
 
 #######################################
 #  TRAINING CONFIG (Simple, Fixed LR) #
