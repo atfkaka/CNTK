@@ -115,7 +115,6 @@
 // NDArryView
 //
 %extend CNTK::NDArrayView {
-    // shall we use const float *dataBuffer
     NDArrayView(const NDShape& viewShape, float *dataBuffer, size_t numBufferElements, const DeviceDescriptor& device, bool readOnly = false)
     {
         return new CNTK::NDArrayView(CNTK::DataType::Float, viewShape, dataBuffer, numBufferElements * sizeof(float), device, readOnly);
