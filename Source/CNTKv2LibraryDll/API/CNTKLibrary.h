@@ -118,6 +118,17 @@ namespace CNTK
         // TODO: FPGA
     };
 
+    /// A collection of additional information needed for the distributed trainer to aggregate the gradients
+    struct MinibatchInfo
+    {
+        bool atEndOfData;
+        size_t numberOfSamples;
+        NDArrayViewPtr trainingLossValue;
+        NDArrayViewPtr evalCriterionValue;
+
+        bool IsEmpty() const { return numberOfSamples == 0; }
+    };
+
     ///
     /// Denotes a compute device instance.
     ///
@@ -388,11 +399,11 @@ namespace CNTK
     class NDArrayView final : public std::enable_shared_from_this<NDArrayView>
     {
         friend class CompositeFunction;
-        friend class LearnerBase;
+        friend class LocalLearnerBase;
         friend class Variable;
         friend class PackedValue;
         friend class MPICommunicatorImpl;
-        friend class BlockMomentumDistributedTrainer;
+        friend class BlockMomentumDistributedLearner;
         friend class Internal::VariableResolver;
 
         template <typename T, typename ...CtorArgTypes>
@@ -3140,58 +3151,72 @@ namespace CNTK
     /// For e.g momentum, AdaGrad, RMSProp etc. are different types of learners with their own algorithms for
     /// learning parameter values using first order gradients.
     ///
-    class Learner : public std::enable_shared_from_this<Learner>, public IDictionarySerializable
+    class Learner
     {
     public:
+        virtual const std::vector<Parameter>& Parameters() const = 0;
+
         //
         // Method to update the parameters associated with this learner. By returning false, this method indicates that
         // learning has stopped for all of the parameters associated with this learner
         //
-        virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) = 0;
-
-        ///
-        /// Returns the set of parameters associated with this learner.
-        ///
-        const std::vector<Parameter>& Parameters() const { return m_parameters; }
+        virtual bool Update(std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& trainingSampleCount, size_t& totalNumberOfSampleSeen) = 0;
 
         ///
         /// Optionally overridable method to checkpoint the learner's state.
         ///
-        virtual Dictionary Serialize() const override { return Dictionary(); }
+        virtual Dictionary CreateCheckpoint() { return Dictionary(); }
 
         ///
         /// Optionally overridable method to restore the learner's state from a previous checkpoint.
         ///
         virtual void RestoreFromCheckpoint(const Dictionary&) { NOT_IMPLEMENTED }
 
+        //
+        virtual bool IsDistributed() const { return false; };
+
+        // 
+        virtual void ResetSmoothedGradients() = 0;
+
+        ///
+        /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
+        ///
+        virtual void ResetLearningRate(const LearningRateSchedule& learningRateSchedule) = 0;
+
+        ///
+        /// Returns current learning rate.
+        ///
+        virtual double LearningRate() const = 0;
+
         ///
         /// Destruct this Learner.
         ///
         virtual ~Learner() {}
 
-        ///
-        /// This method needs to be explicitly overriden in subclasses.
-        ///
-        virtual size_t CurrentVersion() const override { NOT_IMPLEMENTED }
+    protected:
+        CNTK_API virtual size_t CurrentVersion() const { return 0; }
+    };
 
+    class LocalLearner : public Learner
+    {
+    public:
+        const std::vector<Parameter>& Parameters() const override
+        {
+            return m_parameters;
+        }
 
         ///
         /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
         ///
-        virtual void ResetLearningRate(const LearningRateSchedule& learningRateSchedule)
+        void ResetLearningRate(const LearningRateSchedule& learningRateSchedule) override
         {
             m_learningRateSchedule = learningRateSchedule;
         }
 
         ///
-        /// Resets smoothed gradients.
-        ///
-        virtual void ResetSmoothedGradients() = 0;
-
-        ///
         /// Returns current learning rate.
         ///
-        virtual double LearningRate() const
+        double LearningRate() const override
         {
             return GetCurrentTrainingParameterValue<double>(m_learningRateSchedule);
         }
@@ -3200,7 +3225,7 @@ namespace CNTK
         ///
         /// Retrieves and returns current value from the training parameter schedule.
         ///
-        template <typename ElementType> 
+        template <typename ElementType>
         ElementType GetCurrentTrainingParameterValue(const TrainingParameterSchedule<ElementType>& schedule) const
         {
             if (schedule.IsSweepBased())
@@ -3213,7 +3238,7 @@ namespace CNTK
             }
         }
 
-        Learner(const std::vector<Parameter>& parameters, const LearningRateSchedule& learningRateSchedule)
+        LocalLearner(const std::vector<Parameter>& parameters, const LearningRateSchedule& learningRateSchedule)
             : m_parameters(parameters),
             m_learningRateSchedule(learningRateSchedule),
             m_sampleCount(0),
@@ -3226,6 +3251,34 @@ namespace CNTK
         size_t m_sampleCount;
         size_t m_minibatchCount;
         size_t m_sweepCount;
+    };
+
+    class CompositeLearner : public Learner
+    {
+    public:
+        CompositeLearner(const std::vector<LearnerPtr>& learners);
+
+        const std::vector<LearnerPtr>& GetLearners() const { return m_learners; }
+
+        bool Update(std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& trainingSampleCount, size_t& totalNumberOfSampleSeen) override;
+
+        const std::vector<Parameter>& Parameters() const override;
+
+        void ResetSmoothedGradients() override;
+
+        ///
+        /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
+        ///
+        void ResetLearningRate(const LearningRateSchedule& learningRateSchedule) override;
+
+        ///
+        /// Returns current learning rate.
+        ///
+        double LearningRate() const override;
+
+    private:
+        std::vector<LearnerPtr> m_learners;
+        mutable std::vector<Parameter> m_parameters;
     };
 
     ///
@@ -3306,9 +3359,6 @@ namespace CNTK
         // TODO: Add overload for multiple evaluation criterion
         CNTK_API Trainer(const FunctionPtr& model, const FunctionPtr& lossFunction, const FunctionPtr& evaluationFunction, const std::vector<LearnerPtr>& parameterLearners);
 
-        // Same as above but with a distributed trainer.
-        CNTK_API Trainer(const FunctionPtr& model, const FunctionPtr& lossFunction, const FunctionPtr& evaluationFunction, const std::vector<LearnerPtr>& parameterLearners, const DistributedTrainerPtr& distributedTrainer);
-
         ///
         /// Optimize model parameters using the specified 'arguments' minibatch of training samples.
         /// Returns false if all parameter learners indicate end of learning (through their Update method's return value).
@@ -3338,12 +3388,12 @@ namespace CNTK
         ///
         /// Checkpoint the model and other Trainer state at the specified file location
         ///
-        CNTK_API void SaveCheckpoint(const std::wstring& filePath, bool usingLegacyModelFormat = true);
+        CNTK_API void SaveCheckpoint(const std::wstring& filePath, bool usingLegacyModelFormat = true, Dictionary externalState = Dictionary());
 
         ///
         /// Restore the model and trainer state from a previously saved model and checkpoint from the specified file location
         ///
-        CNTK_API void RestoreFromCheckpoint(const std::wstring& filePath);
+        CNTK_API Dictionary RestoreFromCheckpoint(const std::wstring& filePath);
 
         ///
         /// Model being trained by 'this' Trainer.
@@ -3375,17 +3425,18 @@ namespace CNTK
         ///
         size_t PreviousMinibatchSampleCount() const { return m_prevMinibatchNumSamples; }
 
-        ///
-        /// Learners associated with this Trainer for updating the model's parameters using computed gradients.
-        ///
-        const std::vector<LearnerPtr>& ParameterLearners() const { return m_parameterLearners; }
-
         CNTK_API ~Trainer();
 
     private:
-        void Save(const std::wstring& modelFilePath, bool usingLegacyModelFormat, const Dictionary& state);
-        bool UpdateLearners(const std::unordered_map<Parameter, NDArrayViewPtr>& gradients);
-        bool HandleEmptyMinibatch(bool atEndOfData);
+        Trainer(const FunctionPtr& model, const FunctionPtr& lossFunction, const FunctionPtr& evaluationFunction, LearnerPtr learner, size_t);
+
+        void ExecuteForwardBackward(
+            const std::unordered_map<Variable, ValuePtr>& arguments,
+            std::unordered_map<Variable, ValuePtr>& outputsToFetch,
+            const DeviceDescriptor& computeDevice,
+            std::unordered_map<Variable, ValuePtr>& parameterGradients);
+
+        void Save(const std::wstring& modelFilePath, bool usinglegacyModelFormat, const Dictionary& learnerState, const Dictionary& externalState);
 
         FunctionPtr m_combinedTrainingFunction;
         FunctionPtr m_model;
@@ -3395,13 +3446,10 @@ namespace CNTK
         FunctionPtr m_aggregatedEvaluationFunction;
         Variable    m_trainingSampleCountVar;
         Variable    m_testSampleCountVar;
-        DistributedTrainerPtr m_distributedTrainer;
-
-        std::vector<LearnerPtr> m_parameterLearners;
+        LearnerPtr  m_learner;
 
         size_t m_prevMinibatchNumSamples;
         size_t m_totalSamplesSeen;
-        bool m_distributed;
         ValuePtr m_prevMinibatchAggregateTrainingLossValue;
         ValuePtr m_prevMinibatchAggregateEvalCriterionValue;
     };
@@ -3708,78 +3756,46 @@ namespace CNTK
     ///
     CNTK_API QuantizedDistributedCommunicatorPtr QuantizedMPICommunicator(bool zeroThresholdFor1Bit, bool useQuantizationForSelfStripe, size_t numQuantizationBits);
 
-    /// A collection of additional information needed for the distributed trainer to aggregate the gradients
-    struct MinibatchInfo
-    {
-        bool atEndOfData;
-        size_t numberOfSamples;
-        NDArrayViewPtr trainingLossValue;
-        NDArrayViewPtr evalCriterionValue;
-    };
-
     ///
     /// Distributed Trainer.
     ///
-    class DistributedTrainer
+    class DistributedLearner : public Learner
     {
     public:
-        // Optional override that gets called before each minibatch during training
-        CNTK_API virtual void PreMinibatchCallback(const Trainer& trainer) = 0;
-
-        // Optional override that gets called per minibatch after finishing gradient computation but before updating model parameters.
-        CNTK_API virtual bool PreParameterUpdateCallback(const Trainer& trainer, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info) = 0;
-
-        // Optionally overridable method to get checkpoint state associated with this Distributed train method
-        CNTK_API virtual Dictionary CreateCheckpoint(const Trainer& trainer, const Dictionary& localStateToShare) = 0;
-
         // Optionally overridable method getting called at shutdown to do the last syncs if needed
-        CNTK_API virtual void Shutdown(const Trainer& trainer) = 0;
-
-        // Optionally overridable method to restore state pertaining this distributed training method from a previous checkpoint
-        // Returns local state that corresponds to this worker.
-        CNTK_API virtual Dictionary RestoreFromCheckpoint(const Dictionary& checkpoint) = 0;
+        CNTK_API virtual void Shutdown() = 0;
 
         // Return the distributed communicator used in the distributed trainer
         CNTK_API virtual DistributedCommunicatorPtr GetCommunicator() = 0;
 
-        // Return the distributed-after sample count
-        CNTK_API size_t GetDistributedAfterSampleCount() const
-        {
-            return m_distributedAfterSampleCount;
-        }
-
-        virtual ~DistributedTrainer() {}
+        bool IsDistributed() const override { return true; }
 
     protected:
         // Set the parallelization-start-after sample count
-        DistributedTrainer(size_t distributedAfterSampleCount) :
-            m_distributedAfterSampleCount(distributedAfterSampleCount)
+        DistributedLearner()
         {}
-
-    private:
-        size_t m_distributedAfterSampleCount;
     };
 
-    CNTK_API DistributedTrainerPtr CreateDataParallelDistributedTrainer(DistributedCommunicatorPtr communicator, bool useAsyncBufferedParameterUpdate, size_t distributedAfterSampleCount = 0);
+    CNTK_API DistributedLearnerPtr CreateDataParallelDistributedLearner(DistributedCommunicatorPtr communicator, const std::vector<LearnerPtr>& learners, bool useAsyncBufferedParameterUpdate = false);
 
-    CNTK_API DistributedTrainerPtr CreateQuantizedDataParallelDistributedTrainer(QuantizedDistributedCommunicatorPtr communicator, bool useAsyncBufferedParameterUpdate, size_t distributedAfterSampleCount);
+    CNTK_API DistributedLearnerPtr CreateQuantizedDataParallelDistributedLearner(QuantizedDistributedCommunicatorPtr communicator, const std::vector<LearnerPtr>& learners, bool useAsyncBufferedParameterUpdate = false);
 
-    CNTK_API DistributedTrainerPtr CreateBlockMomentumDistributedTrainer(
+    CNTK_API DistributedLearnerPtr CreateBlockMomentumDistributedLearner(
         DistributedCommunicatorPtr communicator,
+        const std::vector<LearnerPtr>& learners,
         size_t blockSize,
         double blockMomentumAsTimeConstant,
         bool useNestrovMomentum = true,
         bool resetSGDMomentumAfterAggregation = true,
-        double blockLearningRate = 1.0,
-        size_t distributedAfterSampleCount = 0);
+        double blockLearningRate = 1.0);
 
-    CNTK_API DistributedTrainerPtr CreateBlockMomentumDistributedTrainer(
+    CNTK_API DistributedLearnerPtr CreateBlockMomentumDistributedLearner(
         DistributedCommunicatorPtr communicator,
+        const std::vector<LearnerPtr>& learners,
         size_t blockSize,
         bool useNestrovMomentum = true,
         bool resetSGDMomentumAfterAggregation = true,
-        double blockLearningRate = 1.0,
-        size_t distributedAfterSampleCount = 0);
+        double blockLearningRate = 1.0);
 }
 
 

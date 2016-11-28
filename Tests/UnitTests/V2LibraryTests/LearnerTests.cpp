@@ -21,15 +21,16 @@ template <typename ElementType>
 void TestUpdate(LearnerPtr& learner, NDShape& shape, size_t numMinibatches, const DeviceDescriptor& device)
 {
     auto seed = (unsigned long) rng();
-    unordered_map<Parameter, NDArrayViewPtr> gradientValues;
+    std::vector<std::pair<Parameter, NDArrayViewPtr>> gradientValues;
+    MinibatchInfo minibatch { 1, false };
+    size_t totalSamplesSeen = 0;
     for (auto i = 0; i < numMinibatches; i++)
-    { 
+    {
+        gradientValues.clear();
         for (auto& parameter : learner->Parameters())
-        {
-            gradientValues[parameter] = NDArrayView::RandomUniform<ElementType>(shape, -1.0, 1.0, seed + i, device);
-        }
+            gradientValues.push_back(std::make_pair(parameter, NDArrayView::RandomUniform<ElementType>(shape, -1.0, 1.0, seed + i, device)));
 
-        learner->Update(gradientValues, 1);
+        learner->Update(gradientValues, minibatch, totalSamplesSeen);
     }
 }
 

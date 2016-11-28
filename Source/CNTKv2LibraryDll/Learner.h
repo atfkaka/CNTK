@@ -14,25 +14,23 @@ namespace CNTK
     // An abstract base class at the root of the standard learners hierarchy
     // It implements most of the learner functionality, except for the actual update function,
     // and adds a few pre-/postprocessing methods (which are invoked before and after the update).
-    class LearnerBase : public Learner
+    class LocalLearnerBase : public LocalLearner
     {
     public:
-        virtual bool Update(const std::unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) override final;
+        bool Update(std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& currentMinibatch, size_t& totalSeenSamples) override final;
 
-        virtual Dictionary Serialize() const override final;
-
-        virtual size_t CurrentVersion() const override final { return s_serializationVersion; }
+        Dictionary CreateCheckpoint() override final;
 
         virtual void RestoreFromCheckpoint(const Dictionary& checkpoint) override final;
 
-        virtual void ResetSmoothedGradients() override final;
+        virtual void ResetSmoothedGradients() final;
 
     protected:
         // allocateSmoothGradients flag specifies whether NDArrayViews for smoothed gradients can be allocated 
         // in the base class constructor (in which case they are allocated with the shapes identical to the shapes of
         // the corresponding parameters) or if the allocation should be deferred to the subclass constructor (which
         // performs allocation that is specific to the particular learner, see FSAdaGrad and RMSProp).
-        LearnerBase(const std::vector<Parameter>& parameters, 
+        LocalLearnerBase(const std::vector<Parameter>& parameters,
                     const LearningRateSchedule& learningRateSchedule,
                     AdditionalLearningOptions additionalOptions,
                     bool allocateSmoothGradients = true);
@@ -44,7 +42,7 @@ namespace CNTK
         // Returns current (per-sample) learning rate.
         double LearningRate(size_t minibatchSize) const
         {
-            auto learningRate = Learner::LearningRate();
+            auto learningRate = LocalLearner::LearningRate();
             if (m_learningRateSchedule.Unit() == LearningRateSchedule::UnitType::Minibatch)
             {
                 // learning rate needs to be converted to the per-sample value.
@@ -108,14 +106,14 @@ namespace CNTK
     };
 
     // Vanilla gradient descent optimization algorithm.
-    class LearnerSGD : public LearnerBase
+    class LearnerSGD : public LocalLearnerBase
     {
     public:
         LearnerSGD(const std::vector<Parameter>& parameters, 
                    const LearningRateSchedule& learningRateSchedule, 
                    AdditionalLearningOptions additionalOptions,
                    bool allocateSmoothGradients = true)
-                   : LearnerBase(parameters, learningRateSchedule, additionalOptions, allocateSmoothGradients)
+                   : LocalLearnerBase(parameters, learningRateSchedule, additionalOptions, allocateSmoothGradients)
         {}
 
         // TODO: get rid of this as soon as NormalGrad is refactored.
@@ -182,7 +180,7 @@ namespace CNTK
         }
     };
 
-    class LearnerAdaGrad : public LearnerBase
+    class LearnerAdaGrad : public LocalLearnerBase
     {
     public:
 
@@ -190,7 +188,7 @@ namespace CNTK
                        const LearningRateSchedule& learningRateSchedule,
                        bool needAveMultiplier,
                        AdditionalLearningOptions additionalOptions)
-                       : LearnerBase(parameters, learningRateSchedule, additionalOptions, /*allocateSmoothGradients*/ true),
+                       : LocalLearnerBase(parameters, learningRateSchedule, additionalOptions, /*allocateSmoothGradients*/ true),
                        m_needAveMultiplier(needAveMultiplier)
     {
     }
@@ -234,7 +232,7 @@ namespace CNTK
         MomentumSchedule m_varianceMomentumSchedule;
     };
 
-    class LearnerRMSProp : public LearnerBase
+    class LearnerRMSProp : public LocalLearnerBase
     {
     public:
 

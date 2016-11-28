@@ -4,13 +4,13 @@
 //
 
 #include "stdafx.h"
-#include "DataParallelDistributedTrainer.h"
+#include "DataParallelDistributedLearner.h"
 #include "DistributedCommunicator.h"
 
 #ifdef CNTK_PARALLEL_TRAINING_SUPPORT
 #include "QuantizedDistributedCommunicator.h"
-#include "QuantizedDataParallelDistributedTrainer.h"
-#include "BlockMomentumDistributedTrainer.h"
+#include "QuantizedDataParallelDistributedLearner.h"
+#include "BlockMomentumDistributedLearner.h"
 #endif
 
 namespace CNTK
@@ -21,45 +21,48 @@ namespace CNTK
         return MakeSharedObject<QuantizedMPICommunicatorImpl>(zeroThresholdFor1Bit, useQuantizationForSelfStripe, numQuantizationBits);
     }
 
-    DistributedTrainerPtr CreateQuantizedDataParallelDistributedTrainer(QuantizedDistributedCommunicatorPtr communicator, bool useAsyncBufferedParameterUpdate, size_t distributedAfterSampleCount)
+    DistributedLearnerPtr CreateQuantizedDataParallelDistributedLearner(
+        QuantizedDistributedCommunicatorPtr communicator,
+        const std::vector<LearnerPtr>& learners,
+        bool useAsyncBufferedParameterUpdate)
     {
-        return MakeSharedObject<QuantizedDataParallelDistributedTrainer>(communicator, useAsyncBufferedParameterUpdate, distributedAfterSampleCount);
+        return MakeSharedObject<QuantizedDataParallelDistributedLearner>(communicator, useAsyncBufferedParameterUpdate, learners);
     }
 
-    DistributedTrainerPtr CreateBlockMomentumDistributedTrainer(
+    DistributedLearnerPtr CreateBlockMomentumDistributedLearner(
         DistributedCommunicatorPtr communicator,
+        const std::vector<LearnerPtr>& learners,
         size_t blockSize,
         bool useNestrovMomentum,
         bool resetSGDMomentumAfterAggregation,
-        double blockLearningRate,
-        size_t distributedAfterSampleCount)
+        double blockLearningRate)
     {
-        return MakeSharedObject<BlockMomentumDistributedTrainer>(
+        return MakeSharedObject<BlockMomentumDistributedLearner>(
             communicator,
+            learners,
             blockSize,
             useNestrovMomentum,
             resetSGDMomentumAfterAggregation,
-            blockLearningRate,
-            distributedAfterSampleCount);
+            blockLearningRate);
     }
 
-    DistributedTrainerPtr CreateBlockMomentumDistributedTrainer(
+    DistributedLearnerPtr CreateBlockMomentumDistributedLearner(
         DistributedCommunicatorPtr communicator,
+        const std::vector<LearnerPtr>& learners,
         size_t blockSize,
         double blockMomentumAsTimeConstant,
         bool useNestrovMomentum,
         bool resetSGDMomentumAfterAggregation,
-        double blockLearningRate,
-        size_t distributedAfterSampleCount)
+        double blockLearningRate)
     {
-        return MakeSharedObject<BlockMomentumDistributedTrainer>(
+        return MakeSharedObject<BlockMomentumDistributedLearner>(
             communicator,
+            learners,
             blockSize,
             useNestrovMomentum,
             resetSGDMomentumAfterAggregation,
             blockLearningRate,
-            blockMomentumAsTimeConstant,
-            distributedAfterSampleCount);
+            blockMomentumAsTimeConstant);
     }
 
 #else
@@ -97,22 +100,22 @@ namespace CNTK
     }
 #endif
 
-    DistributedTrainerPtr CreateDataParallelDistributedTrainer(DistributedCommunicatorPtr communicator, bool useAsyncBufferedParameterUpdate, size_t distributedAfterSampleCount)
+    DistributedLearnerPtr CreateDataParallelDistributedLearner(DistributedCommunicatorPtr communicator, const std::vector<LearnerPtr>& learners, bool useAsyncBufferedParameterUpdate)
     {
-        return MakeSharedObject<DataParallelDistributedTrainer>(communicator, useAsyncBufferedParameterUpdate, distributedAfterSampleCount);
+        return MakeSharedObject<DataParallelDistributedLearner>(communicator, useAsyncBufferedParameterUpdate, learners);
     }
 
-    DataParallelDistributedTrainer::DataParallelDistributedTrainer(DistributedCommunicatorPtr communicator, bool useAsyncBufferedParameterUpdate, size_t distributedAfterSampleCount)
-        : DistributedTrainerBase(communicator, distributedAfterSampleCount)
+    DataParallelDistributedLearner::DataParallelDistributedLearner(DistributedCommunicatorPtr communicator, bool useAsyncBufferedParameterUpdate, const std::vector<LearnerPtr>& learners)
+        : DistributedLearnerBase(communicator, learners)
     {
         if (useAsyncBufferedParameterUpdate)
             LogicError("Asynchronous parameter update is not yet supported.");
     }
 
-    // Optional override that gets called per minibatch after finishing gradient computation but before updating model parameters
-    bool DataParallelDistributedTrainer::PreParameterUpdateCallback(const Trainer& /*trainer*/, std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info)
+    bool DataParallelDistributedLearner::Update(std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info, size_t& totalNumberOfSampleSeen)
     {
-        HandleEmptyMinibatch(gradientValues, info);
+        if (info.IsEmpty())
+            PrepaireZeroGradients(gradientValues, info);
 
         std::vector<NDArrayViewPtr> valuesToAggregate;
         for (const auto& i : gradientValues)
@@ -126,6 +129,7 @@ namespace CNTK
         m_communicator->AggregateInPlace(valuesToAggregate, m_communicator->Workers());
 
         info.numberOfSamples = static_cast<size_t>(*valuesToAggregate.back()->WritableDataBuffer<double>());
-        return info.numberOfSamples == 0;
+        totalNumberOfSampleSeen += info.numberOfSamples;
+        return info.IsEmpty();
     }
 }

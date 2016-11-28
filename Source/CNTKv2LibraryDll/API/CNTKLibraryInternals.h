@@ -185,6 +185,12 @@ namespace CNTK
     class Learner;
     typedef std::shared_ptr<Learner> LearnerPtr;
 
+    class LocalLearner;
+    typedef std::shared_ptr<LocalLearner> LocalLearnerPtr;
+
+    class CompositeLearner;
+    typedef std::shared_ptr<CompositeLearner> CompositeLearnerPtr;
+
     class Dictionary;
     typedef std::shared_ptr<Dictionary> DictionaryPtr;
 
@@ -197,8 +203,11 @@ namespace CNTK
     class QuantizedDistributedCommunicator;
     typedef std::shared_ptr<QuantizedDistributedCommunicator> QuantizedDistributedCommunicatorPtr;
 
-    class DistributedTrainer;
-    typedef std::shared_ptr<DistributedTrainer> DistributedTrainerPtr;
+    class LocalLearner;
+    typedef std::shared_ptr<LocalLearner> LocalLearnerPtr;
+
+    class DistributedLearner;
+    typedef std::shared_ptr<DistributedLearner> DistributedLearnerPtr;
 
     namespace Internal
     {

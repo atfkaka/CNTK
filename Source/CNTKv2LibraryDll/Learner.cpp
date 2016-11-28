@@ -27,25 +27,104 @@ using namespace std;
 
 namespace CNTK
 {
+    CompositeLearner::CompositeLearner(const std::vector<LearnerPtr>& learners) : m_learners(learners)
+    {
+        std::unordered_set<Parameter> learnerParameters;
+        for (const auto& learner : learners)
+        {
+            const auto& currentLearnerParameters = learner->Parameters();
+            for (const auto& parameter : currentLearnerParameters)
+            {
+                auto insertRetVal = learnerParameters.insert(parameter);
+                if (!insertRetVal.second)
+                    InvalidArgument("Parameter named %S is covered by 2 different learners", parameter.Name().c_str());
+            }
+        }
+    }
+
+    bool CompositeLearner::Update(std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradients, MinibatchInfo& minibatch, size_t& totalNumberOfSampleSeen)
+    {
+        bool anyUpdatesPerformed = false;
+        for (auto learner : m_learners)
+        {
+            std::unordered_map<Parameter, NDArrayViewPtr> learnerParameterGradients;
+            const auto& learnerParameters = learner->Parameters();
+            for (const auto& parameter : learnerParameters)
+            {
+                auto value = std::find_if(gradients.begin(), gradients.end(),
+                    [&parameter](const pair<Parameter, NDArrayViewPtr>& g) { return g.first == parameter; });
+
+                if (value == gradients.end())
+                    LogicError("Learner contains parameter that does not exists in the model");
+
+                learnerParameterGradients[parameter] = value->second;
+            }
+
+            anyUpdatesPerformed |= learner->Update(gradients, minibatch, totalNumberOfSampleSeen);
+        }
+
+        return anyUpdatesPerformed;
+    }
+
+    const std::vector<Parameter>& CompositeLearner::Parameters() const
+    {
+        if (m_parameters.empty())
+        {
+            for (auto l : m_learners)
+            {
+                const auto& innerParamters = l->Parameters();
+                m_parameters.insert(m_parameters.end(), innerParamters.begin(), innerParamters.end());
+            }
+        }
+        return m_parameters;
+    }
+
+    void CompositeLearner::ResetSmoothedGradients()
+    {
+        for (auto l : m_learners)
+            l->ResetSmoothedGradients();
+    }
+
+    ///
+    /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
+    ///
+    void CompositeLearner::ResetLearningRate(const LearningRateSchedule& learningRateSchedule)
+    {
+        for (auto l : m_learners)
+            l->ResetLearningRate(learningRateSchedule);
+    }
+
+    ///
+    /// Returns current learning rate.
+    ///
+    double CompositeLearner::LearningRate() const
+    {
+        double learningRate = m_learners.front()->LearningRate();
+        for (auto l : m_learners)
+            if (learningRate != l->LearningRate())
+                RuntimeError("All inner learners of the composite learner should use the same learning rate.");
+        return learningRate;
+    }
+
     template <typename ElementType>
-    /*static*/ shared_ptr<const Matrix<ElementType>> LearnerBase::GetMatrix(const NDArrayViewPtr& arrayView)
+    /*static*/ shared_ptr<const Matrix<ElementType>> LocalLearnerBase::GetMatrix(const NDArrayViewPtr& arrayView)
     {
         return arrayView->GetMatrix<ElementType>();
     }
 
     template <typename ElementType>
-    /*static*/ shared_ptr<Matrix<ElementType>> LearnerBase::GetWritableMatrix(const NDArrayViewPtr& arrayView)
+    /*static*/ shared_ptr<Matrix<ElementType>> LocalLearnerBase::GetWritableMatrix(const NDArrayViewPtr& arrayView)
     {
         return arrayView->GetWritableMatrix<ElementType>();
     }
 
     template <typename ElementType>
-    /*static*/ const TensorView<ElementType>* LearnerBase::GetTensorView(const NDArrayViewPtr& arrayView)
+    /*static*/ const TensorView<ElementType>* LocalLearnerBase::GetTensorView(const NDArrayViewPtr& arrayView)
     {
         return arrayView->GetTensorView<ElementType>();
     }
 
-    /*static*/ bool LearnerBase::HasNan(const NDArrayViewPtr& value, const char* name)
+    /*static*/ bool LocalLearnerBase::HasNan(const NDArrayViewPtr& value, const char* name)
     {
         switch (value->GetDataType())
         {
@@ -58,7 +137,7 @@ namespace CNTK
         }
     }
 
-    /*static*/ void LearnerBase::Print(const NDArrayViewPtr& value, const char* msg)
+    /*static*/ void LocalLearnerBase::Print(const NDArrayViewPtr& value, const char* msg)
     {
         switch (value->GetDataType())
         {
@@ -73,7 +152,7 @@ namespace CNTK
         }
     }
 
-    void LearnerBase::ResetSmoothedGradients()
+    void LocalLearnerBase::ResetSmoothedGradients()
     {
         for(auto v : m_smoothedGradientValues)
         {
@@ -88,7 +167,7 @@ namespace CNTK
 
     // Clipping gradients to prevent outliers,
     template <typename ElementType>
-    void LearnerBase::ClipGradient(Matrix<ElementType>& gradient, size_t actualMBSize) const
+    void LocalLearnerBase::ClipGradient(Matrix<ElementType>& gradient, size_t actualMBSize) const
     {
         if (m_additionalOptions.gradientClippingThresholdPerSample != numeric_limits<double>::infinity())
         {
@@ -111,7 +190,7 @@ namespace CNTK
     // Performs additional preprocessing before calling the update method 
     // (gradient clipping and L2 regularization depending on the additional learning parameters).
     template <typename ElementType>
-    void LearnerBase::PreProcess(const NDArrayViewPtr& parameterValue, const NDArrayViewPtr& gradientValue, size_t actualMBSize) const
+    void LocalLearnerBase::PreProcess(const NDArrayViewPtr& parameterValue, const NDArrayViewPtr& gradientValue, size_t actualMBSize) const
     {
         const auto& gradientMatrix = gradientValue->GetWritableMatrix<ElementType>();
 
@@ -131,7 +210,7 @@ namespace CNTK
     // Performs additional postprocessing after the update method has been executed
     // (noise injection and L1 regularization specified by the additional learning parameters).
     template <typename ElementType>
-    void LearnerBase::PostProcess(const Parameter& parameter, const NDArrayViewPtr& gradientValue, size_t actualMBSize) const
+    void LocalLearnerBase::PostProcess(const Parameter& parameter, const NDArrayViewPtr& gradientValue, size_t actualMBSize) const
     {
         const auto& parameterValue = parameter.Value();
         const auto& parameterMatrix = parameterValue->GetWritableMatrix<ElementType>();
@@ -164,16 +243,16 @@ namespace CNTK
     }
 
     template <typename ElementType>
-    /*static*/ TensorView<ElementType>* LearnerBase::GetWritableTensorView(const NDArrayViewPtr& arrayView)
+    /*static*/ TensorView<ElementType>* LocalLearnerBase::GetWritableTensorView(const NDArrayViewPtr& arrayView)
     {
         return arrayView->GetWritableTensorView<ElementType>();
     }
 
-    LearnerBase::LearnerBase(const vector<Parameter>& parameters,
+    LocalLearnerBase::LocalLearnerBase(const vector<Parameter>& parameters,
                              const LearningRateSchedule& learningRateSchedule,
                              AdditionalLearningOptions additionalOptions,
                              bool allocateSmoothGradients /* = true */)
-                             : Learner(parameters, learningRateSchedule),
+                             : LocalLearner(parameters, learningRateSchedule),
                              m_minibatchCount(0),
                              m_additionalOptions(additionalOptions)
     {
@@ -196,7 +275,7 @@ namespace CNTK
         }
     }
 
-    /*static*/ NDArrayViewPtr LearnerBase::AllocateNDArrayView(const Parameter& parameter, const NDShape& shape)
+    /*static*/ NDArrayViewPtr LocalLearnerBase::AllocateNDArrayView(const Parameter& parameter, const NDShape& shape)
     {
         if (parameter.GetDataType() == DataType::Float)
         {
@@ -208,7 +287,7 @@ namespace CNTK
         }
     }
 
-    /*static*/ NDShape LearnerBase::GetMatrixShape(const Parameter& parameter)
+    /*static*/ NDShape LocalLearnerBase::GetMatrixShape(const Parameter& parameter)
     {
         if (parameter.GetDataType() == DataType::Float)
         {
@@ -222,20 +301,28 @@ namespace CNTK
         }
     }
 
-    /*virtual*/ bool LearnerBase::Update(const unordered_map<Parameter, NDArrayViewPtr>& gradientValues, size_t trainingSampleCount) /*override*/
+    /*virtual*/ bool LocalLearnerBase::Update(vector<pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& info, size_t&) /*override*/
     {
-        if (LearningRate(trainingSampleCount) == 0.0)
+        if (info.numberOfSamples == 0 || LearningRate(info.numberOfSamples) == 0.0)
         {
             return false;
         }
 
         // make sure trainingSampleCount is a valid value
+        auto trainingSampleCount = info.numberOfSamples;
         assert(trainingSampleCount > 0);
 
         for (const auto& parameter : Parameters())
         {
             const auto& smoothedGradientValue = m_smoothedGradientValues.at(parameter);
-            const auto& gradientValue = gradientValues.at(parameter);
+            auto found = std::find_if(gradientValues.begin(), gradientValues.end(),
+                [&parameter](const std::pair<Parameter, NDArrayViewPtr>& g) { return g.first == parameter; });
+
+            if (found == gradientValues.end())
+                RuntimeError("Gradient for paramter '%ls' cannot be found.", parameter.Name().c_str());
+
+            const auto& gradientValue = found->second;
+
             // TODO: make this a runtime parameter.
 #if DUMPOUTPUT
             LOGPRINTF(stderr, "Update_%ls\n", parameter.Uid().c_str());
@@ -275,7 +362,7 @@ namespace CNTK
     }
 
     template <typename ElementType>
-    void LearnerBase::Update(const Parameter& parameter, const NDArrayViewPtr& gradientValue, const NDArrayViewPtr& smoothedGradientValue, size_t trainingSampleCount) const
+    void LocalLearnerBase::Update(const Parameter& parameter, const NDArrayViewPtr& gradientValue, const NDArrayViewPtr& smoothedGradientValue, size_t trainingSampleCount) const
     {
         const auto& parameterValue = parameter.Value();
         PreProcess<ElementType>(parameterValue, gradientValue, trainingSampleCount);
@@ -286,14 +373,14 @@ namespace CNTK
         paramRef.RecordValueUpdate();
     }
 
-    string LearnerBase::LearnerType() const
+    string LocalLearnerBase::LearnerType() const
     {
         return Typename(this);
     }
 
     static const std::wstring s_learnerTypeValue = L"Learner";
 
-    /*virtual*/ Dictionary LearnerBase::Serialize() const /*override*/
+    /*virtual*/ Dictionary LocalLearnerBase::CreateCheckpoint() /*override*/
     {
         Dictionary checkpoint;
 
@@ -323,11 +410,11 @@ namespace CNTK
         return checkpoint;
     }
 
-    /*virtual*/ void LearnerBase::RestoreFromCheckpoint(const Dictionary& checkpoint) /*override*/
+    /*virtual*/ void LocalLearnerBase::RestoreFromCheckpoint(const Dictionary& checkpoint) /*override*/
     {
         static const vector<std::wstring> s_requiredDictionaryKeys = { typeKey, sampleCountKey, minibatchCountKey, learningRateScheduleKey };
 
-        ValidateDictionary<LearnerBase>(checkpoint, s_requiredDictionaryKeys, s_learnerTypeValue, CurrentVersion());
+        ValidateDictionary<LocalLearnerBase>(checkpoint, s_requiredDictionaryKeys, s_learnerTypeValue, CurrentVersion());
 
         m_sampleCount = checkpoint[sampleCountKey].Value<size_t>();
         m_minibatchCount = checkpoint[minibatchCountKey].Value<size_t>();
@@ -465,7 +552,7 @@ namespace CNTK
                                    double gamma, double inc, double dec, double max, double min,
                                    bool needAveMultiplier,
                                    AdditionalLearningOptions additionalOptions)
-                                   : LearnerBase(parameters, learningRateSchedule, additionalOptions, /*allocateSmoothGradients*/ false),
+                                   : LocalLearnerBase(parameters, learningRateSchedule, additionalOptions, /*allocateSmoothGradients*/ false),
                                    m_gamma(gamma), m_inc(inc), m_dec(dec), m_max(max), m_min(min), m_needAveMultiplier(needAveMultiplier)
     {
         for (const auto& parameter : parameters)
@@ -512,8 +599,8 @@ namespace CNTK
     }
 
     // Explicit template instantiations
-    template shared_ptr<Matrix<float>> LearnerBase::GetWritableMatrix<float>(const NDArrayViewPtr& arrayView);
-    template shared_ptr<Matrix<double>> LearnerBase::GetWritableMatrix<double>(const NDArrayViewPtr& arrayView);
+    template shared_ptr<Matrix<float>> LocalLearnerBase::GetWritableMatrix<float>(const NDArrayViewPtr& arrayView);
+    template shared_ptr<Matrix<double>> LocalLearnerBase::GetWritableMatrix<double>(const NDArrayViewPtr& arrayView);
 
     LearnerPtr SGDLearner(const vector<Parameter>& parameters,
                           const LearningRateSchedule& learningRateSchedule,

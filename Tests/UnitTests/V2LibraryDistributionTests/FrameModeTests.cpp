@@ -35,10 +35,9 @@ namespace
     const size_t numMinibatchesToTrain = (numSamplesPerSweep * numSweepsToTrainWith) / minibatchSize;
     const size_t totalNumberOfSamples = numSamplesPerSweep * numSweepsToTrainWith;
 
-    void LoopBasedOnMinibatches(const std::wstring& name, const DeviceDescriptor& device, std::function<DistributedTrainerPtr()> factory, const FeedForwardClassifier& classifier)
+    void LoopBasedOnMinibatches(const std::wstring& name, const DeviceDescriptor& device, std::function<DistributedLearnerPtr(const std::vector<LearnerPtr>&)> factory, const FeedForwardClassifier& classifier)
     {
         printf("Training loop thru minibatches with %ls.\n", name.c_str());
-        auto distributedTrainer = factory();
 
         auto minibatchSource = TextFormatMinibatchSource(g_inputFile, { { g_featureStreamName, classifier.inputDim }, { g_labelsStreamName, classifier.ouputDim } });
         auto featureStreamInfo = minibatchSource->StreamInfo(g_featureStreamName);
@@ -46,7 +45,7 @@ namespace
 
         double learningRatePerSample = 0.02;
 
-        Trainer trainer(classifier.output, classifier.trainingLoss, classifier.prediction, { SGDLearner(classifier.output->Parameters(), LearningRatePerSampleSchedule(learningRatePerSample)) }, distributedTrainer);
+        Trainer trainer(classifier.output, classifier.trainingLoss, classifier.prediction, { factory({ SGDLearner(classifier.output->Parameters(), LearningRatePerSampleSchedule(learningRatePerSample)) }) });
         size_t outputFrequencyInMinibatches = 20;
         for (size_t i = 0; i < numMinibatchesToTrain; ++i)
         {
@@ -58,10 +57,9 @@ namespace
         }
     }
 
-    void LoopBasedOnSamples(const std::wstring& name, const DeviceDescriptor& device, std::function<DistributedTrainerPtr()> factory, const FeedForwardClassifier& classifier)
+    void LoopBasedOnSamples(const std::wstring& name, const DeviceDescriptor& device, std::function<DistributedLearnerPtr(const std::vector<LearnerPtr>&)> factory, const FeedForwardClassifier& classifier)
     {
         printf("Training loop thru samples with %ls.\n", name.c_str());
-        auto distributedTrainer = factory();
 
         auto minibatchSource = TextFormatMinibatchSource(g_inputFile, { { g_featureStreamName, classifier.inputDim }, { g_labelsStreamName, classifier.ouputDim } });
         auto featureStreamInfo = minibatchSource->StreamInfo(g_featureStreamName);
@@ -69,7 +67,7 @@ namespace
 
         double learningRatePerSample = 0.02;
 
-        Trainer trainer(classifier.output, classifier.trainingLoss, classifier.prediction, { SGDLearner(classifier.output->Parameters(), LearningRatePerSampleSchedule(learningRatePerSample)) }, distributedTrainer);
+        Trainer trainer(classifier.output, classifier.trainingLoss, classifier.prediction, { factory({ SGDLearner(classifier.output->Parameters(), LearningRatePerSampleSchedule(learningRatePerSample)) }) });
         size_t outputFrequencyInMinibatches = 20;
         size_t checkpointFrequency = 7000;
         size_t count = 0, index = 0;
@@ -121,13 +119,13 @@ namespace
 void TestFrameMode()
 {
     // Create a set of trainers.
-    std::map<std::wstring, std::function<DistributedTrainerPtr()>> trainers;
-    trainers[L"simple"] = []() { return CreateDataParallelDistributedTrainer(MPICommunicator(), false); };
+    std::map<std::wstring, std::function<DistributedLearnerPtr(const std::vector<LearnerPtr>&)>> learners;
+    learners[L"simple"] = [](const std::vector<LearnerPtr>& l) { return CreateDataParallelDistributedLearner(MPICommunicator(), l); };
 
     if (Is1bitSGDAvailable())
     {
-        trainers[L"1bitsgd"] = []() { return CreateQuantizedDataParallelDistributedTrainer(QuantizedMPICommunicator(true, true, 32), false, 0); };
-        trainers[L"blockmomentum"] = []() { return CreateBlockMomentumDistributedTrainer(MPICommunicator(), 1024); };
+        learners[L"1bitsgd"] = [](const std::vector<LearnerPtr>& l) { return CreateQuantizedDataParallelDistributedLearner(QuantizedMPICommunicator(true, true, 32), l); };
+        learners[L"blockmomentum"] = [](const std::vector<LearnerPtr>& l) { return CreateBlockMomentumDistributedLearner(MPICommunicator(), l, 1024); };
     }
 
     // Create a set of devices.
@@ -137,20 +135,20 @@ void TestFrameMode()
         devices.push_back(DeviceDescriptor::GPUDevice(0));
 
     // Create different types of loops.
-    std::vector<std::function<void(const std::wstring&, const DeviceDescriptor&, std::function<DistributedTrainerPtr()>, const FeedForwardClassifier&)>> loops;
+    std::vector<std::function<void(const std::wstring&, const DeviceDescriptor&, std::function<DistributedLearnerPtr(const std::vector<LearnerPtr>&)>, const FeedForwardClassifier&)>> loops;
     loops.push_back(LoopBasedOnMinibatches);
     loops.push_back(LoopBasedOnSamples);
 
     // Trying all distribution methods on all available devices with different types of loops.
     auto sync = MPICommunicator();
-    for (auto t : trainers)
+    for (auto l : learners)
     {
         for (auto device : devices)
         {
             for (auto loop : loops)
             {
                 sync->Barrier();
-                loop(t.first, device, t.second, BuildFeedForwardClassifer(device));
+                loop(l.first, device, l.second, BuildFeedForwardClassifer(device));
             }
         }
     }
