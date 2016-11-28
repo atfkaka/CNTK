@@ -399,7 +399,7 @@ namespace CNTK
     class NDArrayView final : public std::enable_shared_from_this<NDArrayView>
     {
         friend class CompositeFunction;
-        friend class LocalLearnerBase;
+        friend class LearnerBase;
         friend class Variable;
         friend class PackedValue;
         friend class MPICommunicatorImpl;
@@ -3197,66 +3197,10 @@ namespace CNTK
         CNTK_API virtual size_t CurrentVersion() const { return 0; }
     };
 
-    class LocalLearner : public Learner
-    {
-    public:
-        const std::vector<Parameter>& Parameters() const override
-        {
-            return m_parameters;
-        }
-
-        ///
-        /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
-        ///
-        void ResetLearningRate(const LearningRateSchedule& learningRateSchedule) override
-        {
-            m_learningRateSchedule = learningRateSchedule;
-        }
-
-        ///
-        /// Returns current learning rate.
-        ///
-        double LearningRate() const override
-        {
-            return GetCurrentTrainingParameterValue<double>(m_learningRateSchedule);
-        }
-
-    protected:
-        ///
-        /// Retrieves and returns current value from the training parameter schedule.
-        ///
-        template <typename ElementType>
-        ElementType GetCurrentTrainingParameterValue(const TrainingParameterSchedule<ElementType>& schedule) const
-        {
-            if (schedule.IsSweepBased())
-            {
-                return schedule[m_sweepCount];
-            }
-            else
-            {
-                return schedule[m_sampleCount];
-            }
-        }
-
-        LocalLearner(const std::vector<Parameter>& parameters, const LearningRateSchedule& learningRateSchedule)
-            : m_parameters(parameters),
-            m_learningRateSchedule(learningRateSchedule),
-            m_sampleCount(0),
-            m_minibatchCount(0),
-            m_sweepCount(0)
-        {}
-
-        std::vector<Parameter> m_parameters;
-        LearningRateSchedule m_learningRateSchedule;
-        size_t m_sampleCount;
-        size_t m_minibatchCount;
-        size_t m_sweepCount;
-    };
-
     class CompositeLearner : public Learner
     {
     public:
-        CompositeLearner(const std::vector<LearnerPtr>& learners);
+        CNTK_API CompositeLearner(const std::vector<LearnerPtr>& learners);
 
         const std::vector<LearnerPtr>& GetLearners() const { return m_learners; }
 
@@ -3267,6 +3211,16 @@ namespace CNTK
         void ResetSmoothedGradients() override;
 
         ///
+        /// Optionally overridable method to checkpoint the learner's state.
+        ///
+        Dictionary CreateCheckpoint() override;
+
+        ///
+        /// Optionally overridable method to restore the learner's state from a previous checkpoint.
+        ///
+        void RestoreFromCheckpoint(const Dictionary&) override;
+
+        ///
         /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
         ///
         void ResetLearningRate(const LearningRateSchedule& learningRateSchedule) override;
@@ -3275,6 +3229,8 @@ namespace CNTK
         /// Returns current learning rate.
         ///
         double LearningRate() const override;
+
+        virtual ~CompositeLearner() {}
 
     private:
         std::vector<LearnerPtr> m_learners;
@@ -3379,11 +3335,6 @@ namespace CNTK
         /// Returns the average evaluation criterion value per sample for the tested minibatch of samples
         ///
         CNTK_API double TestMinibatch(const std::unordered_map<Variable, ValuePtr>& arguments, const DeviceDescriptor& computeDevice = DeviceDescriptor::UseDefaultDevice());
-
-        ///
-        /// Returns whether the trainer is running distributed (more than 1 MPI workers)
-        ///
-        CNTK_API bool IsRunningDistributed() const;
 
         ///
         /// Checkpoint the model and other Trainer state at the specified file location

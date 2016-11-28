@@ -14,7 +14,7 @@ namespace CNTK
     // An abstract base class at the root of the standard learners hierarchy
     // It implements most of the learner functionality, except for the actual update function,
     // and adds a few pre-/postprocessing methods (which are invoked before and after the update).
-    class LocalLearnerBase : public LocalLearner
+    class LearnerBase : public Learner
     {
     public:
         bool Update(std::vector<std::pair<Parameter, NDArrayViewPtr>>& gradientValues, MinibatchInfo& currentMinibatch, size_t& totalSeenSamples) override final;
@@ -25,12 +25,49 @@ namespace CNTK
 
         virtual void ResetSmoothedGradients() final;
 
+        const std::vector<Parameter>& Parameters() const override
+        {
+            return m_parameters;
+        }
+
+        ///
+        /// Sets a new learning rate overriding the schedule parameter used to construct this learner.
+        ///
+        void ResetLearningRate(const LearningRateSchedule& learningRateSchedule) override
+        {
+            m_learningRateSchedule = learningRateSchedule;
+        }
+
+        ///
+        /// Returns current learning rate.
+        ///
+        double LearningRate() const override
+        {
+            return GetCurrentTrainingParameterValue<double>(m_learningRateSchedule);
+        }
+
     protected:
+        ///
+        /// Retrieves and returns current value from the training parameter schedule.
+        ///
+        template <typename ElementType>
+        ElementType GetCurrentTrainingParameterValue(const TrainingParameterSchedule<ElementType>& schedule) const
+        {
+            if (schedule.IsSweepBased())
+            {
+                return schedule[m_sweepCount];
+            }
+            else
+            {
+                return schedule[m_sampleCount];
+            }
+        }
+
         // allocateSmoothGradients flag specifies whether NDArrayViews for smoothed gradients can be allocated 
         // in the base class constructor (in which case they are allocated with the shapes identical to the shapes of
         // the corresponding parameters) or if the allocation should be deferred to the subclass constructor (which
         // performs allocation that is specific to the particular learner, see FSAdaGrad and RMSProp).
-        LocalLearnerBase(const std::vector<Parameter>& parameters,
+        LearnerBase(const std::vector<Parameter>& parameters,
                     const LearningRateSchedule& learningRateSchedule,
                     AdditionalLearningOptions additionalOptions,
                     bool allocateSmoothGradients = true);
@@ -42,7 +79,7 @@ namespace CNTK
         // Returns current (per-sample) learning rate.
         double LearningRate(size_t minibatchSize) const
         {
-            auto learningRate = LocalLearner::LearningRate();
+            auto learningRate = LearningRate();
             if (m_learningRateSchedule.Unit() == LearningRateSchedule::UnitType::Minibatch)
             {
                 // learning rate needs to be converted to the per-sample value.
@@ -53,8 +90,13 @@ namespace CNTK
         }
 
         AdditionalLearningOptions m_additionalOptions;
-
         std::unordered_map<Parameter, NDArrayViewPtr> m_smoothedGradientValues;
+
+        std::vector<Parameter> m_parameters;
+        LearningRateSchedule m_learningRateSchedule;
+        size_t m_sampleCount;
+        size_t m_minibatchCount;
+        size_t m_sweepCount;
 
         // The following four static protected methods expose private methods of NDArrayView class
         // (which declares LearnerBase as friend class), so that they are available to subclasses.
@@ -90,8 +132,6 @@ namespace CNTK
         // Retrieves the shape of the matrix corresponding to the parameter value.
         static NDShape GetMatrixShape(const Parameter& parameter);
 
-        size_t m_minibatchCount;
-
     private:
         // Templatized update function, it invokes preprocess and postprocess using the provided
         // template parameter and also invokes virtual Update method implemented in one of the subclasses.
@@ -106,14 +146,14 @@ namespace CNTK
     };
 
     // Vanilla gradient descent optimization algorithm.
-    class LearnerSGD : public LocalLearnerBase
+    class LearnerSGD : public LearnerBase
     {
     public:
         LearnerSGD(const std::vector<Parameter>& parameters, 
                    const LearningRateSchedule& learningRateSchedule, 
                    AdditionalLearningOptions additionalOptions,
                    bool allocateSmoothGradients = true)
-                   : LocalLearnerBase(parameters, learningRateSchedule, additionalOptions, allocateSmoothGradients)
+                   : LearnerBase(parameters, learningRateSchedule, additionalOptions, allocateSmoothGradients)
         {}
 
         // TODO: get rid of this as soon as NormalGrad is refactored.
@@ -180,7 +220,7 @@ namespace CNTK
         }
     };
 
-    class LearnerAdaGrad : public LocalLearnerBase
+    class LearnerAdaGrad : public LearnerBase
     {
     public:
 
@@ -188,7 +228,7 @@ namespace CNTK
                        const LearningRateSchedule& learningRateSchedule,
                        bool needAveMultiplier,
                        AdditionalLearningOptions additionalOptions)
-                       : LocalLearnerBase(parameters, learningRateSchedule, additionalOptions, /*allocateSmoothGradients*/ true),
+                       : LearnerBase(parameters, learningRateSchedule, additionalOptions, /*allocateSmoothGradients*/ true),
                        m_needAveMultiplier(needAveMultiplier)
     {
     }
@@ -232,7 +272,7 @@ namespace CNTK
         MomentumSchedule m_varianceMomentumSchedule;
     };
 
-    class LearnerRMSProp : public LocalLearnerBase
+    class LearnerRMSProp : public LearnerBase
     {
     public:
 
