@@ -71,30 +71,30 @@ namespace CNTK
         LogicError("Quantized MPI Communicator is not supported for this build. The 1BitSGD build is needed, see CNTK wiki for details.");
     }
 
-    DistributedTrainerPtr CreateQuantizedDataParallelDistributedTrainer(QuantizedDistributedCommunicatorPtr, bool, size_t)
+    DistributedLearnerPtr CreateQuantizedDataParallelDistributedLearner(QuantizedDistributedCommunicatorPtr, const std::vector<LearnerPtr>&, bool)
     {
         LogicError("Quantized Distributed Trainer is not supported for this build. The 1BitSGD build is needed, see CNTK wiki for details.");
     }
 
-    DistributedTrainerPtr CreateBlockMomentumDistributedTrainer(
+    DistributedLearnerPtr CreateBlockMomentumDistributedLearner(
         DistributedCommunicatorPtr /*communicator*/,
+        const std::vector<LearnerPtr>&,
         size_t /*blockSize*/,
         bool /*useNestrovMomentum*/,
         bool /*resetSGDMomentumAfterAggregation*/,
-        double /*blockLearningRate*/,
-        size_t /*distributedAfterSampleCount*/)
+        double /*blockLearningRate*/)
     {
         LogicError("Block Momentum Distributed Trainer is not supported for this build. The 1BitSGD build is needed, see CNTK wiki for details.");
     }
 
-    DistributedTrainerPtr CreateBlockMomentumDistributedTrainer(
+    DistributedLearnerPtr CreateBlockMomentumDistributedLearner(
         DistributedCommunicatorPtr /*communicator*/,
+        const std::vector<LearnerPtr>&,
         size_t /*blockSize*/,
         double /*blockMomentumAsTimeConstant*/,
         bool /*useNestrovMomentum*/,
         bool /*resetSGDMomentumAfterAggregation*/,
-        double /*blockLearningRate*/,
-        size_t /*distributedAfterSampleCount*/)
+        double /*blockLearningRate*/)
     {
         LogicError("Block Momentum Distributed Trainer is not supported for this build. The 1BitSGD build is needed, see CNTK wiki for details.");
     }
