@@ -141,26 +141,8 @@
     <Compile Include="..\SwigBinding\StorageFormat.cs">
       <Link>GeneratedFiles\StorageFormat.cs</Link>
     </Compile>
-    <Compile Include="..\SwigBinding\SWIGTYPE_p_double.cs">
-      <Link>GeneratedFiles\SWIGTYPE_p_double.cs</Link>
-    </Compile>
-    <Compile Include="..\SwigBinding\SWIGTYPE_p_float.cs">
-      <Link>GeneratedFiles\SWIGTYPE_p_float.cs</Link>
-    </Compile>
     <Compile Include="..\SwigBinding\SWIGTYPE_p_std__unordered_setT_CNTK__Variable_t.cs">
       <Link>GeneratedFiles\SWIGTYPE_p_std__unordered_setT_CNTK__Variable_t.cs</Link>
-    </Compile>
-    <Compile Include="..\SwigBinding\SWIGTYPE_p_std__vectorT_std__vectorT_double_t_t.cs">
-      <Link>GeneratedFiles\SWIGTYPE_p_std__vectorT_std__vectorT_double_t_t.cs</Link>
-    </Compile>
-    <Compile Include="..\SwigBinding\SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t.cs">
-      <Link>GeneratedFiles\SWIGTYPE_p_std__vectorT_std__vectorT_float_t_t.cs</Link>
-    </Compile>
-    <Compile Include="..\SwigBinding\SWIGTYPE_p_std__vectorT_VectorOfDouble_t.cs">
-      <Link>GeneratedFiles\SWIGTYPE_p_std__vectorT_VectorOfDouble_t.cs</Link>
-    </Compile>
-    <Compile Include="..\SwigBinding\SWIGTYPE_p_std__vectorT_VectorOfFloat_t.cs">
-      <Link>GeneratedFiles\SWIGTYPE_p_std__vectorT_VectorOfFloat_t.cs</Link>
     </Compile>
     <Compile Include="..\SwigBinding\SWIGTYPE_p_void.cs">
       <Link>GeneratedFiles\SWIGTYPE_p_void.cs</Link>
