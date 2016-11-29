@@ -525,7 +525,10 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
             chosenMinibatchSize = m_mbSize[i];
         }
 
-        actualMinibatchSize = FixUpEffectiveMBSize(chosenMinibatchSize /*BUGBUG workaround:*/, trainSetDataReader->GetNumParallelSequencesForFixingBPTTMode());
+        if (trainSetDataReader->IsLegacyReader())
+            actualMinibatchSize = FixUpEffectiveMBSize(chosenMinibatchSize /*BUGBUG workaround:*/, trainSetDataReader->GetNumParallelSequencesForFixingBPTTMode());
+        else
+            actualMinibatchSize = chosenMinibatchSize;
 
         double momentumPerSample = GetMomentumPerSample(i /*BUGBUG workaround:*/, trainSetDataReader->GetNumParallelSequencesForFixingBPTTMode());
         // time constant = number of samples after which a contribution has been reduced to e^-1
